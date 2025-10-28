@@ -23,7 +23,11 @@ export const SizeModal = ({ isOpen, onClose, product }: SizeModalProps) => {
 
   if (!isOpen) return null;
 
-  const handleAddToCart = () => {
+  const handleAddToCart = (e?: React.MouseEvent) => {
+    if (e) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
     const productWithSize = {
       ...product,
       selectedVariant: selectedSize,
@@ -38,12 +42,19 @@ export const SizeModal = ({ isOpen, onClose, product }: SizeModalProps) => {
       {/* Backdrop */}
       <div
         className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4"
-        onClick={onClose}
+        onClick={(e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          onClose();
+        }}
       >
         {/* Modal */}
         <div
           className="bg-white rounded-2xl shadow-2xl max-w-md w-full max-h-[90vh] overflow-y-auto"
-          onClick={(e) => e.stopPropagation()}
+          onClick={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+          }}
         >
           {/* Header */}
           <div className="sticky top-0 bg-gradient-to-r from-green-600 to-green-500 text-white p-6 rounded-t-2xl">
@@ -53,7 +64,11 @@ export const SizeModal = ({ isOpen, onClose, product }: SizeModalProps) => {
                 <p className="text-sm text-green-50">{product.name}</p>
               </div>
               <button
-                onClick={onClose}
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  onClose();
+                }}
                 className="ml-4 p-2 hover:bg-white/20 rounded-full transition-colors"
               >
                 <FiX size={24} />
@@ -91,7 +106,11 @@ export const SizeModal = ({ isOpen, onClose, product }: SizeModalProps) => {
                 {sizes.map((size) => (
                   <button
                     key={size.value}
-                    onClick={() => setSelectedSize(size.value)}
+                    onClick={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      setSelectedSize(size.value);
+                    }}
                     className={`relative border-2 rounded-lg p-3 text-center transition-all hover:scale-105 ${
                       selectedSize === size.value
                         ? 'border-green-600 bg-green-50 ring-2 ring-green-300'

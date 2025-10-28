@@ -112,11 +112,6 @@ export const SideCart = ({ isOpen, onClose }: SideCartProps) => {
                         <h3 className="font-semibold text-xs line-clamp-2">
                           {item.name}
                         </h3>
-                        {item.selectedVariant && (
-                          <p className="text-gray-600 text-xs mt-0.5">
-                            Tamanho: <span className="font-semibold">{item.selectedVariant}</span>
-                          </p>
-                        )}
                         <p className="text-primary-green font-bold text-sm mt-0.5">
                           R$ {item.price.toFixed(2).replace('.', ',')}
                         </p>

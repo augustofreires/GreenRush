@@ -96,13 +96,15 @@ export const CintaLanding = () => {
     if (selectedPkg?.product) {
       const productWithSize = {
         ...selectedPkg.product,
-        selectedVariant: selectedSize
+        selectedVariant: selectedSize,
+        name: `${selectedPkg.product.name} - Tamanho ${selectedSize}`
       };
       addItem(productWithSize, selectedPkg.quantity || 1);
     } else if (product) {
       const productWithSize = {
         ...product,
-        selectedVariant: selectedSize
+        selectedVariant: selectedSize,
+        name: `${product.name} - Tamanho ${selectedSize}`
       };
       addItem(productWithSize, 1);
     }

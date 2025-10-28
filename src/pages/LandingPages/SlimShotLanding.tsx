@@ -121,11 +121,6 @@ export const SlimShotLanding = () => {
 
   const benefits = [
     {
-      icon: <FiTarget className="w-8 h-8" />,
-      title: 'Elimina até 15kg em 1 mês',
-      description: 'Fórmula ultra concentrada para resultados rápidos'
-    },
-    {
       icon: <FiHeart className="w-8 h-8" />,
       title: '100% Natural',
       description: 'Ingredientes naturais sem componentes sintéticos'
@@ -477,60 +472,36 @@ export const SlimShotLanding = () => {
       </section>
 
       {/* Benefits Section */}
-      <section id="benefits" className="py-20 bg-gradient-to-br from-orange-50 via-white to-red-50 relative overflow-hidden">
-        {/* Background decorative elements */}
-        <div className="absolute top-0 left-0 w-96 h-96 bg-orange-200 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob"></div>
-        <div className="absolute top-0 right-0 w-96 h-96 bg-red-200 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob animation-delay-2000"></div>
-        <div className="absolute bottom-0 left-1/2 w-96 h-96 bg-yellow-200 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob animation-delay-4000"></div>
-
-        <div className="container mx-auto px-4 relative z-10">
+      <section id="benefits" className="py-20 bg-white">
+        <div className="container mx-auto px-4">
           <div className="text-center mb-16">
-            <div className="inline-block mb-4">
-              <span className="bg-gradient-to-r from-orange-600 to-red-600 text-white text-sm font-bold px-6 py-2 rounded-full shadow-lg">
-                BENEFÍCIOS EXCLUSIVOS
-              </span>
-            </div>
-            <h2 className="text-4xl md:text-5xl font-bold mb-4">
-              <span className="bg-gradient-to-r from-orange-600 via-red-600 to-orange-600 bg-clip-text text-transparent">
-                Por Que Escolher o SlimShot?
-              </span>
+            <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">
+              Por Que Escolher o SlimShot?
             </h2>
             <p className="text-xl text-gray-600 max-w-3xl mx-auto">
               A fórmula ultra concentrada de vinagre de maçã que vai transformar seu corpo
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-6xl mx-auto">
             {benefits.map((benefit, index) => (
               <div
                 key={index}
-                className="group relative bg-white/80 backdrop-blur-sm p-8 rounded-3xl border-2 border-white shadow-xl hover:shadow-2xl transition-all duration-500 transform hover:-translate-y-3 hover:scale-105"
-                style={{
-                  background: 'linear-gradient(135deg, rgba(255,255,255,0.9) 0%, rgba(255,247,237,0.9) 100%)'
-                }}
+                className="group relative bg-gradient-to-br from-gray-50 to-white p-6 rounded-2xl border border-gray-200 hover:border-orange-300 hover:shadow-lg transition-all duration-300"
               >
-                {/* Número de índice estilizado */}
-                <div className="absolute -top-4 -right-4 w-12 h-12 bg-gradient-to-br from-orange-500 to-red-600 rounded-2xl flex items-center justify-center text-white font-bold text-lg shadow-lg transform group-hover:rotate-12 transition-transform duration-500">
-                  {index + 1}
-                </div>
-
-                {/* Ícone com animação */}
-                <div className="relative mb-6">
-                  <div className="absolute inset-0 bg-gradient-to-br from-orange-400 to-red-500 rounded-2xl blur-xl opacity-50 group-hover:opacity-70 transition-opacity"></div>
-                  <div className="relative bg-gradient-to-br from-orange-600 to-red-600 text-white w-20 h-20 rounded-2xl flex items-center justify-center transform group-hover:scale-110 group-hover:rotate-6 transition-all duration-500 shadow-lg">
-                    <div className="text-3xl">{benefit.icon}</div>
+                {/* Ícone */}
+                <div className="flex items-center gap-4 mb-4">
+                  <div className="bg-gradient-to-br from-orange-500 to-red-600 text-white w-14 h-14 rounded-xl flex items-center justify-center flex-shrink-0 group-hover:scale-110 transition-transform duration-300">
+                    {benefit.icon}
                   </div>
+                  <h3 className="text-lg font-bold text-gray-900 group-hover:text-orange-600 transition-colors">
+                    {benefit.title}
+                  </h3>
                 </div>
 
-                <h3 className="text-2xl font-bold text-gray-900 mb-4 group-hover:text-orange-600 transition-colors">
-                  {benefit.title}
-                </h3>
-                <p className="text-gray-600 leading-relaxed">
+                <p className="text-gray-600 text-sm leading-relaxed">
                   {benefit.description}
                 </p>
-
-                {/* Decorative gradient line */}
-                <div className="absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-orange-600 via-red-600 to-orange-600 transform scale-x-0 group-hover:scale-x-100 transition-transform duration-500 rounded-b-3xl"></div>
               </div>
             ))}
           </div>

@@ -8,29 +8,22 @@ import {
 import { useCartStore } from '../../store/useCartStore';
 import { useProductStore } from '../../store/useProductStore';
 import { useCarouselStore } from '../../store/useCarouselStore';
-import { useTestimonialsVideoStore } from '../../store/useTestimonialsVideoStore';
-import { useReviewStore } from '../../store/useReviewStore';
-import { useBeforeAfterStore } from '../../store/useBeforeAfterStore';
 import { useSettingsStore } from '../../store/useSettingsStore';
 import { ProductCard } from '../../components/Product/ProductCard';
+import { BeforeAfterCarousel } from '../../components/BeforeAfter/BeforeAfterCarousel';
+import { VideoCarousel } from '../../components/Testimonials/VideoCarousel';
+import { ReviewsSection } from '../../components/Review/ReviewsSection';
 
 export const CintaLanding = () => {
   const [selectedPackage, setSelectedPackage] = useState(2); // Kit 2 como padrão (mais vendido)
   const [selectedSize, setSelectedSize] = useState('M'); // Tamanho M como padrão
   const [openFaq, setOpenFaq] = useState<number | null>(null);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
-  const [playingVideo, setPlayingVideo] = useState<string | null>(null);
   const { addItem } = useCartStore();
   const { images: carouselImages } = useCarouselStore();
-  const { videos } = useTestimonialsVideoStore();
-  const { getActiveItems } = useBeforeAfterStore();
   const { settings } = useSettingsStore();
 
   const { getProductBySlug, getAvailableProducts, getProductsByCustomLanding } = useProductStore();
-
-  // Buscar imagens de antes/depois e vídeos da cinta modeladora do banco de dados
-  const beforeAfterImages = getActiveItems();
-  const cintaVideos = videos.cinta || [];
 
   // Buscar produto do banco de dados pelo customLandingPage
   const products = getProductsByCustomLanding('/cinta-modeladora');
@@ -125,28 +118,6 @@ export const CintaLanding = () => {
     setCurrentImageIndex((prev) => (prev - 1 + productImages.length) % productImages.length);
   };
 
-  // Função para limpar URL do YouTube e adicionar parâmetros
-  const getCleanYouTubeUrl = (url: string) => {
-    // Adiciona autoplay quando o usuário clica
-    const params = new URLSearchParams({
-      autoplay: '1',
-      modestbranding: '1',
-      rel: '0',
-      showinfo: '0',
-      controls: '0', // Remove controles
-      fs: '0', // Remove fullscreen
-      iv_load_policy: '3', // Remove anotações
-      cc_load_policy: '0', // Remove legendas
-      disablekb: '1', // Desabilita teclado
-      playsinline: '1',
-      widget_referrer: '', // Remove informações de referência
-      origin: window.location.origin
-    });
-
-    const separator = url.includes('?') ? '&' : '?';
-    return `${url}${separator}${params.toString()}`;
-  };
-
   const benefits = [
     {
       icon: <FiDroplet className="w-8 h-8" />,
@@ -188,30 +159,6 @@ export const CintaLanding = () => {
     }
   ];
 
-  const testimonials = [
-    {
-      name: 'Maria Silva',
-      location: 'São Paulo, SP',
-      rating: 5,
-      text: 'Perdi 12cm de cintura em 1 mês usando a cinta! Além de modelar, ela me ajudou a ter mais consciência corporal.',
-      image: 'https://i.pravatar.cc/150?img=1'
-    },
-    {
-      name: 'Ana Costa',
-      location: 'Rio de Janeiro, RJ',
-      rating: 5,
-      text: 'A cinta é muito confortável! Uso todos os dias e já percebi uma diferença enorme na minha silhueta.',
-      image: 'https://i.pravatar.cc/150?img=5'
-    },
-    {
-      name: 'Juliana Santos',
-      location: 'Belo Horizonte, MG',
-      rating: 5,
-      text: 'Melhor compra que fiz! A cinta modela perfeitamente e não machuca. Super recomendo!',
-      image: 'https://i.pravatar.cc/150?img=9'
-    }
-  ];
-
   const faqs = [
     {
       question: 'Quanto tempo demora para ver resultados?',
@@ -234,20 +181,6 @@ export const CintaLanding = () => {
       answer: 'Sim! Oferecemos 30 dias de garantia. Se não ficar satisfeita, devolvemos seu dinheiro.'
     }
   ];
-
-  const renderStars = (rating: number) => {
-    return (
-      <div className="flex gap-1">
-        {[...Array(5)].map((_, i) => (
-          <FiStar
-            key={i}
-            className={i < rating ? "fill-yellow-400 text-yellow-400" : "text-gray-300"}
-            size={16}
-          />
-        ))}
-      </div>
-    );
-  };
 
   // Verificar se produto existe
   if (!product) {
@@ -615,175 +548,6 @@ export const CintaLanding = () => {
         </div>
       </section>
 
-      {/* Social Proof */}
-      <section className="py-20 bg-gray-50">
-        <div className="container mx-auto px-4">
-          <div className="text-center mb-16">
-            <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">
-              O Que Nossos Clientes Dizem
-            </h2>
-            <p className="text-xl text-gray-600">
-              Mais de 10.000 pessoas já transformaram suas vidas
-            </p>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-6xl mx-auto">
-            {testimonials.map((testimonial, index) => (
-              <div
-                key={index}
-                className="bg-white p-8 rounded-2xl shadow-lg border border-gray-100 hover:shadow-xl transition-all"
-              >
-                <div className="flex items-center gap-4 mb-6">
-                  <img
-                    src={testimonial.image}
-                    alt={testimonial.name}
-                    className="w-16 h-16 rounded-full object-cover"
-                  />
-                  <div>
-                    <p className="font-bold text-gray-900">{testimonial.name}</p>
-                    <p className="text-sm text-gray-600">{testimonial.location}</p>
-                    {renderStars(testimonial.rating)}
-                  </div>
-                </div>
-                <p className="text-gray-700 leading-relaxed italic">"{testimonial.text}"</p>
-              </div>
-            ))}
-          </div>
-
-          {/* Stats */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-4xl mx-auto mt-16 text-center">
-            <div>
-              <div className="flex items-center justify-center gap-2 mb-2">
-                <FiUsers className="text-green-600 w-8 h-8" />
-                <p className="text-5xl font-bold text-gray-900">10k+</p>
-              </div>
-              <p className="text-gray-600 font-medium">Clientes Satisfeitos</p>
-            </div>
-            <div>
-              <div className="flex items-center justify-center gap-2 mb-2">
-                <FiTrendingUp className="text-green-600 w-8 h-8" />
-                <p className="text-5xl font-bold text-gray-900">95%</p>
-              </div>
-              <p className="text-gray-600 font-medium">Taxa de Satisfação</p>
-            </div>
-            <div>
-              <div className="flex items-center justify-center gap-2 mb-2">
-                <FiStar className="text-yellow-400 w-8 h-8" />
-                <p className="text-5xl font-bold text-gray-900">4.9</p>
-              </div>
-              <p className="text-gray-600 font-medium">Avaliação Média</p>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Video Testimonials */}
-      {videos.cinta && videos.cinta.length > 0 && (
-        <section className="py-20 bg-gradient-to-b from-white to-green-50">
-          <div className="container mx-auto px-4">
-            <div className="text-center mb-16">
-              <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">
-                Veja Depoimentos Reais
-              </h2>
-              <p className="text-xl text-gray-600">
-                Pessoas reais compartilhando suas experiências transformadoras
-              </p>
-            </div>
-
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 max-w-7xl mx-auto">
-              {videos.cinta.map((video) => (
-                <div
-                  key={video.id}
-                  className="bg-white rounded-2xl shadow-lg overflow-hidden hover:shadow-xl transition-all transform hover:-translate-y-1"
-                >
-                  {/* Video */}
-                  <div className="relative bg-gray-900 aspect-[9/16] group overflow-hidden">
-                    {video.videoUrl.match(/\.(mp4|webm|ogg)$/i) ? (
-                      // Vídeo direto - mostra frame como thumbnail
-                      <div className="relative w-full h-full">
-                        <video
-                          src={video.videoUrl}
-                          poster={video.thumbnailUrl}
-                          className="w-full h-full object-cover"
-                          controls={playingVideo === video.id}
-                          autoPlay={playingVideo === video.id}
-                          playsInline
-                          loop
-                          preload="metadata"
-                        />
-                        {playingVideo !== video.id && (
-                          <>
-                            {/* Overlay escuro */}
-                            <div className="absolute inset-0 bg-black/30 group-hover:bg-black/40 transition-all pointer-events-none"></div>
-                            {/* Botão de play */}
-                            <div
-                              className="absolute inset-0 flex items-center justify-center cursor-pointer"
-                              onClick={() => setPlayingVideo(video.id)}
-                            >
-                              <div className="bg-green-600 hover:bg-green-700 text-white rounded-full p-6 transform group-hover:scale-110 transition-all shadow-2xl">
-                                <FiPlay size={40} className="ml-1" />
-                              </div>
-                            </div>
-                          </>
-                        )}
-                      </div>
-                    ) : playingVideo === video.id ? (
-                      // Iframe (YouTube, Vimeo, etc) - só carrega ao clicar
-                      <div className="relative w-full h-full overflow-hidden">
-                        <iframe
-                          src={getCleanYouTubeUrl(video.videoUrl)}
-                          title={video.title}
-                          className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[110%] h-[110%] pointer-events-auto"
-                          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                          allowFullScreen={false}
-                          style={{ border: 'none' }}
-                        ></iframe>
-                      </div>
-                    ) : (
-                      // Thumbnail para YouTube/outros
-                      <div
-                        className="relative w-full h-full cursor-pointer"
-                        onClick={() => setPlayingVideo(video.id)}
-                      >
-                        <img
-                          src={video.thumbnailUrl || 'https://via.placeholder.com/640x360/1a1a1a/ffffff?text=Video'}
-                          alt={video.title}
-                          className="w-full h-full object-cover"
-                        />
-                        {/* Overlay escuro */}
-                        <div className="absolute inset-0 bg-black/30 group-hover:bg-black/40 transition-all"></div>
-                        {/* Botão de play */}
-                        <div className="absolute inset-0 flex items-center justify-center">
-                          <div className="bg-green-600 hover:bg-green-700 text-white rounded-full p-6 transform group-hover:scale-110 transition-all shadow-2xl">
-                            <FiPlay size={40} className="ml-1" />
-                          </div>
-                        </div>
-                      </div>
-                    )}
-                  </div>
-
-                  {/* Video Info */}
-                  <div className="p-6">
-                    <h3 className="text-xl font-bold text-gray-900 mb-2">
-                      {video.title}
-                    </h3>
-                    <div className="flex items-center gap-2 text-gray-600">
-                      <FiUsers size={16} />
-                      <p className="text-sm">
-                        <span className="font-semibold">{video.customerName}</span>
-                        {video.customerLocation && (
-                          <span className="text-gray-500"> • {video.customerLocation}</span>
-                        )}
-                      </p>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        </section>
-      )}
-
       {/* WhatsApp Community */}
       {settings.whatsappCommunityLink && (
         <section className="py-20 bg-gradient-to-b from-white to-gray-50 overflow-hidden">
@@ -906,124 +670,14 @@ export const CintaLanding = () => {
         </section>
       )}
 
-      {/* Before & After Section */}
-      {beforeAfterImages.length > 0 && (
-        <section className="py-20 bg-gradient-to-b from-white to-green-50">
-          <div className="container mx-auto px-4">
-            <div className="text-center mb-16">
-              <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">
-                Antes e Depois
-              </h2>
-              <p className="text-xl text-gray-600 max-w-2xl mx-auto">
-                Veja as transformações reais de quem já usa a Cinta Modeladora GreenRush
-              </p>
-            </div>
+      {/* Before/After Section */}
+      <BeforeAfterCarousel />
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-7xl mx-auto">
-              {beforeAfterImages.map((item) => (
-                <div key={item.id} className="bg-white rounded-2xl shadow-xl overflow-hidden hover:shadow-2xl transition-shadow">
-                  <div className="relative">
-                    {/* Before Image */}
-                    <div className="relative">
-                      <img
-                        src={item.beforeImage}
-                        alt="Antes"
-                        className="w-full h-64 object-cover"
-                      />
-                      <div className="absolute top-4 left-4 bg-red-500 text-white px-4 py-2 rounded-full font-bold text-sm shadow-lg">
-                        ANTES
-                      </div>
-                    </div>
-                    {/* After Image */}
-                    <div className="relative border-t-4 border-green-500">
-                      <img
-                        src={item.afterImage}
-                        alt="Depois"
-                        className="w-full h-64 object-cover"
-                      />
-                      <div className="absolute top-4 left-4 bg-green-500 text-white px-4 py-2 rounded-full font-bold text-sm shadow-lg">
-                        DEPOIS
-                      </div>
-                    </div>
-                  </div>
-                  {/* Description */}
-                  {item.description && (
-                    <div className="p-6">
-                      <h3 className="font-bold text-xl text-gray-900 mb-2">{item.title}</h3>
-                      <p className="text-gray-600">{item.description}</p>
-                    </div>
-                  )}
-                </div>
-              ))}
-            </div>
-          </div>
-        </section>
-      )}
+      {/* Testimonial Videos */}
+      <VideoCarousel />
 
-      {/* Video Testimonials Section - Quem Usou Amou */}
-      {cintaVideos.length > 0 && (
-        <section className="py-20 bg-white">
-          <div className="container mx-auto px-4">
-            <div className="text-center mb-16">
-              <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">
-                Quem Usou, Amou! ❤️
-              </h2>
-              <p className="text-xl text-gray-600 max-w-2xl mx-auto">
-                Veja os depoimentos em vídeo de clientes reais que transformaram suas vidas
-              </p>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-7xl mx-auto">
-              {cintaVideos.map((video) => (
-                <div key={video.id} className="bg-white rounded-2xl shadow-xl overflow-hidden hover:shadow-2xl transition-shadow">
-                  <div className="relative aspect-video bg-gray-100">
-                    {playingVideo === video.id ? (
-                      <iframe
-                        src={getCleanYouTubeUrl(video.videoUrl)}
-                        className="w-full h-full"
-                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                        allowFullScreen
-                      />
-                    ) : (
-                      <div className="relative w-full h-full group cursor-pointer" onClick={() => setPlayingVideo(video.id)}>
-                        {video.thumbnailUrl ? (
-                          <img
-                            src={video.thumbnailUrl}
-                            alt={video.title}
-                            className="w-full h-full object-cover"
-                          />
-                        ) : (
-                          <div className="w-full h-full bg-gradient-to-br from-green-400 to-green-600 flex items-center justify-center">
-                            <FiPlay className="w-16 h-16 text-white" />
-                          </div>
-                        )}
-                        <div className="absolute inset-0 bg-black bg-opacity-30 group-hover:bg-opacity-50 transition-all flex items-center justify-center">
-                          <div className="bg-white rounded-full p-6 transform group-hover:scale-110 transition-transform shadow-2xl">
-                            <FiPlay className="w-12 h-12 text-green-600" />
-                          </div>
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                  <div className="p-6">
-                    <h3 className="font-bold text-xl text-gray-900 mb-2">{video.title}</h3>
-                    <div className="flex items-center gap-2 text-gray-600">
-                      <FiUsers className="w-5 h-5" />
-                      <span className="font-medium">{video.customerName}</span>
-                      {video.customerLocation && (
-                        <>
-                          <span>•</span>
-                          <span className="text-sm">{video.customerLocation}</span>
-                        </>
-                      )}
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        </section>
-      )}
+      {/* Customer Reviews */}
+      <ReviewsSection />
 
       {/* Related Products */}
       <section className="py-20 bg-white">

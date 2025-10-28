@@ -561,193 +561,6 @@ export const CintaLanding = () => {
         </div>
       </section>
 
-      {/* Kits Explanation Section */}
-      <section className="py-20 bg-gradient-to-b from-white to-green-50">
-        <div className="container mx-auto px-4">
-          <div className="text-center mb-16">
-            <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">
-              Conheça Nossos{' '}
-              <span className="bg-gradient-to-r from-green-600 to-green-500 bg-clip-text text-transparent">
-                Kits Exclusivos
-              </span>
-            </h2>
-            <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-              Potencialize seus resultados com nossos kits especialmente desenvolvidos para seu emagrecimento
-            </p>
-          </div>
-
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 max-w-6xl mx-auto">
-            {/* Kit 1: Chá Detox + Cinta Modeladora */}
-            <div className="group bg-white rounded-3xl shadow-xl overflow-hidden border-2 border-green-100 hover:border-green-300 transition-all duration-300 hover:shadow-2xl transform hover:-translate-y-2">
-              {/* Badge */}
-              <div className="absolute top-6 right-6 z-10 bg-gradient-to-r from-green-500 to-green-600 text-white px-4 py-2 rounded-full font-bold text-sm shadow-lg flex items-center gap-2">
-                <FiStar className="fill-white" size={16} />
-                MAIS VENDIDO
-              </div>
-
-              {/* Image */}
-              <div className="relative overflow-hidden bg-gradient-to-br from-green-50 to-white">
-                <img
-                  src="https://greenrush.com.br/wp-content/uploads/2025/10/BANNER-2.webp"
-                  alt="Kit Chá Detox + Cinta Modeladora"
-                  className="w-full h-72 object-contain transform group-hover:scale-105 transition-transform duration-500"
-                />
-              </div>
-
-              {/* Content */}
-              <div className="p-8">
-                <h3 className="text-2xl md:text-3xl font-bold text-gray-900 mb-4">
-                  Kit: Chá Detox + Cinta Modeladora
-                </h3>
-                <p className="text-gray-600 mb-6 leading-relaxed">
-                  A combinação perfeita para quem quer eliminar toxinas e modelar o corpo ao mesmo tempo!
-                </p>
-
-                <div className="bg-gradient-to-br from-green-50 to-white border-2 border-green-200 rounded-2xl p-6 mb-6">
-                  <h4 className="font-bold text-gray-900 mb-4 flex items-center gap-2">
-                    <div className="bg-green-600 text-white w-6 h-6 rounded-full flex items-center justify-center text-sm">
-                      <FiCheck />
-                    </div>
-                    O que vem neste kit:
-                  </h4>
-                  <div className="space-y-3">
-                    <div className="flex items-start gap-3">
-                      <div className="flex-shrink-0 w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center">
-                        <FiCheck className="text-green-600" size={18} />
-                      </div>
-                      <div>
-                        <p className="font-semibold text-gray-900">Chá Detox GreenRush</p>
-                        <p className="text-sm text-gray-600">Elimina toxinas e desincha naturalmente</p>
-                      </div>
-                    </div>
-                    <div className="flex items-start gap-3">
-                      <div className="flex-shrink-0 w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center">
-                        <FiCheck className="text-green-600" size={18} />
-                      </div>
-                      <div>
-                        <p className="font-semibold text-gray-900">Cinta Modeladora</p>
-                        <p className="text-sm text-gray-600">Modela, comprime e acelera a queima de gordura</p>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Benefits */}
-                <div className="grid grid-cols-2 gap-3">
-                  <div className="bg-green-50 rounded-xl p-3 text-center">
-                    <p className="text-2xl font-bold text-green-600 mb-1">2x</p>
-                    <p className="text-xs text-gray-700 font-medium">Mais Resultados</p>
-                  </div>
-                  <div className="bg-green-50 rounded-xl p-3 text-center">
-                    <p className="text-2xl font-bold text-green-600 mb-1">R$ 116</p>
-                    <p className="text-xs text-gray-700 font-medium">De Economia</p>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* Kit 2: Kit Emagrecedor Completo */}
-            <div className="group bg-white rounded-3xl shadow-xl overflow-hidden border-2 border-green-200 hover:border-green-400 transition-all duration-300 hover:shadow-2xl transform hover:-translate-y-2">
-              {/* Badge */}
-              <div className="absolute top-6 right-6 z-10 bg-gradient-to-r from-green-600 to-green-700 text-white px-4 py-2 rounded-full font-bold text-sm shadow-lg flex items-center gap-2">
-                <FiTrendingUp size={16} />
-                MELHOR OFERTA
-              </div>
-
-              {/* Image */}
-              <div className="relative overflow-hidden bg-gradient-to-br from-green-50 to-white">
-                <img
-                  src="https://greenrush.com.br/wp-content/uploads/2025/10/BANNER-3.webp"
-                  alt="Kit Emagrecedor Completo"
-                  className="w-full h-72 object-contain transform group-hover:scale-105 transition-transform duration-500"
-                />
-              </div>
-
-              {/* Content */}
-              <div className="p-8">
-                <h3 className="text-2xl md:text-3xl font-bold text-gray-900 mb-4">
-                  Kit Emagrecedor Completo
-                </h3>
-                <p className="text-gray-600 mb-6 leading-relaxed">
-                  O kit definitivo para quem busca o máximo de resultados! Tudo que você precisa em um único combo.
-                </p>
-
-                <div className="bg-gradient-to-br from-green-50 to-white border-2 border-green-200 rounded-2xl p-6 mb-6">
-                  <h4 className="font-bold text-gray-900 mb-4 flex items-center gap-2">
-                    <div className="bg-green-600 text-white w-6 h-6 rounded-full flex items-center justify-center text-sm">
-                      <FiCheck />
-                    </div>
-                    O que vem neste kit:
-                  </h4>
-                  <div className="space-y-3">
-                    <div className="flex items-start gap-3">
-                      <div className="flex-shrink-0 w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center">
-                        <FiCheck className="text-green-600" size={18} />
-                      </div>
-                      <div>
-                        <p className="font-semibold text-gray-900">Chá Detox GreenRush</p>
-                        <p className="text-sm text-gray-600">Desintoxica e desincha</p>
-                      </div>
-                    </div>
-                    <div className="flex items-start gap-3">
-                      <div className="flex-shrink-0 w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center">
-                        <FiCheck className="text-green-600" size={18} />
-                      </div>
-                      <div>
-                        <p className="font-semibold text-gray-900">GreenRush Cápsulas</p>
-                        <p className="text-sm text-gray-600">Acelera o metabolismo e queima gordura</p>
-                      </div>
-                    </div>
-                    <div className="flex items-start gap-3">
-                      <div className="flex-shrink-0 w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center">
-                        <FiCheck className="text-green-600" size={18} />
-                      </div>
-                      <div>
-                        <p className="font-semibold text-gray-900">Cinta Modeladora</p>
-                        <p className="text-sm text-gray-600">Modelagem instantânea e redução de medidas</p>
-                      </div>
-                    </div>
-                    <div className="flex items-start gap-3">
-                      <div className="flex-shrink-0 w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center">
-                        <FiCheck className="text-green-600" size={18} />
-                      </div>
-                      <div>
-                        <p className="font-semibold text-gray-900">Vinagre de Maçã SlimShot</p>
-                        <p className="text-sm text-gray-600">Controla apetite e melhora digestão</p>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Benefits */}
-                <div className="grid grid-cols-2 gap-3">
-                  <div className="bg-gradient-to-br from-green-100 to-green-50 rounded-xl p-3 text-center">
-                    <p className="text-2xl font-bold text-green-600 mb-1">4x</p>
-                    <p className="text-xs text-gray-700 font-medium">Mais Completo</p>
-                  </div>
-                  <div className="bg-gradient-to-br from-green-100 to-green-50 rounded-xl p-3 text-center">
-                    <p className="text-2xl font-bold text-green-600 mb-1">R$ 156</p>
-                    <p className="text-xs text-gray-700 font-medium">De Economia</p>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* CTA Bottom */}
-          <div className="mt-12 text-center">
-            <div className="bg-gradient-to-r from-green-600 to-green-500 text-white rounded-2xl p-8 max-w-4xl mx-auto shadow-xl">
-              <h3 className="text-2xl md:text-3xl font-bold mb-4">
-                Escolha seu kit acima e comece sua transformação hoje!
-              </h3>
-              <p className="text-green-50 text-lg">
-                Todos os kits têm garantia de 30 dias e frete grátis acima de R$ 350
-              </p>
-            </div>
-          </div>
-        </div>
-      </section>
-
       {/* Size Guide Section */}
       <section className="py-12 bg-white">
         <div className="container mx-auto px-4">
@@ -855,6 +668,145 @@ export const CintaLanding = () => {
                         <p className="text-green-100 text-xs">Design ergonômico para conforto</p>
                       </div>
                     </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Kits Explanation Section - Compacto */}
+      <section className="py-10 bg-gradient-to-b from-white to-green-50">
+        <div className="container mx-auto px-4">
+          <div className="text-center mb-8">
+            <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-2">
+              Conheça Nossos{' '}
+              <span className="bg-gradient-to-r from-green-600 to-green-500 bg-clip-text text-transparent">
+                Kits Exclusivos
+              </span>
+            </h2>
+            <p className="text-lg text-gray-600">
+              Potencialize seus resultados com nossos combos especiais
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 max-w-6xl mx-auto">
+            {/* Kit 1: Chá Detox + Cinta Modeladora */}
+            <div className="relative bg-white rounded-2xl shadow-lg overflow-hidden border border-green-100 hover:border-green-300 transition-all hover:shadow-xl">
+              {/* Badge */}
+              <div className="absolute top-3 right-3 z-10 bg-gradient-to-r from-green-500 to-green-600 text-white px-3 py-1 rounded-full font-bold text-xs shadow-md flex items-center gap-1">
+                <FiStar className="fill-white" size={12} />
+                MAIS VENDIDO
+              </div>
+
+              {/* Image */}
+              <div className="bg-gradient-to-br from-green-50 to-white">
+                <img
+                  src="https://greenrush.com.br/wp-content/uploads/2025/10/BANNER-2.webp"
+                  alt="Kit Chá Detox + Cinta Modeladora"
+                  className="w-full h-48 object-contain"
+                />
+              </div>
+
+              {/* Content */}
+              <div className="p-5">
+                <h3 className="text-xl font-bold text-gray-900 mb-2">
+                  Kit: Chá Detox + Cinta Modeladora
+                </h3>
+                <p className="text-gray-600 text-sm mb-4">
+                  Elimine toxinas e modele seu corpo ao mesmo tempo!
+                </p>
+
+                <div className="bg-green-50 border border-green-200 rounded-xl p-4 mb-4">
+                  <p className="font-bold text-gray-900 text-sm mb-2 flex items-center gap-2">
+                    <FiCheck className="text-green-600" size={16} />
+                    O que vem neste kit:
+                  </p>
+                  <div className="space-y-2">
+                    <div className="flex items-center gap-2">
+                      <FiCheck className="text-green-600 flex-shrink-0" size={14} />
+                      <p className="text-sm text-gray-700"><strong>Chá Detox</strong> - Desintoxica</p>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <FiCheck className="text-green-600 flex-shrink-0" size={14} />
+                      <p className="text-sm text-gray-700"><strong>Cinta Modeladora</strong> - Modela e comprime</p>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="flex gap-2">
+                  <div className="flex-1 bg-green-50 rounded-lg p-2 text-center">
+                    <p className="text-lg font-bold text-green-600">2x</p>
+                    <p className="text-[10px] text-gray-700">Resultados</p>
+                  </div>
+                  <div className="flex-1 bg-green-50 rounded-lg p-2 text-center">
+                    <p className="text-lg font-bold text-green-600">R$ 116</p>
+                    <p className="text-[10px] text-gray-700">Economia</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Kit 2: Kit Emagrecedor Completo */}
+            <div className="relative bg-white rounded-2xl shadow-lg overflow-hidden border border-green-200 hover:border-green-400 transition-all hover:shadow-xl">
+              {/* Badge */}
+              <div className="absolute top-3 right-3 z-10 bg-gradient-to-r from-green-600 to-green-700 text-white px-3 py-1 rounded-full font-bold text-xs shadow-md flex items-center gap-1">
+                <FiTrendingUp size={12} />
+                MELHOR OFERTA
+              </div>
+
+              {/* Image */}
+              <div className="bg-gradient-to-br from-green-50 to-white">
+                <img
+                  src="https://greenrush.com.br/wp-content/uploads/2025/10/BANNER-3.webp"
+                  alt="Kit Emagrecedor Completo"
+                  className="w-full h-48 object-contain"
+                />
+              </div>
+
+              {/* Content */}
+              <div className="p-5">
+                <h3 className="text-xl font-bold text-gray-900 mb-2">
+                  Kit Emagrecedor Completo
+                </h3>
+                <p className="text-gray-600 text-sm mb-4">
+                  Tudo que você precisa para resultados máximos!
+                </p>
+
+                <div className="bg-green-50 border border-green-200 rounded-xl p-4 mb-4">
+                  <p className="font-bold text-gray-900 text-sm mb-2 flex items-center gap-2">
+                    <FiCheck className="text-green-600" size={16} />
+                    O que vem neste kit:
+                  </p>
+                  <div className="space-y-2">
+                    <div className="flex items-center gap-2">
+                      <FiCheck className="text-green-600 flex-shrink-0" size={14} />
+                      <p className="text-sm text-gray-700"><strong>Chá Detox</strong> - Desintoxica</p>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <FiCheck className="text-green-600 flex-shrink-0" size={14} />
+                      <p className="text-sm text-gray-700"><strong>Cápsulas</strong> - Acelera metabolismo</p>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <FiCheck className="text-green-600 flex-shrink-0" size={14} />
+                      <p className="text-sm text-gray-700"><strong>Cinta</strong> - Modela instantaneamente</p>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <FiCheck className="text-green-600 flex-shrink-0" size={14} />
+                      <p className="text-sm text-gray-700"><strong>Vinagre SlimShot</strong> - Controla apetite</p>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="flex gap-2">
+                  <div className="flex-1 bg-green-50 rounded-lg p-2 text-center">
+                    <p className="text-lg font-bold text-green-600">4x</p>
+                    <p className="text-[10px] text-gray-700">Completo</p>
+                  </div>
+                  <div className="flex-1 bg-green-50 rounded-lg p-2 text-center">
+                    <p className="text-lg font-bold text-green-600">R$ 156</p>
+                    <p className="text-[10px] text-gray-700">Economia</p>
                   </div>
                 </div>
               </div>

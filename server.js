@@ -20,15 +20,20 @@ dotenv.config();
 const app = express();
 const PORT = 3001;
 
-// Conexão MySQL
-const db = await mysql.createConnection({
+// Pool de conexões MySQL
+const db = mysql.createPool({
   host: 'localhost',
   user: 'greenrushapp',
   password: 'greenrush2024app',
-  database: 'greenrush'
+  database: 'greenrush',
+  waitForConnections: true,
+  connectionLimit: 10,
+  queueLimit: 0,
+  enableKeepAlive: true,
+  keepAliveInitialDelay: 0
 });
 
-console.log('✅ Conectado ao MySQL!');
+console.log('✅ Pool de conexões MySQL criado!');
 
 app.use(cors());
 app.use(express.json({ limit: '50mb' }));

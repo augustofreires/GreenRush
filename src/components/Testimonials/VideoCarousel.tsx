@@ -2,9 +2,17 @@ import { useState, useRef, useEffect } from 'react';
 import { FiChevronLeft, FiChevronRight, FiVolume2, FiVolumeX } from 'react-icons/fi';
 import { useTestimonialsVideoStore } from '../../store/useTestimonialsVideoStore';
 
-export const VideoCarousel = () => {
-  const { getActiveVideos } = useTestimonialsVideoStore();
-  const videos = getActiveVideos();
+interface VideoCarouselProps {
+  productFilter?: 'cinta' | 'cha' | 'greenrush' | 'slimshot';
+}
+
+export const VideoCarousel = ({ productFilter }: VideoCarouselProps = {}) => {
+  const testimonialsStore = useTestimonialsVideoStore();
+
+  // Se tem filtro, pega apenas os vídeos daquele produto, senão pega todos
+  const videos = productFilter
+    ? (testimonialsStore.videos[productFilter] || []).filter((v: any) => v.isActive)
+    : testimonialsStore.getActiveVideos();
   const [currentIndex, setCurrentIndex] = useState(0);
   const [mutedStates, setMutedStates] = useState<{ [key: string]: boolean }>({});
   const videoRefs = useRef<{ [key: string]: HTMLVideoElement | null }>({});

@@ -677,7 +677,7 @@ export const CintaLanding = () => {
       </section>
 
       {/* Testimonial Videos */}
-      <VideoCarousel />
+      <VideoCarousel productFilter="cinta" />
 
       {/* Before/After Section */}
       <BeforeAfterCarousel />

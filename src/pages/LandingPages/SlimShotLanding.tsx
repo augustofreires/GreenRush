@@ -477,11 +477,23 @@ export const SlimShotLanding = () => {
       </section>
 
       {/* Benefits Section */}
-      <section id="benefits" className="py-20 bg-white">
-        <div className="container mx-auto px-4">
+      <section id="benefits" className="py-20 bg-gradient-to-br from-orange-50 via-white to-red-50 relative overflow-hidden">
+        {/* Background decorative elements */}
+        <div className="absolute top-0 left-0 w-96 h-96 bg-orange-200 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob"></div>
+        <div className="absolute top-0 right-0 w-96 h-96 bg-red-200 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob animation-delay-2000"></div>
+        <div className="absolute bottom-0 left-1/2 w-96 h-96 bg-yellow-200 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob animation-delay-4000"></div>
+
+        <div className="container mx-auto px-4 relative z-10">
           <div className="text-center mb-16">
-            <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">
-              Por Que Escolher o SlimShot?
+            <div className="inline-block mb-4">
+              <span className="bg-gradient-to-r from-orange-600 to-red-600 text-white text-sm font-bold px-6 py-2 rounded-full shadow-lg">
+                BENEFÍCIOS EXCLUSIVOS
+              </span>
+            </div>
+            <h2 className="text-4xl md:text-5xl font-bold mb-4">
+              <span className="bg-gradient-to-r from-orange-600 via-red-600 to-orange-600 bg-clip-text text-transparent">
+                Por Que Escolher o SlimShot?
+              </span>
             </h2>
             <p className="text-xl text-gray-600 max-w-3xl mx-auto">
               A fórmula ultra concentrada de vinagre de maçã que vai transformar seu corpo
@@ -492,13 +504,33 @@ export const SlimShotLanding = () => {
             {benefits.map((benefit, index) => (
               <div
                 key={index}
-                className="bg-gradient-to-br from-orange-50 to-white p-8 rounded-2xl border border-orange-100 hover:shadow-xl transition-all transform hover:-translate-y-2 duration-300"
+                className="group relative bg-white/80 backdrop-blur-sm p-8 rounded-3xl border-2 border-white shadow-xl hover:shadow-2xl transition-all duration-500 transform hover:-translate-y-3 hover:scale-105"
+                style={{
+                  background: 'linear-gradient(135deg, rgba(255,255,255,0.9) 0%, rgba(255,247,237,0.9) 100%)'
+                }}
               >
-                <div className="bg-gradient-to-br from-orange-600 to-red-600 text-white w-16 h-16 rounded-xl flex items-center justify-center mb-6">
-                  {benefit.icon}
+                {/* Número de índice estilizado */}
+                <div className="absolute -top-4 -right-4 w-12 h-12 bg-gradient-to-br from-orange-500 to-red-600 rounded-2xl flex items-center justify-center text-white font-bold text-lg shadow-lg transform group-hover:rotate-12 transition-transform duration-500">
+                  {index + 1}
                 </div>
-                <h3 className="text-xl font-bold text-gray-900 mb-3">{benefit.title}</h3>
-                <p className="text-gray-600 leading-relaxed">{benefit.description}</p>
+
+                {/* Ícone com animação */}
+                <div className="relative mb-6">
+                  <div className="absolute inset-0 bg-gradient-to-br from-orange-400 to-red-500 rounded-2xl blur-xl opacity-50 group-hover:opacity-70 transition-opacity"></div>
+                  <div className="relative bg-gradient-to-br from-orange-600 to-red-600 text-white w-20 h-20 rounded-2xl flex items-center justify-center transform group-hover:scale-110 group-hover:rotate-6 transition-all duration-500 shadow-lg">
+                    <div className="text-3xl">{benefit.icon}</div>
+                  </div>
+                </div>
+
+                <h3 className="text-2xl font-bold text-gray-900 mb-4 group-hover:text-orange-600 transition-colors">
+                  {benefit.title}
+                </h3>
+                <p className="text-gray-600 leading-relaxed">
+                  {benefit.description}
+                </p>
+
+                {/* Decorative gradient line */}
+                <div className="absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-orange-600 via-red-600 to-orange-600 transform scale-x-0 group-hover:scale-x-100 transition-transform duration-500 rounded-b-3xl"></div>
               </div>
             ))}
           </div>
@@ -537,150 +569,149 @@ export const SlimShotLanding = () => {
       </section>
 
       {/* Ingredients Section */}
-      <section className="py-20 bg-white">
-        <div className="container mx-auto px-4">
+      <section className="py-20 bg-gradient-to-b from-white via-gray-50 to-white relative overflow-hidden">
+        {/* Background pattern */}
+        <div className="absolute inset-0 opacity-5">
+          <div className="absolute inset-0" style={{
+            backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23000000' fill-opacity='1'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`
+          }}></div>
+        </div>
+
+        <div className="container mx-auto px-4 relative z-10">
           <div className="text-center mb-16">
-            <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">
-              7 Ingredientes Ativos Poderosos
+            <div className="inline-flex items-center gap-2 bg-gradient-to-r from-purple-100 to-pink-100 border-2 border-purple-200 px-6 py-2 rounded-full mb-4">
+              <span className="text-2xl">🧪</span>
+              <span className="text-purple-700 font-bold text-sm">FÓRMULA CIENTÍFICA</span>
+            </div>
+            <h2 className="text-4xl md:text-5xl font-bold mb-4">
+              <span className="bg-gradient-to-r from-purple-600 via-pink-600 to-red-600 bg-clip-text text-transparent">
+                7 Ingredientes Ativos Poderosos
+              </span>
             </h2>
             <p className="text-xl text-gray-600 max-w-3xl mx-auto">
               Uma fórmula inovadora com ingredientes naturais cientificamente selecionados para queima de gordura eficaz
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-7xl mx-auto">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 max-w-7xl mx-auto">
             {/* Vinagre de Maçã */}
-            <div className="bg-gradient-to-br from-red-50 to-white p-8 rounded-2xl border-2 border-red-100 hover:shadow-xl transition-all">
-              <div className="bg-red-600 text-white w-16 h-16 rounded-xl flex items-center justify-center mb-6 text-3xl">
-                🍎
+            <div className="group relative bg-white rounded-3xl p-6 shadow-lg hover:shadow-2xl transition-all duration-500 transform hover:-translate-y-2 border-2 border-transparent hover:border-red-200 overflow-hidden">
+              {/* Background gradient on hover */}
+              <div className="absolute inset-0 bg-gradient-to-br from-red-50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+
+              <div className="relative z-10">
+                {/* Badge number */}
+                <div className="absolute -top-3 -right-3 w-10 h-10 bg-red-600 text-white rounded-xl flex items-center justify-center font-bold text-sm shadow-lg">
+                  01
+                </div>
+
+                {/* Icon */}
+                <div className="w-20 h-20 bg-gradient-to-br from-red-500 to-red-600 rounded-2xl flex items-center justify-center text-4xl mb-4 shadow-lg transform group-hover:scale-110 group-hover:rotate-3 transition-all duration-500">
+                  🍎
+                </div>
+
+                <h3 className="text-xl font-bold text-gray-900 mb-3 group-hover:text-red-600 transition-colors">Vinagre de Maçã</h3>
+
+                <div className="space-y-2">
+                  <div className="flex items-center gap-2 text-sm">
+                    <FiCheck className="text-red-600 flex-shrink-0" size={16} />
+                    <span className="text-gray-700">Queima gordura</span>
+                  </div>
+                  <div className="flex items-center gap-2 text-sm">
+                    <FiCheck className="text-red-600 flex-shrink-0" size={16} />
+                    <span className="text-gray-700">Controla açúcar</span>
+                  </div>
+                  <div className="flex items-center gap-2 text-sm">
+                    <FiCheck className="text-red-600 flex-shrink-0" size={16} />
+                    <span className="text-gray-700">Acelera metabolismo</span>
+                  </div>
+                </div>
               </div>
-              <h3 className="text-2xl font-bold text-gray-900 mb-4">Vinagre de Maçã</h3>
-              <ul className="space-y-2 mb-6">
-                <li className="flex items-start gap-2 text-gray-700">
-                  <span className="text-red-600 font-bold">✓</span>
-                  <span className="text-sm">Queima gordura</span>
-                </li>
-                <li className="flex items-start gap-2 text-gray-700">
-                  <span className="text-red-600 font-bold">✓</span>
-                  <span className="text-sm">Controla açúcar no sangue</span>
-                </li>
-                <li className="flex items-start gap-2 text-gray-700">
-                  <span className="text-red-600 font-bold">✓</span>
-                  <span className="text-sm">Acelera metabolismo</span>
-                </li>
-              </ul>
             </div>
 
             {/* Café Verde */}
-            <div className="bg-gradient-to-br from-green-50 to-white p-8 rounded-2xl border-2 border-green-100 hover:shadow-xl transition-all">
-              <div className="bg-green-600 text-white w-16 h-16 rounded-xl flex items-center justify-center mb-6 text-3xl">
-                ☕
+            <div className="group relative bg-white rounded-3xl p-6 shadow-lg hover:shadow-2xl transition-all duration-500 transform hover:-translate-y-2 border-2 border-transparent hover:border-green-200 overflow-hidden">
+              <div className="absolute inset-0 bg-gradient-to-br from-green-50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+              <div className="relative z-10">
+                <div className="absolute -top-3 -right-3 w-10 h-10 bg-green-600 text-white rounded-xl flex items-center justify-center font-bold text-sm shadow-lg">02</div>
+                <div className="w-20 h-20 bg-gradient-to-br from-green-500 to-green-600 rounded-2xl flex items-center justify-center text-4xl mb-4 shadow-lg transform group-hover:scale-110 group-hover:rotate-3 transition-all duration-500">☕</div>
+                <h3 className="text-xl font-bold text-gray-900 mb-3 group-hover:text-green-600 transition-colors">Café Verde</h3>
+                <div className="space-y-2">
+                  <div className="flex items-center gap-2 text-sm"><FiCheck className="text-green-600 flex-shrink-0" size={16} /><span className="text-gray-700">Queima gordura</span></div>
+                  <div className="flex items-center gap-2 text-sm"><FiCheck className="text-green-600 flex-shrink-0" size={16} /><span className="text-gray-700">Aumenta energia</span></div>
+                </div>
               </div>
-              <h3 className="text-2xl font-bold text-gray-900 mb-4">Café Verde</h3>
-              <ul className="space-y-2 mb-6">
-                <li className="flex items-start gap-2 text-gray-700">
-                  <span className="text-green-600 font-bold">✓</span>
-                  <span className="text-sm">Estimula queima de gordura</span>
-                </li>
-                <li className="flex items-start gap-2 text-gray-700">
-                  <span className="text-green-600 font-bold">✓</span>
-                  <span className="text-sm">Aumenta energia</span>
-                </li>
-              </ul>
             </div>
 
             {/* Laranja Moro */}
-            <div className="bg-gradient-to-br from-orange-50 to-white p-8 rounded-2xl border-2 border-orange-100 hover:shadow-xl transition-all">
-              <div className="bg-orange-600 text-white w-16 h-16 rounded-xl flex items-center justify-center mb-6 text-3xl">
-                🍊
+            <div className="group relative bg-white rounded-3xl p-6 shadow-lg hover:shadow-2xl transition-all duration-500 transform hover:-translate-y-2 border-2 border-transparent hover:border-orange-200 overflow-hidden">
+              <div className="absolute inset-0 bg-gradient-to-br from-orange-50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+              <div className="relative z-10">
+                <div className="absolute -top-3 -right-3 w-10 h-10 bg-orange-600 text-white rounded-xl flex items-center justify-center font-bold text-sm shadow-lg">03</div>
+                <div className="w-20 h-20 bg-gradient-to-br from-orange-500 to-orange-600 rounded-2xl flex items-center justify-center text-4xl mb-4 shadow-lg transform group-hover:scale-110 group-hover:rotate-3 transition-all duration-500">🍊</div>
+                <h3 className="text-xl font-bold text-gray-900 mb-3 group-hover:text-orange-600 transition-colors">Laranja Moro</h3>
+                <div className="space-y-2">
+                  <div className="flex items-center gap-2 text-sm"><FiCheck className="text-orange-600 flex-shrink-0" size={16} /><span className="text-gray-700">Reduz gordura</span></div>
+                  <div className="flex items-center gap-2 text-sm"><FiCheck className="text-orange-600 flex-shrink-0" size={16} /><span className="text-gray-700">Regula metabolismo</span></div>
+                  <div className="flex items-center gap-2 text-sm"><FiCheck className="text-orange-600 flex-shrink-0" size={16} /><span className="text-gray-700">Aumenta saciedade</span></div>
+                </div>
               </div>
-              <h3 className="text-2xl font-bold text-gray-900 mb-4">Laranja Moro</h3>
-              <ul className="space-y-2 mb-6">
-                <li className="flex items-start gap-2 text-gray-700">
-                  <span className="text-orange-600 font-bold">✓</span>
-                  <span className="text-sm">Reduz gordura corporal</span>
-                </li>
-                <li className="flex items-start gap-2 text-gray-700">
-                  <span className="text-orange-600 font-bold">✓</span>
-                  <span className="text-sm">Regula metabolismo</span>
-                </li>
-                <li className="flex items-start gap-2 text-gray-700">
-                  <span className="text-orange-600 font-bold">✓</span>
-                  <span className="text-sm">Aumenta saciedade</span>
-                </li>
-              </ul>
             </div>
 
             {/* Colágeno */}
-            <div className="bg-gradient-to-br from-pink-50 to-white p-8 rounded-2xl border-2 border-pink-100 hover:shadow-xl transition-all">
-              <div className="bg-pink-600 text-white w-16 h-16 rounded-xl flex items-center justify-center mb-6 text-3xl">
-                💪
+            <div className="group relative bg-white rounded-3xl p-6 shadow-lg hover:shadow-2xl transition-all duration-500 transform hover:-translate-y-2 border-2 border-transparent hover:border-pink-200 overflow-hidden">
+              <div className="absolute inset-0 bg-gradient-to-br from-pink-50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+              <div className="relative z-10">
+                <div className="absolute -top-3 -right-3 w-10 h-10 bg-pink-600 text-white rounded-xl flex items-center justify-center font-bold text-sm shadow-lg">04</div>
+                <div className="w-20 h-20 bg-gradient-to-br from-pink-500 to-pink-600 rounded-2xl flex items-center justify-center text-4xl mb-4 shadow-lg transform group-hover:scale-110 group-hover:rotate-3 transition-all duration-500">💪</div>
+                <h3 className="text-xl font-bold text-gray-900 mb-3 group-hover:text-pink-600 transition-colors">Colágeno</h3>
+                <div className="space-y-2">
+                  <div className="flex items-center gap-2 text-sm"><FiCheck className="text-pink-600 flex-shrink-0" size={16} /><span className="text-gray-700">Fortalece saúde</span></div>
+                  <div className="flex items-center gap-2 text-sm"><FiCheck className="text-pink-600 flex-shrink-0" size={16} /><span className="text-gray-700">Melhora pele</span></div>
+                </div>
               </div>
-              <h3 className="text-2xl font-bold text-gray-900 mb-4">Colágeno</h3>
-              <ul className="space-y-2 mb-6">
-                <li className="flex items-start gap-2 text-gray-700">
-                  <span className="text-pink-600 font-bold">✓</span>
-                  <span className="text-sm">Fortalece saúde geral</span>
-                </li>
-                <li className="flex items-start gap-2 text-gray-700">
-                  <span className="text-pink-600 font-bold">✓</span>
-                  <span className="text-sm">Melhora pele e cabelo</span>
-                </li>
-              </ul>
             </div>
 
             {/* L-Carnitina */}
-            <div className="bg-gradient-to-br from-purple-50 to-white p-8 rounded-2xl border-2 border-purple-100 hover:shadow-xl transition-all">
-              <div className="bg-purple-600 text-white w-16 h-16 rounded-xl flex items-center justify-center mb-6 text-3xl">
-                🔥
+            <div className="group relative bg-white rounded-3xl p-6 shadow-lg hover:shadow-2xl transition-all duration-500 transform hover:-translate-y-2 border-2 border-transparent hover:border-purple-200 overflow-hidden">
+              <div className="absolute inset-0 bg-gradient-to-br from-purple-50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+              <div className="relative z-10">
+                <div className="absolute -top-3 -right-3 w-10 h-10 bg-purple-600 text-white rounded-xl flex items-center justify-center font-bold text-sm shadow-lg">05</div>
+                <div className="w-20 h-20 bg-gradient-to-br from-purple-500 to-purple-600 rounded-2xl flex items-center justify-center text-4xl mb-4 shadow-lg transform group-hover:scale-110 group-hover:rotate-3 transition-all duration-500">🔥</div>
+                <h3 className="text-xl font-bold text-gray-900 mb-3 group-hover:text-purple-600 transition-colors">L-Carnitina</h3>
+                <div className="space-y-2">
+                  <div className="flex items-center gap-2 text-sm"><FiCheck className="text-purple-600 flex-shrink-0" size={16} /><span className="text-gray-700">Queima gordura</span></div>
+                  <div className="flex items-center gap-2 text-sm"><FiCheck className="text-purple-600 flex-shrink-0" size={16} /><span className="text-gray-700">Aumenta resistência</span></div>
+                </div>
               </div>
-              <h3 className="text-2xl font-bold text-gray-900 mb-4">L-Carnitina</h3>
-              <ul className="space-y-2 mb-6">
-                <li className="flex items-start gap-2 text-gray-700">
-                  <span className="text-purple-600 font-bold">✓</span>
-                  <span className="text-sm">Queima gordura</span>
-                </li>
-                <li className="flex items-start gap-2 text-gray-700">
-                  <span className="text-purple-600 font-bold">✓</span>
-                  <span className="text-sm">Aumenta resistência</span>
-                </li>
-              </ul>
             </div>
 
             {/* Canela em Pó */}
-            <div className="bg-gradient-to-br from-amber-50 to-white p-8 rounded-2xl border-2 border-amber-100 hover:shadow-xl transition-all">
-              <div className="bg-amber-600 text-white w-16 h-16 rounded-xl flex items-center justify-center mb-6 text-3xl">
-                🌿
+            <div className="group relative bg-white rounded-3xl p-6 shadow-lg hover:shadow-2xl transition-all duration-500 transform hover:-translate-y-2 border-2 border-transparent hover:border-amber-200 overflow-hidden">
+              <div className="absolute inset-0 bg-gradient-to-br from-amber-50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+              <div className="relative z-10">
+                <div className="absolute -top-3 -right-3 w-10 h-10 bg-amber-600 text-white rounded-xl flex items-center justify-center font-bold text-sm shadow-lg">06</div>
+                <div className="w-20 h-20 bg-gradient-to-br from-amber-500 to-amber-600 rounded-2xl flex items-center justify-center text-4xl mb-4 shadow-lg transform group-hover:scale-110 group-hover:rotate-3 transition-all duration-500">🌿</div>
+                <h3 className="text-xl font-bold text-gray-900 mb-3 group-hover:text-amber-600 transition-colors">Canela em Pó</h3>
+                <div className="space-y-2">
+                  <div className="flex items-center gap-2 text-sm"><FiCheck className="text-amber-600 flex-shrink-0" size={16} /><span className="text-gray-700">Estabiliza açúcar</span></div>
+                  <div className="flex items-center gap-2 text-sm"><FiCheck className="text-amber-600 flex-shrink-0" size={16} /><span className="text-gray-700">Acelera metabolismo</span></div>
+                </div>
               </div>
-              <h3 className="text-2xl font-bold text-gray-900 mb-4">Canela em Pó</h3>
-              <ul className="space-y-2 mb-6">
-                <li className="flex items-start gap-2 text-gray-700">
-                  <span className="text-amber-600 font-bold">✓</span>
-                  <span className="text-sm">Estabiliza açúcar no sangue</span>
-                </li>
-                <li className="flex items-start gap-2 text-gray-700">
-                  <span className="text-amber-600 font-bold">✓</span>
-                  <span className="text-sm">Acelera metabolismo</span>
-                </li>
-              </ul>
             </div>
 
-            {/* Picolinato de Cromo - Card maior */}
-            <div className="md:col-span-2 lg:col-span-1 bg-gradient-to-br from-blue-50 to-white p-8 rounded-2xl border-2 border-blue-100 hover:shadow-xl transition-all">
-              <div className="bg-blue-600 text-white w-16 h-16 rounded-xl flex items-center justify-center mb-6 text-3xl">
-                ⚗️
+            {/* Picolinato de Cromo */}
+            <div className="group relative bg-white rounded-3xl p-6 shadow-lg hover:shadow-2xl transition-all duration-500 transform hover:-translate-y-2 border-2 border-transparent hover:border-blue-200 overflow-hidden">
+              <div className="absolute inset-0 bg-gradient-to-br from-blue-50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+              <div className="relative z-10">
+                <div className="absolute -top-3 -right-3 w-10 h-10 bg-blue-600 text-white rounded-xl flex items-center justify-center font-bold text-sm shadow-lg">07</div>
+                <div className="w-20 h-20 bg-gradient-to-br from-blue-500 to-blue-600 rounded-2xl flex items-center justify-center text-4xl mb-4 shadow-lg transform group-hover:scale-110 group-hover:rotate-3 transition-all duration-500">⚗️</div>
+                <h3 className="text-xl font-bold text-gray-900 mb-3 group-hover:text-blue-600 transition-colors">Picolinato de Cromo</h3>
+                <div className="space-y-2">
+                  <div className="flex items-center gap-2 text-sm"><FiCheck className="text-blue-600 flex-shrink-0" size={16} /><span className="text-gray-700">Controla apetite</span></div>
+                  <div className="flex items-center gap-2 text-sm"><FiCheck className="text-blue-600 flex-shrink-0" size={16} /><span className="text-gray-700">Regula glicose</span></div>
+                </div>
               </div>
-              <h3 className="text-2xl font-bold text-gray-900 mb-4">Picolinato de Cromo</h3>
-              <ul className="space-y-2 mb-6">
-                <li className="flex items-start gap-2 text-gray-700">
-                  <span className="text-blue-600 font-bold">✓</span>
-                  <span className="text-sm">Controla apetite</span>
-                </li>
-                <li className="flex items-start gap-2 text-gray-700">
-                  <span className="text-blue-600 font-bold">✓</span>
-                  <span className="text-sm">Regula glicose</span>
-                </li>
-              </ul>
             </div>
           </div>
 

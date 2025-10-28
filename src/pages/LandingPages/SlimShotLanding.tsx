@@ -508,6 +508,171 @@ export const SlimShotLanding = () => {
         </div>
       </section>
 
+      {/* How SlimShot Works - Visual Section */}
+      <section className="py-20 bg-gradient-to-b from-gray-50 to-white relative overflow-hidden">
+        {/* Background decoration */}
+        <div className="absolute inset-0 opacity-5">
+          <div className="absolute top-20 left-10 w-32 h-32 bg-red-600 rounded-full blur-3xl"></div>
+          <div className="absolute bottom-20 right-10 w-32 h-32 bg-yellow-600 rounded-full blur-3xl"></div>
+        </div>
+
+        <div className="container mx-auto px-4 relative z-10">
+          {/* Title */}
+          <div className="text-center mb-16">
+            <h2 className="text-3xl md:text-5xl font-black mb-4 leading-tight">
+              <span className="text-red-700">DESCUBRA POR QUE O </span>
+              <span className="bg-gradient-to-r from-yellow-600 via-yellow-500 to-yellow-600 bg-clip-text text-transparent">SLIM SHOT</span>
+              <span className="text-red-700"> FUNCIONA:</span>
+            </h2>
+          </div>
+
+          {/* Main Content - Product centered with ingredients around */}
+          <div className="max-w-7xl mx-auto">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-center">
+
+              {/* Left Column - 3 ingredients */}
+              <div className="space-y-8">
+                {/* Vinagre de Maçã */}
+                <div className="relative group">
+                  <div className="flex items-start gap-4 bg-white p-6 rounded-2xl shadow-md hover:shadow-xl transition-all border-2 border-transparent hover:border-red-200">
+                    <div className="flex-1 text-right lg:text-left">
+                      <h3 className="font-bold text-lg text-red-700 mb-2">Vinagre de maçã:</h3>
+                      <p className="text-gray-600 text-sm leading-relaxed">
+                        Queime gordura, controle o açúcar no sangue e acelere seu metabolismo.
+                      </p>
+                    </div>
+                    {/* Arrow */}
+                    <div className="hidden lg:block absolute -right-12 top-1/2 -translate-y-1/2 text-yellow-600 text-4xl transform group-hover:scale-110 transition-transform">
+                      ➜
+                    </div>
+                  </div>
+                </div>
+
+                {/* Café verde */}
+                <div className="relative group">
+                  <div className="flex items-start gap-4 bg-white p-6 rounded-2xl shadow-md hover:shadow-xl transition-all border-2 border-transparent hover:border-red-200">
+                    <div className="flex-1 text-right lg:text-left">
+                      <h3 className="font-bold text-lg text-red-700 mb-2">Café verde:</h3>
+                      <p className="text-gray-600 text-sm leading-relaxed">
+                        Estimule a queima de gordura, aumente sua energia e supere seus limites.
+                      </p>
+                    </div>
+                    <div className="hidden lg:block absolute -right-12 top-1/2 -translate-y-1/2 text-yellow-600 text-4xl transform group-hover:scale-110 transition-transform">
+                      ➜
+                    </div>
+                  </div>
+                </div>
+
+                {/* Laranja Moro */}
+                <div className="relative group">
+                  <div className="flex items-start gap-4 bg-white p-6 rounded-2xl shadow-md hover:shadow-xl transition-all border-2 border-transparent hover:border-red-200">
+                    <div className="flex-1 text-right lg:text-left">
+                      <h3 className="font-bold text-lg text-red-700 mb-2">Laranja Moro:</h3>
+                      <p className="text-gray-600 text-sm leading-relaxed">
+                        Reduza a gordura corporal, regule seu metabolismo e sinta-se saciado por mais tempo.
+                      </p>
+                    </div>
+                    <div className="hidden lg:block absolute -right-12 top-1/2 -translate-y-1/2 text-yellow-600 text-4xl transform group-hover:scale-110 transition-transform">
+                      ➜
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Center Column - Product Image */}
+              <div className="flex items-center justify-center lg:px-8">
+                <div className="relative group">
+                  {/* Glow effect */}
+                  <div className="absolute inset-0 bg-gradient-to-br from-red-400 to-yellow-400 rounded-full blur-3xl opacity-20 group-hover:opacity-30 transition-opacity"></div>
+
+                  {/* Product image */}
+                  <img
+                    src="https://res.cloudinary.com/dnsqfrelo/image/upload/v1761692427/AnyConv.com__1-frasco-arrow-2-1751x2048_pkbsuw.webp"
+                    alt="SlimShot - Vinagre de Maçã"
+                    className="relative z-10 w-full max-w-sm mx-auto drop-shadow-2xl transform group-hover:scale-105 transition-transform duration-500"
+                  />
+                </div>
+              </div>
+
+              {/* Right Column - 3 ingredients */}
+              <div className="space-y-8">
+                {/* L-Carnitina */}
+                <div className="relative group">
+                  <div className="flex items-start gap-4 bg-white p-6 rounded-2xl shadow-md hover:shadow-xl transition-all border-2 border-transparent hover:border-red-200">
+                    <div className="hidden lg:block absolute -left-12 top-1/2 -translate-y-1/2 text-yellow-600 text-4xl transform rotate-180 group-hover:scale-110 transition-transform">
+                      ➜
+                    </div>
+                    <div className="flex-1">
+                      <h3 className="font-bold text-lg text-red-700 mb-2">L-Carnitina:</h3>
+                      <p className="text-gray-600 text-sm leading-relaxed">
+                        Queime gordura, aumente sua resistência e alcance resultados além dos esperado.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Canela em pó */}
+                <div className="relative group">
+                  <div className="flex items-start gap-4 bg-white p-6 rounded-2xl shadow-md hover:shadow-xl transition-all border-2 border-transparent hover:border-red-200">
+                    <div className="hidden lg:block absolute -left-12 top-1/2 -translate-y-1/2 text-yellow-600 text-4xl transform rotate-180 group-hover:scale-110 transition-transform">
+                      ➜
+                    </div>
+                    <div className="flex-1">
+                      <h3 className="font-bold text-lg text-red-700 mb-2">Canela em pó:</h3>
+                      <p className="text-gray-600 text-sm leading-relaxed">
+                        Estabilize o açúcar no sangue, acelere seu metabolismo e mantenha-se no caminho certo.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Picolinato de Cromo */}
+                <div className="relative group">
+                  <div className="flex items-start gap-4 bg-white p-6 rounded-2xl shadow-md hover:shadow-xl transition-all border-2 border-transparent hover:border-red-200">
+                    <div className="hidden lg:block absolute -left-12 top-1/2 -translate-y-1/2 text-yellow-600 text-4xl transform rotate-180 group-hover:scale-110 transition-transform">
+                      ➜
+                    </div>
+                    <div className="flex-1">
+                      <h3 className="font-bold text-lg text-red-700 mb-2">Picolinato de Cromo:</h3>
+                      <p className="text-gray-600 text-sm leading-relaxed">
+                        Controle seu apetite, regule sua glicose e impulsione sua jornada de emagrecimento.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Bottom - Colágeno */}
+            <div className="mt-12 max-w-2xl mx-auto">
+              <div className="relative group">
+                {/* Arrow down */}
+                <div className="absolute -top-8 left-1/2 -translate-x-1/2 text-yellow-600 text-4xl transform rotate-90 group-hover:scale-110 transition-transform">
+                  ➜
+                </div>
+
+                <div className="bg-white p-6 rounded-2xl shadow-md hover:shadow-xl transition-all border-2 border-transparent hover:border-red-200 text-center">
+                  <h3 className="font-bold text-lg text-red-700 mb-2">Colágeno:</h3>
+                  <p className="text-gray-600 text-sm leading-relaxed">
+                    Fortaleça sua saúde geral e liberte-se para atingir seu corpo dos sonhos.
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            {/* CTA Button */}
+            <div className="mt-12 text-center">
+              <a
+                href="#hero"
+                className="inline-block bg-gradient-to-r from-red-700 to-red-800 hover:from-red-800 hover:to-red-900 text-yellow-400 font-black text-lg md:text-xl px-12 py-5 rounded-xl shadow-2xl hover:shadow-3xl transform hover:scale-105 transition-all duration-300 uppercase tracking-wide"
+              >
+                SIM! EU PRECISO COMPRAR AGORA!
+              </a>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* How It Works */}
       <section className="py-20 bg-gradient-to-b from-green-50 to-white">
         <div className="container mx-auto px-4">

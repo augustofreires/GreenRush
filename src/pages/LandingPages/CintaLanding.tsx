@@ -98,7 +98,9 @@ export const CintaLanding = () => {
       const productWithSize = {
         ...selectedPkg.product,
         selectedVariant: selectedSize,
-        name: `${selectedPkg.label} - Tamanho ${selectedSize}`
+        name: `${selectedPkg.label} - Tamanho ${selectedSize}`,
+        price: selectedPkg.pricePerUnit, // Usa o preço do pacote
+        originalPrice: selectedPkg.originalPrice
       };
       addItem(productWithSize, selectedPkg.quantity || 1);
     } else if (product) {

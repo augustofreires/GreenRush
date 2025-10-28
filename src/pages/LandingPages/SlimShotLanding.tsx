@@ -12,6 +12,8 @@ import { useTestimonialsVideoStore } from '../../store/useTestimonialsVideoStore
 import { useBeforeAfterStore } from '../../store/useBeforeAfterStore';
 import { useSettingsStore } from '../../store/useSettingsStore';
 import { ProductCard } from '../../components/Product/ProductCard';
+import { BeforeAfterCarousel } from '../../components/BeforeAfter/BeforeAfterCarousel';
+import { ReviewsSection } from '../../components/Review/ReviewsSection';
 
 export const SlimShotLanding = () => {
   const [selectedPackage, setSelectedPackage] = useState(2); // 3 shots como padrão (mais vendido)
@@ -173,30 +175,6 @@ export const SlimShotLanding = () => {
     }
   ];
 
-  const testimonials = [
-    {
-      name: 'Carla Mendes',
-      location: 'São Paulo, SP',
-      rating: 5,
-      text: 'Eliminei 12kg em 1 mês com o SlimShot! O sabor de frutas vermelhas é delicioso e super fácil de tomar. Estou me sentindo incrível!',
-      image: 'https://i.pravatar.cc/150?img=1'
-    },
-    {
-      name: 'Fernanda Lima',
-      location: 'Rio de Janeiro, RJ',
-      rating: 5,
-      text: 'Produto revolucionário! Além de perder peso rapidamente, minha disposição aumentou muito. O melhor investimento que já fiz!',
-      image: 'https://i.pravatar.cc/150?img=5'
-    },
-    {
-      name: 'Patricia Souza',
-      location: 'Belo Horizonte, MG',
-      rating: 5,
-      text: 'Estava cética, mas funcionou mesmo! Perdi 10kg e minha autoestima voltou. Recomendo muito o SlimShot!',
-      image: 'https://i.pravatar.cc/150?img=9'
-    }
-  ];
-
   const faqs = [
     {
       question: 'Quanto tempo demora para ver resultados?',
@@ -227,20 +205,6 @@ export const SlimShotLanding = () => {
       answer: 'Sim! Oferecemos 30 dias de garantia. Se não ficar satisfeito com os resultados, devolvemos 100% do seu dinheiro.'
     }
   ];
-
-  const renderStars = (rating: number) => {
-    return (
-      <div className="flex gap-1">
-        {[...Array(5)].map((_, i) => (
-          <FiStar
-            key={i}
-            className={i < rating ? "fill-yellow-400 text-yellow-400" : "text-gray-300"}
-            size={16}
-          />
-        ))}
-      </div>
-    );
-  };
 
   // Verificar se produto existe
   if (!product) {
@@ -759,67 +723,11 @@ export const SlimShotLanding = () => {
         </div>
       </section>
 
-      {/* Social Proof */}
-      <section className="py-20 bg-gray-50">
-        <div className="container mx-auto px-4">
-          <div className="text-center mb-16">
-            <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">
-              O Que Nossos Clientes Dizem
-            </h2>
-            <p className="text-xl text-gray-600">
-              Mais de 10.000 pessoas já transformaram suas vidas
-            </p>
-          </div>
+      {/* Before/After Section - Resultados Reais */}
+      <BeforeAfterCarousel />
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-6xl mx-auto">
-            {testimonials.map((testimonial, index) => (
-              <div
-                key={index}
-                className="bg-white p-8 rounded-2xl shadow-lg border border-gray-100 hover:shadow-xl transition-all"
-              >
-                <div className="flex items-center gap-4 mb-6">
-                  <img
-                    src={testimonial.image}
-                    alt={testimonial.name}
-                    className="w-16 h-16 rounded-full object-cover"
-                  />
-                  <div>
-                    <p className="font-bold text-gray-900">{testimonial.name}</p>
-                    <p className="text-sm text-gray-600">{testimonial.location}</p>
-                    {renderStars(testimonial.rating)}
-                  </div>
-                </div>
-                <p className="text-gray-700 leading-relaxed italic">"{testimonial.text}"</p>
-              </div>
-            ))}
-          </div>
-
-          {/* Stats */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-4xl mx-auto mt-16 text-center">
-            <div>
-              <div className="flex items-center justify-center gap-2 mb-2">
-                <FiUsers className="text-green-600 w-8 h-8" />
-                <p className="text-5xl font-bold text-gray-900">10k+</p>
-              </div>
-              <p className="text-gray-600 font-medium">Clientes Satisfeitos</p>
-            </div>
-            <div>
-              <div className="flex items-center justify-center gap-2 mb-2">
-                <FiTrendingUp className="text-green-600 w-8 h-8" />
-                <p className="text-5xl font-bold text-gray-900">95%</p>
-              </div>
-              <p className="text-gray-600 font-medium">Taxa de Satisfação</p>
-            </div>
-            <div>
-              <div className="flex items-center justify-center gap-2 mb-2">
-                <FiStar className="text-yellow-400 w-8 h-8" />
-                <p className="text-5xl font-bold text-gray-900">4.9</p>
-              </div>
-              <p className="text-gray-600 font-medium">Avaliação Média</p>
-            </div>
-          </div>
-        </div>
-      </section>
+      {/* Customer Reviews - O Que Nossos Clientes Dizem */}
+      <ReviewsSection />
 
       {/* Video Testimonials */}
       {videos.slimshot && videos.slimshot.length > 0 && (

@@ -15,7 +15,7 @@ import { VideoCarousel } from '../../components/Testimonials/VideoCarousel';
 import { ReviewsSection } from '../../components/Review/ReviewsSection';
 
 export const CintaLanding = () => {
-  const [selectedPackage, setSelectedPackage] = useState(2); // Kit 2 como padrão (mais vendido)
+  const [selectedPackage, setSelectedPackage] = useState<number | null>(null); // Nenhum kit selecionado por padrão
   const [selectedSize, setSelectedSize] = useState('M'); // Tamanho M como padrão
   const [openFaq, setOpenFaq] = useState<number | null>(null);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
@@ -97,7 +97,7 @@ export const CintaLanding = () => {
       const productWithSize = {
         ...selectedPkg.product,
         selectedVariant: selectedSize,
-        name: `${selectedPkg.product.name} - Tamanho ${selectedSize}`
+        name: `${selectedPkg.label} - Tamanho ${selectedSize}`
       };
       addItem(productWithSize, selectedPkg.quantity || 1);
     } else if (product) {

@@ -11,7 +11,7 @@ export const VideoCarousel = ({ productFilter }: VideoCarouselProps = {}) => {
 
   // Se tem filtro, pega apenas os vídeos daquele produto, senão pega todos
   const videos = productFilter
-    ? (testimonialsStore.videos[productFilter] || []).filter((v: any) => v.isActive)
+    ? (testimonialsStore.videos[productFilter] || [])
     : testimonialsStore.getActiveVideos();
   const [currentIndex, setCurrentIndex] = useState(0);
   const [mutedStates, setMutedStates] = useState<{ [key: string]: boolean }>({});

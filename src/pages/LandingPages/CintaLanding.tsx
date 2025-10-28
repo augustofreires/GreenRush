@@ -44,12 +44,13 @@ export const CintaLanding = () => {
     { value: 'GG', label: 'GG', description: 'TAM acima de 56 | Cintura +133cm' }
   ];
   // Buscar produtos dos kits do banco de dados
-  // Buscar produto da cinta baseado no tamanho selecionado
+  const cintaChaProduct = allProducts.find(p => p.slug === 'cinta-ch' || p.slug === 'combo-cinta-ch');
+  const kitEmagrecedorProduct = allProducts.find(p => p.slug === 'combo-emagrecimento-completo');
+
+  // Buscar produto da cinta baseado no tamanho selecionado (apenas para kit 1)
   const cintaProduct = selectedSize !== 'M'
     ? allProducts.find(p => p.slug === `cinta-modeladora-${selectedSize.toLowerCase()}`)
     : product;
-  const cintaChaProduct = allProducts.find(p => p.slug === 'cinta-ch' || p.slug === 'combo-cinta-ch');
-  const kitEmagrecedorProduct = allProducts.find(p => p.slug === 'combo-emagrecimento-completo');
 
   // Pacotes/Kits disponíveis
   const packages = [
@@ -69,7 +70,7 @@ export const CintaLanding = () => {
       id: 2,
       quantity: 1,
       label: 'Kit: Chá Detox + Cinta Modeladora',
-      product: cintaChaProduct || cintaProduct,
+      product: cintaChaProduct || product, // Fallback para produto base, não cintaProduct
       pricePerUnit: 359.00,
       total: 359.00,
       originalPrice: 474.90,
@@ -81,7 +82,7 @@ export const CintaLanding = () => {
       id: 3,
       quantity: 1,
       label: 'Kit Emagrecedor + Cinta Modeladora',
-      product: kitEmagrecedorProduct || cintaProduct,
+      product: kitEmagrecedorProduct || product, // Fallback para produto base, não cintaProduct
       pricePerUnit: 479.00,
       total: 479.00,
       originalPrice: 634.80,

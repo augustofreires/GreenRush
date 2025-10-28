@@ -71,31 +71,39 @@ export const useCartStore = create<CartStore>()(
 
       addItem: (product, quantity = 1) => {
         set((state) => {
-          const existingItem = state.items.find((item) => item.id === product.id);
+          // Encontra item com mesmo ID e mesma variante (tamanho)
+          const existingItem = state.items.find((item) =>
+            item.id === product.id &&
+            item.selectedVariant === product.selectedVariant
+          );
 
           if (existingItem) {
             return {
               items: state.items.map((item) =>
-                item.id === product.id
+                item.id === product.id && item.selectedVariant === product.selectedVariant
                   ? { ...item, quantity: item.quantity + quantity }
                   : item
               ),
               version: state.version + 1,
-              isCartOpen: true, // Open cart when adding item
+              isCartOpen: true,
             };
           }
 
           return {
             items: [...state.items, { ...product, quantity }],
             version: state.version + 1,
-            isCartOpen: true, // Open cart when adding item
+            isCartOpen: true,
           };
         });
       },
 
       removeItem: (productId) => {
         set((state) => ({
-          items: state.items.filter((item) => item.id !== productId),
+          items: state.items.filter((item) => {
+            // Remove pelo ID composto (id + variante)
+            const itemKey = item.selectedVariant ? `${item.id}-${item.selectedVariant}` : item.id;
+            return itemKey !== productId;
+          }),
           version: state.version + 1,
         }));
       },
@@ -107,9 +115,10 @@ export const useCartStore = create<CartStore>()(
         }
 
         set((state) => {
-          const newItems = state.items.map((item) =>
-            item.id === productId ? { ...item, quantity: quantity } : { ...item }
-          );
+          const newItems = state.items.map((item) => {
+            const itemKey = item.selectedVariant ? `${item.id}-${item.selectedVariant}` : item.id;
+            return itemKey === productId ? { ...item, quantity: quantity } : { ...item };
+          });
           console.log('[Store] Updating quantity:', productId, 'to', quantity, 'Version:', state.version + 1);
           return {
             items: newItems,

@@ -94,9 +94,17 @@ export const CintaLanding = () => {
   const handleAddToCart = () => {
     const selectedPkg = packages.find(pkg => pkg.id === selectedPackage);
     if (selectedPkg?.product) {
-      addItem(selectedPkg.product, selectedPkg.quantity || 1);
+      const productWithSize = {
+        ...selectedPkg.product,
+        selectedVariant: selectedSize
+      };
+      addItem(productWithSize, selectedPkg.quantity || 1);
     } else if (product) {
-      addItem(product, 1);
+      const productWithSize = {
+        ...product,
+        selectedVariant: selectedSize
+      };
+      addItem(productWithSize, 1);
     }
   };
 

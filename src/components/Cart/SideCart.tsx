@@ -19,6 +19,11 @@ export const SideCart = ({ isOpen, onClose }: SideCartProps) => {
   const products = useProductStore((state) => state.products);
   const [recommendedProducts] = useState(() => Array.isArray(products) ? products.slice(0, 3) : []);
 
+  // Helper para gerar ID único do item (id + variante)
+  const getItemKey = (item: any) => {
+    return item.selectedVariant ? `${item.id}-${item.selectedVariant}` : item.id;
+  };
+
   // Calculate totals directly - will recalculate on every version change
   const subtotal = items.reduce((sum, item) => {
     console.log(`[SideCart v${version}] ${item.name}: R$ ${item.price} x ${item.quantity} = R$ ${item.price * item.quantity}`);
@@ -91,53 +96,61 @@ export const SideCart = ({ isOpen, onClose }: SideCartProps) => {
             <div className="p-4 space-y-4">
               {/* Cart Items */}
               <div className="space-y-3">
-                {items.map((item) => (
-                  <div key={item.id} className="flex gap-3 pb-3 border-b">
-                    {/* Image */}
-                    <img
-                      src={item.image}
-                      alt={item.name}
-                      className="w-16 h-16 object-cover rounded"
-                    />
+                {items.map((item) => {
+                  const itemKey = getItemKey(item);
+                  return (
+                    <div key={itemKey} className="flex gap-3 pb-3 border-b">
+                      {/* Image */}
+                      <img
+                        src={item.image}
+                        alt={item.name}
+                        className="w-16 h-16 object-cover rounded"
+                      />
 
-                    {/* Info */}
-                    <div className="flex-1 min-w-0">
-                      <h3 className="font-semibold text-xs line-clamp-2">
-                        {item.name}
-                      </h3>
-                      <p className="text-primary-green font-bold text-sm mt-0.5">
-                        R$ {item.price.toFixed(2).replace('.', ',')}
-                      </p>
+                      {/* Info */}
+                      <div className="flex-1 min-w-0">
+                        <h3 className="font-semibold text-xs line-clamp-2">
+                          {item.name}
+                        </h3>
+                        {item.selectedVariant && (
+                          <p className="text-gray-600 text-xs mt-0.5">
+                            Tamanho: <span className="font-semibold">{item.selectedVariant}</span>
+                          </p>
+                        )}
+                        <p className="text-primary-green font-bold text-sm mt-0.5">
+                          R$ {item.price.toFixed(2).replace('.', ',')}
+                        </p>
 
-                      {/* Quantity Controls */}
-                      <div className="flex items-center gap-2 mt-1">
-                        <div className="flex items-center border rounded">
+                        {/* Quantity Controls */}
+                        <div className="flex items-center gap-2 mt-1">
+                          <div className="flex items-center border rounded">
+                            <button
+                              onClick={() => updateQuantity(itemKey, item.quantity - 1)}
+                              className="p-0.5 hover:bg-gray-100 transition-colors"
+                            >
+                              <FiMinus size={12} />
+                            </button>
+                            <span className="px-2 py-0.5 text-xs">{item.quantity}</span>
+                            <button
+                              onClick={() => updateQuantity(itemKey, item.quantity + 1)}
+                              className="p-0.5 hover:bg-gray-100 transition-colors"
+                              disabled={item.quantity >= item.stock}
+                            >
+                              <FiPlus size={12} />
+                            </button>
+                          </div>
+
                           <button
-                            onClick={() => updateQuantity(item.id, item.quantity - 1)}
-                            className="p-0.5 hover:bg-gray-100 transition-colors"
+                            onClick={() => removeItem(itemKey)}
+                            className="text-red-600 hover:text-red-700 transition-colors p-0.5"
                           >
-                            <FiMinus size={12} />
-                          </button>
-                          <span className="px-2 py-0.5 text-xs">{item.quantity}</span>
-                          <button
-                            onClick={() => updateQuantity(item.id, item.quantity + 1)}
-                            className="p-0.5 hover:bg-gray-100 transition-colors"
-                            disabled={item.quantity >= item.stock}
-                          >
-                            <FiPlus size={12} />
+                            <FiTrash2 size={14} />
                           </button>
                         </div>
-
-                        <button
-                          onClick={() => removeItem(item.id)}
-                          className="text-red-600 hover:text-red-700 transition-colors p-0.5"
-                        >
-                          <FiTrash2 size={14} />
-                        </button>
                       </div>
                     </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
 
               {/* Recommended Products */}

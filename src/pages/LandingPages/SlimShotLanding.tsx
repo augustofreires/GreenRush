@@ -44,9 +44,10 @@ export const SlimShotLanding = () => {
       id: 1,
       quantity: 1,
       label: '1 Shot (1 mês de tratamento)',
-      pricePerUnit: 197.00,
-      total: 197.00,
-      discount: 0,
+      pricePerUnit: 77.00,
+      total: 77.00,
+      originalPrice: 150.00,
+      discount: 73.00,
       badge: null,
       badgeColor: ''
     },
@@ -54,21 +55,23 @@ export const SlimShotLanding = () => {
       id: 2,
       quantity: 3,
       label: '3 Shots (3 meses de tratamento)',
-      pricePerUnit: 149.00,
-      total: 447.00,
-      discount: 144.00,
+      pricePerUnit: 65.67,
+      total: 197.00,
+      originalPrice: 450.00,
+      discount: 253.00,
       badge: 'MAIS VENDIDO',
-      badgeColor: 'bg-gradient-to-r from-orange-500 to-orange-600'
+      badgeColor: 'bg-gradient-to-r from-orange-500 to-red-600'
     },
     {
       id: 3,
       quantity: 5,
       label: '5 Shots (5 meses de tratamento)',
-      pricePerUnit: 129.40,
-      total: 647.00,
-      discount: 338.00,
+      pricePerUnit: 59.40,
+      total: 297.00,
+      originalPrice: 750.00,
+      discount: 453.00,
       badge: 'MELHOR OFERTA',
-      badgeColor: 'bg-gradient-to-r from-red-600 to-red-700'
+      badgeColor: 'bg-gradient-to-r from-red-600 to-red-800'
     }
   ];
 
@@ -345,8 +348,8 @@ export const SlimShotLanding = () => {
                     onClick={() => setSelectedPackage(pkg.id)}
                     className={`relative border-2 rounded-lg p-3 cursor-pointer transition-all ${
                       selectedPackage === pkg.id
-                        ? 'border-green-500 bg-green-50 shadow-md'
-                        : 'border-gray-300 hover:border-green-300 bg-white'
+                        ? 'border-red-500 bg-red-50 shadow-md'
+                        : 'border-gray-300 hover:border-orange-300 bg-white'
                     }`}
                   >
                     {/* Badge mais vendido */}
@@ -361,11 +364,11 @@ export const SlimShotLanding = () => {
                       {/* Radio Button */}
                       <div className={`w-4 h-4 rounded-full border-2 flex items-center justify-center flex-shrink-0 ${
                         selectedPackage === pkg.id
-                          ? 'border-green-600 bg-white'
+                          ? 'border-red-600 bg-white'
                           : 'border-gray-300'
                       }`}>
                         {selectedPackage === pkg.id && (
-                          <div className="w-2 h-2 rounded-full bg-green-600"></div>
+                          <div className="w-2 h-2 rounded-full bg-red-600"></div>
                         )}
                       </div>
 
@@ -387,7 +390,7 @@ export const SlimShotLanding = () => {
                               R$ {pkg.pricePerUnit.toFixed(2)} <span className="text-xs font-normal text-gray-600">/ Cada</span>
                             </p>
                             {pkg.discount > 0 && (
-                              <p className="text-green-600 font-semibold text-xs">
+                              <p className="text-red-600 font-semibold text-xs">
                                 Economize R$ {pkg.discount.toFixed(2)}
                               </p>
                             )}
@@ -402,21 +405,21 @@ export const SlimShotLanding = () => {
               {/* CTA Button */}
               <button
                 onClick={handleAddToCart}
-                className="w-full bg-gradient-to-r from-green-500 to-green-600 text-white py-4 rounded-xl font-bold text-lg hover:from-green-600 hover:to-green-700 transition-all transform hover:scale-[1.02] shadow-lg flex items-center justify-center gap-2"
+                className="w-full bg-gradient-to-r from-red-600 to-red-700 text-white py-4 rounded-xl font-bold text-lg hover:from-red-700 hover:to-red-800 transition-all transform hover:scale-[1.02] shadow-lg flex items-center justify-center gap-2"
               >
                 <FiShoppingCart size={22} />
                 Adicionar ao Carrinho
               </button>
 
               {/* Informação de Entrega */}
-              <div className="bg-green-50 border border-green-200 rounded-lg p-3">
+              <div className="bg-orange-50 border border-orange-200 rounded-lg p-3">
                 <div className="flex items-start gap-2">
-                  <FiTruck className="text-green-600 mt-0.5 flex-shrink-0" size={18} />
+                  <FiTruck className="text-orange-600 mt-0.5 flex-shrink-0" size={18} />
                   <div>
-                    <p className="text-green-800 font-semibold text-sm">
+                    <p className="text-orange-800 font-semibold text-sm">
                       Chegará entre 10 de out. e 13 de out.
                     </p>
-                    <p className="text-green-700 text-xs mt-0.5">
+                    <p className="text-orange-700 text-xs mt-0.5">
                       Confirme o prazo de entrega antes de finalizar o pedido
                     </p>
                   </div>
@@ -426,15 +429,15 @@ export const SlimShotLanding = () => {
               {/* Garantias */}
               <div className="flex flex-wrap gap-3 pt-3 border-t">
                 <div className="flex items-center gap-1.5 text-gray-600">
-                  <FiShield className="text-green-600" size={16} />
+                  <FiShield className="text-red-600" size={16} />
                   <span className="text-xs">Compra 100% Segura</span>
                 </div>
                 <div className="flex items-center gap-1.5 text-gray-600">
-                  <FiAward className="text-green-600" size={16} />
+                  <FiAward className="text-orange-600" size={16} />
                   <span className="text-xs">Garantia de 30 dias</span>
                 </div>
                 <div className="flex items-center gap-1.5 text-gray-600">
-                  <FiHeart className="text-green-600" size={16} />
+                  <FiHeart className="text-red-600" size={16} />
                   <span className="text-xs">+10.000 clientes satisfeitos</span>
                 </div>
               </div>
@@ -750,13 +753,9 @@ export const SlimShotLanding = () => {
           {/* Bottom CTA */}
           <div className="mt-16 text-center">
             <div className="inline-block bg-white rounded-2xl p-6 shadow-xl max-w-2xl">
-              <p className="text-gray-700 text-lg mb-4">
+              <p className="text-gray-700 text-lg">
                 <span className="font-bold text-red-600">⚡ Dica importante:</span> Para resultados ainda melhores, combine o uso do SlimShot com uma alimentação equilibrada e exercícios físicos regulares.
               </p>
-              <div className="flex items-center justify-center gap-2 text-green-600 font-semibold">
-                <FiCheck className="w-5 h-5" />
-                <span>Aprovado pela ANVISA</span>
-              </div>
             </div>
           </div>
         </div>

@@ -549,13 +549,13 @@ export const CintaLanding = () => {
       </section>
 
       {/* Size Guide Section */}
-      <section className="py-20 bg-white">
+      <section className="py-12 bg-white">
         <div className="container mx-auto px-4">
-          <div className="max-w-7xl mx-auto">
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+          <div className="max-w-6xl mx-auto">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-center">
               {/* Left - Image */}
               <div className="order-2 lg:order-1">
-                <div className="relative rounded-2xl overflow-hidden shadow-2xl">
+                <div className="relative rounded-xl overflow-hidden shadow-lg max-w-md mx-auto">
                   <img
                     src="https://res.cloudinary.com/dnsqfrelo/image/upload/v1761678598/Captura_de_Tela_2025-10-27_a%CC%80s_12.36.39-min_jzxftd.png"
                     alt="Cinta Modeladora GreenRush"
@@ -565,47 +565,47 @@ export const CintaLanding = () => {
               </div>
 
               {/* Right - Size Guide & Features */}
-              <div className="order-1 lg:order-2 space-y-8">
+              <div className="order-1 lg:order-2 space-y-6">
                 {/* Size Guide */}
                 <div>
-                  <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-6 flex items-center gap-3">
+                  <h2 className="text-2xl md:text-3xl font-bold text-gray-900 mb-4 flex items-center gap-2">
                     📏 Guia de Tamanhos
                   </h2>
-                  <div className="bg-gradient-to-br from-green-50 to-white border-2 border-green-200 rounded-2xl overflow-hidden shadow-lg">
+                  <div className="bg-gradient-to-br from-green-50 to-white border-2 border-green-200 rounded-xl overflow-hidden shadow-md">
                     <div className="overflow-x-auto">
                       <table className="w-full">
                         <thead>
                           <tr className="bg-gradient-to-r from-green-600 to-green-500 text-white">
-                            <th className="px-6 py-4 text-left font-bold text-sm uppercase tracking-wide">Tamanho</th>
-                            <th className="px-6 py-4 text-left font-bold text-sm uppercase tracking-wide">Manequim</th>
-                            <th className="px-6 py-4 text-left font-bold text-sm uppercase tracking-wide">Cintura</th>
+                            <th className="px-4 py-2.5 text-left font-bold text-xs uppercase tracking-wide">Tamanho</th>
+                            <th className="px-4 py-2.5 text-left font-bold text-xs uppercase tracking-wide">Manequim</th>
+                            <th className="px-4 py-2.5 text-left font-bold text-xs uppercase tracking-wide">Cintura</th>
                           </tr>
                         </thead>
                         <tbody className="divide-y divide-green-100">
                           <tr className="hover:bg-green-50 transition-colors">
-                            <td className="px-6 py-4 font-bold text-lg text-green-700">PP</td>
-                            <td className="px-6 py-4 text-gray-700">32-38</td>
-                            <td className="px-6 py-4 text-gray-700">60-80cm</td>
+                            <td className="px-4 py-2.5 font-bold text-base text-green-700">PP</td>
+                            <td className="px-4 py-2.5 text-sm text-gray-700">32-38</td>
+                            <td className="px-4 py-2.5 text-sm text-gray-700">60-80cm</td>
                           </tr>
                           <tr className="hover:bg-green-50 transition-colors">
-                            <td className="px-6 py-4 font-bold text-lg text-green-700">P</td>
-                            <td className="px-6 py-4 text-gray-700">40-42</td>
-                            <td className="px-6 py-4 text-gray-700">81-90cm</td>
+                            <td className="px-4 py-2.5 font-bold text-base text-green-700">P</td>
+                            <td className="px-4 py-2.5 text-sm text-gray-700">40-42</td>
+                            <td className="px-4 py-2.5 text-sm text-gray-700">81-90cm</td>
                           </tr>
                           <tr className="hover:bg-green-50 transition-colors">
-                            <td className="px-6 py-4 font-bold text-lg text-green-700">M</td>
-                            <td className="px-6 py-4 text-gray-700">42-46</td>
-                            <td className="px-6 py-4 text-gray-700">85-102cm</td>
+                            <td className="px-4 py-2.5 font-bold text-base text-green-700">M</td>
+                            <td className="px-4 py-2.5 text-sm text-gray-700">42-46</td>
+                            <td className="px-4 py-2.5 text-sm text-gray-700">85-102cm</td>
                           </tr>
                           <tr className="hover:bg-green-50 transition-colors">
-                            <td className="px-6 py-4 font-bold text-lg text-green-700">G</td>
-                            <td className="px-6 py-4 text-gray-700">48-56</td>
-                            <td className="px-6 py-4 text-gray-700">105-133cm</td>
+                            <td className="px-4 py-2.5 font-bold text-base text-green-700">G</td>
+                            <td className="px-4 py-2.5 text-sm text-gray-700">48-56</td>
+                            <td className="px-4 py-2.5 text-sm text-gray-700">105-133cm</td>
                           </tr>
                           <tr className="hover:bg-green-50 transition-colors">
-                            <td className="px-6 py-4 font-bold text-lg text-green-700">GG</td>
-                            <td className="px-6 py-4 text-gray-700">Acima de 56</td>
-                            <td className="px-6 py-4 text-gray-700">+133cm</td>
+                            <td className="px-4 py-2.5 font-bold text-base text-green-700">GG</td>
+                            <td className="px-4 py-2.5 text-sm text-gray-700">Acima de 56</td>
+                            <td className="px-4 py-2.5 text-sm text-gray-700">+133cm</td>
                           </tr>
                         </tbody>
                       </table>
@@ -614,51 +614,80 @@ export const CintaLanding = () => {
                 </div>
 
                 {/* Features */}
-                <div className="bg-gradient-to-br from-green-600 to-green-500 rounded-2xl p-8 text-white shadow-xl">
-                  <h3 className="text-2xl font-bold mb-6 text-center">
+                <div className="bg-gradient-to-br from-green-600 to-green-500 rounded-xl p-5 text-white shadow-lg">
+                  <h3 className="text-lg font-bold mb-4 text-center">
                     USE DE 6H A 8H POR DIA
                   </h3>
-                  <div className="space-y-4">
-                    <div className="flex items-start gap-3">
-                      <div className="flex-shrink-0 w-8 h-8 bg-white/20 rounded-full flex items-center justify-center mt-1">
-                        <FiCheck className="w-5 h-5" />
+                  <div className="space-y-3">
+                    <div className="flex items-start gap-2.5">
+                      <div className="flex-shrink-0 w-6 h-6 bg-white/20 rounded-full flex items-center justify-center mt-0.5">
+                        <FiCheck className="w-4 h-4" />
                       </div>
                       <div>
-                        <p className="font-semibold text-lg">2 Ajustes De Compreensão</p>
-                        <p className="text-green-100 text-sm">Personalize o nível de compressão ideal para você</p>
+                        <p className="font-semibold text-sm">2 Ajustes De Compreensão</p>
+                        <p className="text-green-100 text-xs">Personalize o nível de compressão ideal</p>
                       </div>
                     </div>
-                    <div className="flex items-start gap-3">
-                      <div className="flex-shrink-0 w-8 h-8 bg-white/20 rounded-full flex items-center justify-center mt-1">
-                        <FiCheck className="w-5 h-5" />
+                    <div className="flex items-start gap-2.5">
+                      <div className="flex-shrink-0 w-6 h-6 bg-white/20 rounded-full flex items-center justify-center mt-0.5">
+                        <FiCheck className="w-4 h-4" />
                       </div>
                       <div>
-                        <p className="font-semibold text-lg">Ecopreme</p>
-                        <p className="text-green-100 text-sm">Tecido sustentável e de alta qualidade</p>
+                        <p className="font-semibold text-sm">Ecopreme</p>
+                        <p className="text-green-100 text-xs">Tecido sustentável e de alta qualidade</p>
                       </div>
                     </div>
-                    <div className="flex items-start gap-3">
-                      <div className="flex-shrink-0 w-8 h-8 bg-white/20 rounded-full flex items-center justify-center mt-1">
-                        <FiCheck className="w-5 h-5" />
+                    <div className="flex items-start gap-2.5">
+                      <div className="flex-shrink-0 w-6 h-6 bg-white/20 rounded-full flex items-center justify-center mt-0.5">
+                        <FiCheck className="w-4 h-4" />
                       </div>
                       <div>
-                        <p className="font-semibold text-lg">Pastilha de Infra Vermelho e Imã</p>
-                        <p className="text-green-100 text-sm">Tecnologia avançada para potencializar resultados</p>
+                        <p className="font-semibold text-sm">Pastilha de Infra Vermelho e Imã</p>
+                        <p className="text-green-100 text-xs">Tecnologia avançada para resultados</p>
                       </div>
                     </div>
-                    <div className="flex items-start gap-3">
-                      <div className="flex-shrink-0 w-8 h-8 bg-white/20 rounded-full flex items-center justify-center mt-1">
-                        <FiCheck className="w-5 h-5" />
+                    <div className="flex items-start gap-2.5">
+                      <div className="flex-shrink-0 w-6 h-6 bg-white/20 rounded-full flex items-center justify-center mt-0.5">
+                        <FiCheck className="w-4 h-4" />
                       </div>
                       <div>
-                        <p className="font-semibold text-lg">Palheta Reformada</p>
-                        <p className="text-green-100 text-sm">Design ergonômico para máximo conforto</p>
+                        <p className="font-semibold text-sm">Palheta Reformada</p>
+                        <p className="text-green-100 text-xs">Design ergonômico para conforto</p>
                       </div>
                     </div>
                   </div>
                 </div>
               </div>
             </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Testimonial Videos */}
+      <VideoCarousel />
+
+      {/* Before/After Section */}
+      <BeforeAfterCarousel />
+
+      {/* Customer Reviews */}
+      <ReviewsSection />
+
+      {/* Related Products */}
+      <section className="py-20 bg-white">
+        <div className="container mx-auto px-4">
+          <div className="text-center mb-12">
+            <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">
+              Produtos Relacionados
+            </h2>
+            <p className="text-xl text-gray-600 max-w-2xl mx-auto">
+              Confira outros produtos que podem complementar sua jornada de transformação
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 max-w-7xl mx-auto">
+            {relatedProducts.map((relatedProduct) => (
+              <ProductCard key={relatedProduct.id} product={relatedProduct} />
+            ))}
           </div>
         </div>
       </section>
@@ -784,35 +813,6 @@ export const CintaLanding = () => {
           </div>
         </section>
       )}
-
-      {/* Before/After Section */}
-      <BeforeAfterCarousel />
-
-      {/* Testimonial Videos */}
-      <VideoCarousel />
-
-      {/* Customer Reviews */}
-      <ReviewsSection />
-
-      {/* Related Products */}
-      <section className="py-20 bg-white">
-        <div className="container mx-auto px-4">
-          <div className="text-center mb-12">
-            <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">
-              Produtos Relacionados
-            </h2>
-            <p className="text-xl text-gray-600 max-w-2xl mx-auto">
-              Confira outros produtos que podem complementar sua jornada de transformação
-            </p>
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 max-w-7xl mx-auto">
-            {relatedProducts.map((relatedProduct) => (
-              <ProductCard key={relatedProduct.id} product={relatedProduct} />
-            ))}
-          </div>
-        </div>
-      </section>
 
       {/* FAQ */}
       <section className="py-20 bg-gray-50">

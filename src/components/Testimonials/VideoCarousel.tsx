@@ -182,47 +182,72 @@ export const VideoCarousel = ({ productFilter }: VideoCarouselProps = {}) => {
           )}
         </div>
 
-        {/* Desktop Grid - Multiple videos visible */}
-        <div className="hidden md:block">
-          <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-            {videos.map((video) => (
-              <div key={video.id} className="relative group">
-                <div className="relative aspect-[9/16] bg-gray-900 rounded-xl overflow-hidden">
-                  <video
-                    ref={(el) => {
-                      videoRefs.current[video.id] = el;
-                    }}
-                    src={video.videoUrl}
-                    poster={video.thumbnailUrl}
-                    loop
-                    playsInline
-                    muted={mutedStates[video.id] !== false}
-                    onLoadedMetadata={() => handleVideoLoaded(video.id)}
-                    className="w-full h-full object-cover"
-                  />
+        {/* Desktop Carousel - 4 videos visible */}
+        <div className="hidden md:block relative">
+          <div className="overflow-hidden">
+            <div
+              className="flex transition-transform duration-500 ease-out gap-4"
+              style={{ transform: `translateX(-${currentIndex * (100 / 4)}%)` }}
+            >
+              {videos.map((video) => (
+                <div key={video.id} className="relative group flex-shrink-0" style={{ width: 'calc(25% - 12px)' }}>
+                  <div className="relative aspect-[9/16] bg-gray-900 rounded-xl overflow-hidden">
+                    <video
+                      ref={(el) => {
+                        videoRefs.current[video.id] = el;
+                      }}
+                      src={video.videoUrl}
+                      poster={video.thumbnailUrl}
+                      loop
+                      playsInline
+                      muted={mutedStates[video.id] !== false}
+                      onLoadedMetadata={() => handleVideoLoaded(video.id)}
+                      className="w-full h-full object-cover"
+                    />
 
-                  {/* Video Info Overlay */}
-                  <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-4 opacity-0 group-hover:opacity-100 transition-opacity">
-                    <h3 className="text-white font-bold text-base mb-1">{video.title}</h3>
-                    <p className="text-white/80 text-sm">{video.customerName}</p>
+                    {/* Video Info Overlay */}
+                    <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-4 opacity-0 group-hover:opacity-100 transition-opacity">
+                      <h3 className="text-white font-bold text-base mb-1">{video.title}</h3>
+                      <p className="text-white/80 text-sm">{video.customerName}</p>
+                    </div>
+
+                    {/* Mute/Unmute Button */}
+                    <button
+                      onClick={(e) => handleToggleMute(video.id, e)}
+                      className="absolute top-4 right-4 p-2 bg-black/50 rounded-full hover:bg-black/70 transition-all opacity-0 group-hover:opacity-100 z-10"
+                      aria-label={mutedStates[video.id] ? 'Ativar som' : 'Desativar som'}
+                    >
+                      {mutedStates[video.id] ? (
+                        <FiVolumeX className="text-white" size={18} />
+                      ) : (
+                        <FiVolume2 className="text-white" size={18} />
+                      )}
+                    </button>
                   </div>
-
-                  {/* Mute/Unmute Button */}
-                  <button
-                    onClick={(e) => handleToggleMute(video.id, e)}
-                    className="absolute top-4 right-4 p-2 bg-black/50 rounded-full hover:bg-black/70 transition-all opacity-0 group-hover:opacity-100 z-10"
-                    aria-label={mutedStates[video.id] ? 'Ativar som' : 'Desativar som'}
-                  >
-                    {mutedStates[video.id] ? (
-                      <FiVolumeX className="text-white" size={18} />
-                    ) : (
-                      <FiVolume2 className="text-white" size={18} />
-                    )}
-                  </button>
                 </div>
-              </div>
-            ))}
+              ))}
+            </div>
           </div>
+
+          {/* Navigation Arrows - Desktop */}
+          {videos.length > 4 && (
+            <>
+              <button
+                onClick={prevSlide}
+                disabled={currentIndex === 0}
+                className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-4 p-3 bg-white rounded-full hover:bg-gray-100 transition-colors shadow-lg disabled:opacity-50 disabled:cursor-not-allowed z-10"
+              >
+                <FiChevronLeft size={28} style={{ color: '#4a9d4e' }} />
+              </button>
+              <button
+                onClick={nextSlide}
+                disabled={currentIndex >= videos.length - 4}
+                className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-4 p-3 bg-white rounded-full hover:bg-gray-100 transition-colors shadow-lg disabled:opacity-50 disabled:cursor-not-allowed z-10"
+              >
+                <FiChevronRight size={28} style={{ color: '#4a9d4e' }} />
+              </button>
+            </>
+          )}
         </div>
       </div>
     </section>

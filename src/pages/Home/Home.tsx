@@ -370,6 +370,9 @@ export const Home = () => {
         </div>
       </section>
 
+      {/* Testimonial Videos */}
+      <VideoCarousel />
+
       {/* Combos */}
       <section className="py-16 bg-gray-50">
         <div className="container mx-auto px-4">
@@ -393,9 +396,6 @@ export const Home = () => {
 
       {/* Before/After Section */}
       <BeforeAfterCarousel />
-
-      {/* Testimonial Videos */}
-      <VideoCarousel />
 
       {/* Customer Reviews */}
       <ReviewsSection />

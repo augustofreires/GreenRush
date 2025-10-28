@@ -1,0 +1,47 @@
+@import "tailwindcss";
+
+@layer base {
+  body {
+    font-family: 'Lato', sans-serif;
+  }
+}
+
+@layer utilities {
+  .btn-primary {
+    background-color: #FC419A;
+    color: white;
+    padding: 0.5rem 1.5rem;
+    border-radius: 9999px;
+    transition: opacity 0.3s;
+  }
+
+  .btn-primary:hover {
+    opacity: 0.9;
+  }
+
+  .btn-secondary {
+    background-color: #446084;
+    color: white;
+    padding: 0.5rem 1.5rem;
+    border-radius: 9999px;
+    transition: opacity 0.3s;
+  }
+
+  .btn-secondary:hover {
+    opacity: 0.9;
+  }
+
+  .btn-green {
+    background-color: #4a9d4e !important;
+    color: white !important;
+    font-weight: 600 !important;
+    padding: 0.75rem 2rem !important;
+    border-radius: 0.5rem !important;
+    transition: opacity 0.2s !important;
+    border: none !important;
+  }
+
+  .btn-green:hover {
+    opacity: 0.9 !important;
+  }
+}

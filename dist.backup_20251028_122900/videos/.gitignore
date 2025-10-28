@@ -1,0 +1,10 @@
+# Ignora todos os arquivos de vídeo para não subir pro Git
+*.mp4
+*.webm
+*.mov
+*.avi
+
+# Mas mantém o README e .gitkeep
+!README.md
+!.gitkeep
+!.gitignore

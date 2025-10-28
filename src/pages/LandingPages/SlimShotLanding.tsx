@@ -318,11 +318,11 @@ export const SlimShotLanding = () => {
               {/* Preços */}
               <div>
                 <p className="text-gray-400 line-through text-lg mb-1">
-                  R$ {(selectedPkg?.pricePerUnit ? selectedPkg.pricePerUnit * 1.4 : product?.originalPrice || 0).toFixed(2)}
+                  R$ {(selectedPkg?.originalPrice || product?.originalPrice || 0).toFixed(2)}
                 </p>
                 <div className="flex items-baseline gap-2 mb-1">
                   <span className="text-3xl md:text-4xl font-bold text-gray-900">
-                    R$ {selectedPkg?.pricePerUnit.toFixed(2)}
+                    R$ {(selectedPkg?.total || 0).toFixed(2)}
                   </span>
                   <span className="text-sm text-gray-600">12x de R$ {((selectedPkg?.total || 0) / 12).toFixed(2)} sem juros</span>
                 </div>
@@ -446,29 +446,92 @@ export const SlimShotLanding = () => {
         </div>
       </section>
 
-      {/* Trust Bar */}
-      <section className="bg-white border-y shadow-sm">
-        <div className="container mx-auto px-4 py-6">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-6 text-center">
-            <div className="flex flex-col items-center gap-2">
-              <FiTruck className="text-green-600 w-8 h-8" />
-              <p className="font-semibold text-sm">Frete Grátis</p>
-              <p className="text-xs text-gray-600">Acima de R$ 350</p>
+      {/* Trust Bar - Modernized */}
+      <section className="bg-gradient-to-br from-red-50 via-orange-50 to-yellow-50 py-8 relative overflow-hidden">
+        {/* Background decoration */}
+        <div className="absolute inset-0 opacity-5">
+          <div className="absolute top-0 left-1/4 w-32 h-32 bg-red-400 rounded-full blur-3xl"></div>
+          <div className="absolute bottom-0 right-1/4 w-32 h-32 bg-orange-400 rounded-full blur-3xl"></div>
+        </div>
+
+        <div className="container mx-auto px-4 relative z-10">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 max-w-6xl mx-auto">
+            {/* Frete Grátis */}
+            <div className="group relative bg-white rounded-2xl p-6 shadow-md hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 border-2 border-transparent hover:border-red-200">
+              <div className="flex flex-col items-center text-center gap-3">
+                {/* Icon with glow */}
+                <div className="relative">
+                  <div className="absolute inset-0 bg-gradient-to-br from-red-400 to-orange-400 rounded-2xl blur-xl opacity-30 group-hover:opacity-50 transition-opacity"></div>
+                  <div className="relative bg-gradient-to-br from-red-500 to-orange-500 text-white w-14 h-14 rounded-2xl flex items-center justify-center shadow-lg transform group-hover:scale-110 group-hover:rotate-6 transition-all duration-300">
+                    <FiTruck className="w-7 h-7" />
+                  </div>
+                </div>
+
+                <div>
+                  <p className="font-bold text-gray-900 text-base mb-1">Frete Grátis</p>
+                  <p className="text-xs text-gray-600">Acima de R$ 350</p>
+                </div>
+              </div>
+
+              {/* Bottom accent */}
+              <div className="absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-red-500 to-orange-500 transform scale-x-0 group-hover:scale-x-100 transition-transform duration-300 rounded-b-2xl"></div>
             </div>
-            <div className="flex flex-col items-center gap-2">
-              <FiShield className="text-green-600 w-8 h-8" />
-              <p className="font-semibold text-sm">Compra 100% Segura</p>
-              <p className="text-xs text-gray-600">Seus dados protegidos</p>
+
+            {/* Compra Segura */}
+            <div className="group relative bg-white rounded-2xl p-6 shadow-md hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 border-2 border-transparent hover:border-red-200">
+              <div className="flex flex-col items-center text-center gap-3">
+                <div className="relative">
+                  <div className="absolute inset-0 bg-gradient-to-br from-red-400 to-red-500 rounded-2xl blur-xl opacity-30 group-hover:opacity-50 transition-opacity"></div>
+                  <div className="relative bg-gradient-to-br from-red-600 to-red-700 text-white w-14 h-14 rounded-2xl flex items-center justify-center shadow-lg transform group-hover:scale-110 group-hover:rotate-6 transition-all duration-300">
+                    <FiShield className="w-7 h-7" />
+                  </div>
+                </div>
+
+                <div>
+                  <p className="font-bold text-gray-900 text-base mb-1">Compra 100% Segura</p>
+                  <p className="text-xs text-gray-600">Seus dados protegidos</p>
+                </div>
+              </div>
+
+              <div className="absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-red-600 to-red-700 transform scale-x-0 group-hover:scale-x-100 transition-transform duration-300 rounded-b-2xl"></div>
             </div>
-            <div className="flex flex-col items-center gap-2">
-              <FiCreditCard className="text-green-600 w-8 h-8" />
-              <p className="font-semibold text-sm">Parcele em até 3x</p>
-              <p className="text-xs text-gray-600">Sem juros no cartão</p>
+
+            {/* Parcelamento */}
+            <div className="group relative bg-white rounded-2xl p-6 shadow-md hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 border-2 border-transparent hover:border-orange-200">
+              <div className="flex flex-col items-center text-center gap-3">
+                <div className="relative">
+                  <div className="absolute inset-0 bg-gradient-to-br from-orange-400 to-yellow-400 rounded-2xl blur-xl opacity-30 group-hover:opacity-50 transition-opacity"></div>
+                  <div className="relative bg-gradient-to-br from-orange-500 to-yellow-500 text-white w-14 h-14 rounded-2xl flex items-center justify-center shadow-lg transform group-hover:scale-110 group-hover:rotate-6 transition-all duration-300">
+                    <FiCreditCard className="w-7 h-7" />
+                  </div>
+                </div>
+
+                <div>
+                  <p className="font-bold text-gray-900 text-base mb-1">Parcele em até 3x</p>
+                  <p className="text-xs text-gray-600">Sem juros no cartão</p>
+                </div>
+              </div>
+
+              <div className="absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-orange-500 to-yellow-500 transform scale-x-0 group-hover:scale-x-100 transition-transform duration-300 rounded-b-2xl"></div>
             </div>
-            <div className="flex flex-col items-center gap-2">
-              <FiAward className="text-green-600 w-8 h-8" />
-              <p className="font-semibold text-sm">Garantia 30 dias</p>
-              <p className="text-xs text-gray-600">Devolução grátis</p>
+
+            {/* Garantia */}
+            <div className="group relative bg-white rounded-2xl p-6 shadow-md hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 border-2 border-transparent hover:border-orange-200">
+              <div className="flex flex-col items-center text-center gap-3">
+                <div className="relative">
+                  <div className="absolute inset-0 bg-gradient-to-br from-orange-400 to-red-400 rounded-2xl blur-xl opacity-30 group-hover:opacity-50 transition-opacity"></div>
+                  <div className="relative bg-gradient-to-br from-orange-600 to-red-600 text-white w-14 h-14 rounded-2xl flex items-center justify-center shadow-lg transform group-hover:scale-110 group-hover:rotate-6 transition-all duration-300">
+                    <FiAward className="w-7 h-7" />
+                  </div>
+                </div>
+
+                <div>
+                  <p className="font-bold text-gray-900 text-base mb-1">Garantia 30 dias</p>
+                  <p className="text-xs text-gray-600">Devolução grátis</p>
+                </div>
+              </div>
+
+              <div className="absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-orange-600 to-red-600 transform scale-x-0 group-hover:scale-x-100 transition-transform duration-300 rounded-b-2xl"></div>
             </div>
           </div>
         </div>

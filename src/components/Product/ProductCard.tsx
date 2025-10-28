@@ -1,19 +1,30 @@
+import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { FiShoppingCart, FiHeart } from 'react-icons/fi';
 import type { Product } from '../../types';
 import { useCartStore } from '../../store/useCartStore';
+import { SizeModal } from './SizeModal';
 
 interface ProductCardProps {
   product: Product;
 }
 
 export const ProductCard = ({ product }: ProductCardProps) => {
+  const [showSizeModal, setShowSizeModal] = useState(false);
   const addItem = useCartStore((state) => state.addItem);
+
+  // Verifica se o produto precisa de seleção de tamanho
+  const needsSizeSelection = product.name.toLowerCase().includes('cinta');
 
   const handleAddToCart = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    addItem(product);
+
+    if (needsSizeSelection) {
+      setShowSizeModal(true);
+    } else {
+      addItem(product);
+    }
   };
 
   const discount = product.originalPrice
@@ -138,6 +149,13 @@ export const ProductCard = ({ product }: ProductCardProps) => {
           {product.stock === 0 ? 'Esgotado' : 'Adicionar ao Carrinho'}
         </button>
       </div>
+
+      {/* Size Selection Modal */}
+      <SizeModal
+        isOpen={showSizeModal}
+        onClose={() => setShowSizeModal(false)}
+        product={product}
+      />
     </Link>
   );
 };

@@ -48,18 +48,43 @@ export const AdminBanners = () => {
     fetchBanners();
   }, [setBanners]);
 
-  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>, type: 'desktop' | 'mobile') => {
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>, type: 'desktop' | 'mobile') => {
     const file = e.target.files?.[0];
     if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        if (type === 'desktop') {
-          setNewBanner({ ...newBanner, image: reader.result as string });
-        } else {
-          setNewBanner({ ...newBanner, mobileImage: reader.result as string });
+      setLoading(true);
+      try {
+        console.log(`📤 Fazendo upload da imagem ${type}...`);
+
+        // Criar FormData para enviar arquivo
+        const formData = new FormData();
+        formData.append('image', file);
+        formData.append('folder', 'greenrush/banners');
+
+        // Fazer upload para Cloudinary via API
+        const response = await fetch(`${API_URL}/upload/image`, {
+          method: 'POST',
+          body: formData
+        });
+
+        if (!response.ok) {
+          throw new Error('Erro no upload da imagem');
         }
-      };
-      reader.readAsDataURL(file);
+
+        const result = await response.json();
+        console.log('✅ Upload concluído:', result.url);
+
+        // Salvar URL do Cloudinary no estado
+        if (type === 'desktop') {
+          setNewBanner({ ...newBanner, image: result.url });
+        } else {
+          setNewBanner({ ...newBanner, mobileImage: result.url });
+        }
+      } catch (error) {
+        console.error('❌ Erro no upload:', error);
+        alert('Erro ao fazer upload da imagem. Tente novamente.');
+      } finally {
+        setLoading(false);
+      }
     }
   };
 

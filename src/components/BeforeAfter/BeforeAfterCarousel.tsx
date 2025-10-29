@@ -12,6 +12,19 @@ interface BeforeAfterItemProps {
   };
 }
 
+// Helper para otimizar imagens do Cloudinary
+const optimizeCloudinaryImage = (url: string): string => {
+  if (!url || !url.includes('cloudinary.com')) {
+    return url;
+  }
+
+  // Adicionar transformações: WebP, resize, qualidade 85
+  const transformations = 'w_600,h_800,q_85,f_webp';
+
+  // Inserir transformações na URL do Cloudinary
+  return url.replace('/upload/', `/upload/${transformations}/`);
+};
+
 const BeforeAfterItem = ({ item }: BeforeAfterItemProps) => {
   const [sliderPosition, setSliderPosition] = useState(50);
   const [isDragging, setIsDragging] = useState(false);
@@ -55,8 +68,11 @@ const BeforeAfterItem = ({ item }: BeforeAfterItemProps) => {
         {/* After Image (Background) */}
         <div className="absolute inset-0">
           <img
-            src={item.afterImage}
+            src={optimizeCloudinaryImage(item.afterImage)}
             alt={`${item.title} - Depois`}
+            width="600"
+            height="800"
+            loading="lazy"
             className="w-full h-full object-cover"
           />
           <div className="absolute top-3 right-3 bg-green-600 text-white px-3 py-1 rounded-full text-xs font-bold shadow-lg">
@@ -70,8 +86,11 @@ const BeforeAfterItem = ({ item }: BeforeAfterItemProps) => {
           style={{ clipPath: `inset(0 ${100 - sliderPosition}% 0 0)` }}
         >
           <img
-            src={item.beforeImage}
+            src={optimizeCloudinaryImage(item.beforeImage)}
             alt={`${item.title} - Antes`}
+            width="600"
+            height="800"
+            loading="lazy"
             className="w-full h-full object-cover"
           />
           <div className="absolute top-3 left-3 bg-red-600 text-white px-3 py-1 rounded-full text-xs font-bold shadow-lg">

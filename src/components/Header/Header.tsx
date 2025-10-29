@@ -42,9 +42,12 @@ export const Header = () => {
             {/* Logo */}
             <Link to="/" className="flex-shrink-0">
               <img
-                src="/logo-green-rush.png"
+                src="/logo-green-rush.webp"
                 alt="GreenRush"
+                width="75"
+                height="40"
                 className="h-10 w-auto object-contain"
+                fetchpriority="high"
               />
             </Link>
 

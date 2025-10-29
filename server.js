@@ -1,11 +1,13 @@
 import express from 'express';
 import cors from 'cors';
+import compression from 'compression';
 import axios from 'axios';
 import QRCode from 'qrcode';
 import bcrypt from 'bcrypt';
 import mysql from 'mysql2/promise';
 import fileUpload from 'express-fileupload';
 import dotenv from 'dotenv';
+import cloudinary from './backend/src/config/cloudinary.js';
 import {
   createReview,
   getProductReviews,
@@ -34,6 +36,17 @@ const db = mysql.createPool({
 });
 
 console.log('✅ Pool de conexões MySQL criado!');
+
+// Compressão gzip para todas as respostas - melhora performance drasticamente!
+app.use(compression({
+  filter: (req, res) => {
+    if (req.headers['x-no-compression']) {
+      return false;
+    }
+    return compression.filter(req, res);
+  },
+  level: 6, // Nível de compressão (0-9, 6 é um bom equilíbrio)
+}));
 
 app.use(cors());
 app.use(express.json({ limit: '50mb' }));
@@ -2040,6 +2053,9 @@ app.delete('/api/admin/reviews/:reviewId', async (req, res) => {
 // Listar todos os produtos
 app.get('/api/products', async (req, res) => {
   try {
+    // Cache por 5 minutos
+    res.set('Cache-Control', 'public, max-age=300, s-maxage=300');
+
     const [products] = await db.execute('SELECT * FROM products WHERE is_active = TRUE ORDER BY created_at DESC');
 
     const productsFormatted = products.map(p => {
@@ -2266,6 +2282,9 @@ app.get('/api/categories', async (req, res) => {
 
 app.get('/api/banners', async (req, res) => {
   try {
+    // Cache por 5 minutos (300 segundos)
+    res.set('Cache-Control', 'public, max-age=300, s-maxage=300');
+
     const [banners] = await db.execute('SELECT * FROM banners WHERE is_active = TRUE ORDER BY position');
     res.json(banners);
   } catch (error) {
@@ -2328,12 +2347,64 @@ app.delete('/api/banners/:id', async (req, res) => {
   }
 });
 
+// ==================== UPLOAD API ====================
+
+app.post('/api/upload/image', async (req, res) => {
+  try {
+    if (!req.files || !req.files.image) {
+      return res.status(400).json({ error: 'Nenhuma imagem foi enviada' });
+    }
+
+    const image = req.files.image;
+    const folder = req.body.folder || 'greenrush/banners';
+
+    console.log('📤 Fazendo upload para Cloudinary...');
+
+    const result = await cloudinary.uploader.upload(image.tempFilePath, {
+      folder: folder,
+      resource_type: 'image'
+    });
+
+    console.log('✅ Upload concluído:', result.secure_url);
+
+    res.json({
+      url: result.secure_url,
+      public_id: result.public_id,
+      width: result.width,
+      height: result.height
+    });
+  } catch (error) {
+    console.error('❌ Erro no upload:', error);
+    res.status(500).json({ error: { message: error.message } });
+  }
+});
+
 // ==================== BEFORE/AFTER API ====================
+
+// Helper para otimizar URLs do Cloudinary
+const optimizeCloudinaryImage = (url) => {
+  if (!url || !url.includes('cloudinary.com')) {
+    return url;
+  }
+  // Adicionar transformações: WebP, resize, qualidade 85
+  return url.replace('/upload/', '/upload/w_600,h_800,q_85,f_webp/');
+};
 
 app.get('/api/before-after', async (req, res) => {
   try {
+    // Cache por 5 minutos
+    res.set('Cache-Control', 'public, max-age=300, s-maxage=300');
+
     const [items] = await db.execute('SELECT * FROM before_after WHERE is_active = TRUE ORDER BY position');
-    res.json(items);
+
+    // Otimizar imagens Cloudinary automaticamente
+    const optimizedItems = items.map(item => ({
+      ...item,
+      before_image: optimizeCloudinaryImage(item.before_image),
+      after_image: optimizeCloudinaryImage(item.after_image)
+    }));
+
+    res.json(optimizedItems);
   } catch (error) {
     console.error('Erro ao listar antes/depois:', error);
     res.status(500).json({ error: { message: error.message } });
@@ -2436,6 +2507,9 @@ app.delete('/api/video-testimonials/:id', async (req, res) => {
 
 app.get('/api/carousel-images', async (req, res) => {
   try {
+    // Cache por 5 minutos
+    res.set('Cache-Control', 'public, max-age=300, s-maxage=300');
+
     const [images] = await db.execute('SELECT * FROM carousel_images WHERE is_active = TRUE ORDER BY product, position');
     res.json(images);
   } catch (error) {

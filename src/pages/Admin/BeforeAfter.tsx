@@ -3,9 +3,12 @@ import { FiImage, FiUpload, FiTrash2, FiEye, FiEyeOff } from 'react-icons/fi';
 import { useBeforeAfterStore } from '../../store/useBeforeAfterStore';
 import type { BeforeAfter } from '../../store/useBeforeAfterStore';
 
+const API_URL = import.meta.env.VITE_API_BASE_URL || '/api';
+
 export const AdminBeforeAfter = () => {
   const { items, addItem, updateItem, deleteItem } = useBeforeAfterStore();
   const [showModal, setShowModal] = useState(false);
+  const [loading, setLoading] = useState(false);
   const [newItem, setNewItem] = useState({
     title: '',
     beforeImage: '',
@@ -14,18 +17,43 @@ export const AdminBeforeAfter = () => {
     active: true,
   });
 
-  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>, type: 'before' | 'after') => {
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>, type: 'before' | 'after') => {
     const file = e.target.files?.[0];
     if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        if (type === 'before') {
-          setNewItem({ ...newItem, beforeImage: reader.result as string });
-        } else {
-          setNewItem({ ...newItem, afterImage: reader.result as string });
+      setLoading(true);
+      try {
+        console.log(`📤 Fazendo upload da imagem ${type}...`);
+
+        // Criar FormData para enviar arquivo
+        const formData = new FormData();
+        formData.append('image', file);
+        formData.append('folder', 'greenrush/before-after');
+
+        // Fazer upload para Cloudinary via API
+        const response = await fetch(`${API_URL}/upload/image`, {
+          method: 'POST',
+          body: formData
+        });
+
+        if (!response.ok) {
+          throw new Error('Erro no upload da imagem');
         }
-      };
-      reader.readAsDataURL(file);
+
+        const result = await response.json();
+        console.log('✅ Upload concluído:', result.url);
+
+        // Salvar URL do Cloudinary no estado
+        if (type === 'before') {
+          setNewItem({ ...newItem, beforeImage: result.url });
+        } else {
+          setNewItem({ ...newItem, afterImage: result.url });
+        }
+      } catch (error) {
+        console.error('❌ Erro no upload:', error);
+        alert('Erro ao fazer upload da imagem. Tente novamente.');
+      } finally {
+        setLoading(false);
+      }
     }
   };
 

@@ -111,6 +111,9 @@ export const Home = () => {
             <img
               src={currentBanner.mobileImage}
               alt={currentBanner.title}
+              width="800"
+              height="1200"
+              fetchPriority="high"
               className="md:hidden absolute inset-0 w-full h-full object-cover object-center transition-all duration-1000"
             />
           )}
@@ -118,6 +121,9 @@ export const Home = () => {
           <img
             src={currentBanner.image}
             alt={currentBanner.title}
+            width="1920"
+            height="600"
+            fetchPriority="high"
             className={`${currentBanner.mobileImage ? 'hidden md:block' : ''} absolute inset-0 w-full h-full object-cover object-center transition-all duration-1000`}
           />
 

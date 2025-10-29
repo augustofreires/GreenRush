@@ -194,9 +194,10 @@ export const PopupNewsletter = ({ isOpen, onClose }: PopupNewsletterProps) => {
           {/* Right side - Image */}
           <div className="hidden md:block relative overflow-hidden">
             <img
-              src="/newsletter-cinta.png"
+              src="https://res.cloudinary.com/dnsqfrelo/image/upload/v1761745840/popup_ynhz5f.webp"
               alt="Cinta Modeladora GreenRush"
               className="w-full h-full object-cover"
+              loading="lazy"
             />
           </div>
         </div>

@@ -11,9 +11,12 @@ export const Footer = () => {
           <div>
             <div className="mb-4">
               <img
-                src="/logo-green-rush.png"
+                src="/logo-green-rush.webp"
                 alt="GreenRush"
+                width="75"
+                height="40"
                 className="h-10 w-auto object-contain"
+                loading="lazy"
               />
             </div>
             <p className="text-sm mb-4">
@@ -147,7 +150,14 @@ export const Footer = () => {
           <div className="flex flex-col md:flex-row justify-between items-center gap-4 text-sm">
             <p>&copy; 2025 GreenRush. Todos os direitos reservados.</p>
             <div className="flex items-center gap-4">
-              <img src="/images/payment-methods.png" alt="Formas de pagamento" className="h-8" />
+              <img
+                src="/images/payment-methods.png"
+                alt="Formas de pagamento"
+                width="160"
+                height="32"
+                className="h-8"
+                loading="lazy"
+              />
               <span className="text-primary-green font-semibold">
                 🔒 Compra 100% Segura
               </span>

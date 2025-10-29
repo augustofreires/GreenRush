@@ -8,26 +8,20 @@ import {
 import { useCartStore } from '../../store/useCartStore';
 import { useProductStore } from '../../store/useProductStore';
 import { useCarouselStore } from '../../store/useCarouselStore';
-import { useTestimonialsVideoStore } from '../../store/useTestimonialsVideoStore';
-import { useBeforeAfterStore } from '../../store/useBeforeAfterStore';
 import { useSettingsStore } from '../../store/useSettingsStore';
 import { ProductCard } from '../../components/Product/ProductCard';
+import { BeforeAfterCarousel } from '../../components/BeforeAfter/BeforeAfterCarousel';
+import { VideoCarousel } from '../../components/Testimonials/VideoCarousel';
+import { ReviewsSection } from '../../components/Review/ReviewsSection';
 
 export const CapsulesLanding = () => {
   const [selectedPackage, setSelectedPackage] = useState(2); // 3 frascos como padrão (mais vendido)
   const [openFaq, setOpenFaq] = useState<number | null>(null);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
-  const [playingVideo, setPlayingVideo] = useState<string | null>(null);
   const { addItem } = useCartStore();
   const { getProductBySlug, getAvailableProducts, getProductsByCustomLanding } = useProductStore();
   const { images: carouselImages } = useCarouselStore();
-  const { videos } = useTestimonialsVideoStore();
-  const { getActiveItems } = useBeforeAfterStore();
   const { settings } = useSettingsStore();
-
-  // Buscar imagens de antes/depois e vídeos das cápsulas do banco de dados
-  const beforeAfterImages = getActiveItems();
-  const chaVideos = videos.greenrush || [];
 
   // Buscar produto do banco de dados
   const products = getProductsByCustomLanding("/capsulas");
@@ -95,38 +89,11 @@ export const CapsulesLanding = () => {
     setCurrentImageIndex((prev) => (prev - 1 + productImages.length) % productImages.length);
   };
 
-  // Função para limpar URL do YouTube e adicionar parâmetros
-  const getCleanYouTubeUrl = (url: string) => {
-    // Adiciona autoplay quando o usuário clica
-    const params = new URLSearchParams({
-      autoplay: '1',
-      modestbranding: '1',
-      rel: '0',
-      showinfo: '0',
-      controls: '0', // Remove controles
-      fs: '0', // Remove fullscreen
-      iv_load_policy: '3', // Remove anotações
-      cc_load_policy: '0', // Remove legendas
-      disablekb: '1', // Desabilita teclado
-      playsinline: '1',
-      widget_referrer: '', // Remove informações de referência
-      origin: window.location.origin
-    });
-
-    const separator = url.includes('?') ? '&' : '?';
-    return `${url}${separator}${params.toString()}`;
-  };
-
   const benefits = [
     {
       icon: <FiHeart className="w-8 h-8" />,
       title: 'Fórmula 100% Natural',
       description: 'Ingredientes naturais cuidadosamente selecionados'
-    },
-    {
-      icon: <FiShield className="w-8 h-8" />,
-      title: 'Aprovado pela Anvisa',
-      description: 'Produto regulamentado e seguro para consumo'
     },
     {
       icon: <FiCheck className="w-8 h-8" />,
@@ -163,9 +130,6 @@ export const CapsulesLanding = () => {
     }
   ];
 
-  // Buscar avaliações reais do produto
-  const customerReviews = product?.customerReviews?.filter(review => review.verified !== false).slice(0, 6) || [];
-
   const faqs = [
     {
       question: 'Quanto tempo demora para ver resultados?',
@@ -188,20 +152,6 @@ export const CapsulesLanding = () => {
       answer: 'Sim! Oferecemos 30 dias de garantia. Se não ficar satisfeito, devolvemos seu dinheiro.'
     }
   ];
-
-  const renderStars = (rating: number) => {
-    return (
-      <div className="flex gap-1">
-        {[...Array(5)].map((_, i) => (
-          <FiStar
-            key={i}
-            className={i < rating ? "fill-yellow-400 text-yellow-400" : "text-gray-300"}
-            size={16}
-          />
-        ))}
-      </div>
-    );
-  };
 
   // Verificar se produto existe
   if (!product) {
@@ -315,59 +265,61 @@ export const CapsulesLanding = () => {
               </div>
 
               {/* Preços */}
-              <div>
-                <p className="text-gray-400 line-through text-lg mb-1">
-                  R$ {(selectedPkg?.pricePerUnit ? selectedPkg.pricePerUnit * 1.4 : product?.originalPrice || 0).toFixed(2)}
+              <div className="bg-gradient-to-br from-gray-50 to-white rounded-2xl p-4 border border-gray-200">
+                <p className="text-gray-400 line-through text-base mb-1">
+                  De R$ {(selectedPkg?.total ? selectedPkg.total * 1.4 : product?.originalPrice || 0).toFixed(2)}
                 </p>
-                <div className="flex items-baseline gap-2 mb-1">
-                  <span className="text-3xl md:text-4xl font-bold text-gray-900">
-                    R$ {selectedPkg?.pricePerUnit.toFixed(2)}
+                <div className="flex items-baseline gap-2 mb-2">
+                  <span className="text-4xl md:text-5xl font-bold text-gray-900">
+                    R$ {selectedPkg?.total.toFixed(2)}
                   </span>
-                  <span className="text-sm text-gray-600">12x de R$ {((selectedPkg?.total || 0) / 12).toFixed(2)} sem juros</span>
                 </div>
+                <p className="text-sm text-gray-600">
+                  ou 12x de <span className="font-semibold text-gray-900">R$ {((selectedPkg?.total || 0) / 12).toFixed(2)}</span> sem juros
+                </p>
               </div>
 
               {/* Badges de Benefícios */}
               <div className="flex flex-wrap gap-2">
-                <div className="flex items-center gap-2 bg-green-50 border border-green-200 text-green-700 px-3 py-1.5 rounded-lg font-semibold text-sm">
+                <div className="flex items-center gap-2 bg-gradient-to-r from-blue-50 to-blue-100 border border-blue-200 text-blue-700 px-3 py-1.5 rounded-lg font-semibold text-sm">
                   <FiCreditCard size={16} />
                   5% OFF no pix
                 </div>
-                <div className="flex items-center gap-2 bg-green-50 border border-green-200 text-green-700 px-3 py-1.5 rounded-lg font-semibold text-sm">
+                <div className="flex items-center gap-2 bg-gradient-to-r from-purple-50 to-purple-100 border border-purple-200 text-purple-700 px-3 py-1.5 rounded-lg font-semibold text-sm">
                   <FiTruck size={16} />
                   Envio em até 24h
                 </div>
               </div>
 
               {/* Package Options */}
-              <div className="space-y-2">
+              <div className="space-y-3">
                 {packages.map((pkg) => (
                   <div
                     key={pkg.id}
                     onClick={() => setSelectedPackage(pkg.id)}
-                    className={`relative border-2 rounded-lg p-3 cursor-pointer transition-all ${
+                    className={`relative border-2 rounded-xl p-4 cursor-pointer transition-all ${
                       selectedPackage === pkg.id
-                        ? 'border-green-500 bg-green-50 shadow-md'
-                        : 'border-gray-300 hover:border-green-300 bg-white'
+                        ? 'border-gray-900 bg-gradient-to-br from-gray-50 to-white shadow-lg ring-2 ring-gray-200'
+                        : 'border-gray-200 hover:border-gray-400 bg-white hover:shadow-md'
                     }`}
                   >
                     {/* Badge mais vendido */}
                     {pkg.badge && (
-                      <div className={`absolute -top-2 -right-2 ${pkg.badgeColor} text-white px-2 py-0.5 rounded-full text-xs font-bold shadow-lg flex items-center gap-1`}>
-                        <FiStar className="fill-white" size={10} />
+                      <div className="absolute -top-2 -right-2 bg-gradient-to-r from-orange-500 to-orange-600 text-white px-3 py-1 rounded-full text-xs font-bold shadow-lg flex items-center gap-1">
+                        <FiStar className="fill-white" size={12} />
                         {pkg.badge}
                       </div>
                     )}
 
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-3">
                       {/* Radio Button */}
-                      <div className={`w-4 h-4 rounded-full border-2 flex items-center justify-center flex-shrink-0 ${
+                      <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center flex-shrink-0 ${
                         selectedPackage === pkg.id
-                          ? 'border-green-600 bg-white'
+                          ? 'border-gray-900 bg-white'
                           : 'border-gray-300'
                       }`}>
                         {selectedPackage === pkg.id && (
-                          <div className="w-2 h-2 rounded-full bg-green-600"></div>
+                          <div className="w-2.5 h-2.5 rounded-full bg-gray-900"></div>
                         )}
                       </div>
 
@@ -375,22 +327,22 @@ export const CapsulesLanding = () => {
                       <div className="flex-1">
                         <div className="flex items-center justify-between flex-wrap gap-2">
                           <div>
-                            <p className="font-bold text-gray-900 text-sm">{pkg.label}</p>
+                            <p className="font-bold text-gray-900 text-base">{pkg.label}</p>
                             {pkg.discount > 0 && (
-                              <p className="text-xs text-gray-600">
-                                {pkg.quantity === 3 && '+ Brinde grátis'}
-                                {pkg.quantity === 5 && '+ E-book grátis'}
+                              <p className="text-sm text-gray-600 mt-0.5">
+                                {pkg.quantity === 3 && '🎁 + Brinde grátis'}
+                                {pkg.quantity === 5 && '📚 + E-book grátis'}
                               </p>
                             )}
                           </div>
 
                           <div className="text-right">
-                            <p className="text-base font-bold text-gray-900">
-                              R$ {pkg.pricePerUnit.toFixed(2)} <span className="text-xs font-normal text-gray-600">/ Cada</span>
+                            <p className="text-lg font-bold text-gray-900">
+                              R$ {pkg.pricePerUnit.toFixed(2)} <span className="text-xs font-normal text-gray-500">/ un</span>
                             </p>
                             {pkg.discount > 0 && (
-                              <p className="text-green-600 font-semibold text-xs">
-                                Economize R$ {pkg.discount.toFixed(2)}
+                              <p className="text-green-600 font-semibold text-sm mt-0.5">
+                                -R$ {pkg.discount.toFixed(2)}
                               </p>
                             )}
                           </div>
@@ -404,21 +356,21 @@ export const CapsulesLanding = () => {
               {/* CTA Button */}
               <button
                 onClick={handleAddToCart}
-                className="w-full bg-gradient-to-r from-green-500 to-green-600 text-white py-4 rounded-xl font-bold text-lg hover:from-green-600 hover:to-green-700 transition-all transform hover:scale-[1.02] shadow-lg flex items-center justify-center gap-2"
+                className="w-full bg-gradient-to-r from-gray-900 to-gray-800 text-white py-4 rounded-xl font-bold text-lg hover:from-gray-800 hover:to-gray-700 transition-all transform hover:scale-[1.02] shadow-xl flex items-center justify-center gap-3"
               >
                 <FiShoppingCart size={22} />
                 Adicionar ao Carrinho
               </button>
 
               {/* Informação de Entrega */}
-              <div className="bg-green-50 border border-green-200 rounded-lg p-3">
+              <div className="bg-gradient-to-br from-blue-50 to-blue-100 border border-blue-200 rounded-lg p-3">
                 <div className="flex items-start gap-2">
-                  <FiTruck className="text-green-600 mt-0.5 flex-shrink-0" size={18} />
+                  <FiTruck className="text-blue-600 mt-0.5 flex-shrink-0" size={18} />
                   <div>
-                    <p className="text-green-800 font-semibold text-sm">
+                    <p className="text-blue-900 font-semibold text-sm">
                       Chegará entre 10 de out. e 13 de out.
                     </p>
-                    <p className="text-green-700 text-xs mt-0.5">
+                    <p className="text-blue-700 text-xs mt-0.5">
                       Confirme o prazo de entrega antes de finalizar o pedido
                     </p>
                   </div>
@@ -428,7 +380,7 @@ export const CapsulesLanding = () => {
               {/* Garantias */}
               <div className="flex flex-wrap gap-3 pt-3 border-t">
                 <div className="flex items-center gap-1.5 text-gray-600">
-                  <FiShield className="text-green-600" size={16} />
+                  <FiShield className="text-blue-600" size={16} />
                   <span className="text-xs">Compra 100% Segura</span>
                 </div>
                 <div className="flex items-center gap-1.5 text-gray-600">
@@ -445,87 +397,153 @@ export const CapsulesLanding = () => {
         </div>
       </section>
 
-      {/* Trust Bar */}
-      <section className="bg-white border-y shadow-sm">
-        <div className="container mx-auto px-4 py-6">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-6 text-center">
-            <div className="flex flex-col items-center gap-2">
-              <FiTruck className="text-green-600 w-8 h-8" />
-              <p className="font-semibold text-sm">Frete Grátis</p>
-              <p className="text-xs text-gray-600">Acima de R$ 350</p>
+      {/* Trust Bar - Modernizado */}
+      <section className="py-12 bg-gradient-to-br from-gray-50 via-white to-gray-50">
+        <div className="container mx-auto px-4">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-6 max-w-6xl mx-auto">
+            {/* Frete Grátis */}
+            <div className="group relative bg-white rounded-2xl p-6 shadow-md hover:shadow-2xl transition-all duration-300 border border-gray-100 hover:border-green-200 hover:-translate-y-2">
+              <div className="absolute inset-0 bg-gradient-to-br from-green-50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity rounded-2xl"></div>
+              <div className="relative flex flex-col items-center gap-3 text-center">
+                <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-green-500 to-green-600 text-white flex items-center justify-center shadow-lg group-hover:scale-110 group-hover:rotate-3 transition-transform duration-300">
+                  <FiTruck className="w-7 h-7" />
+                </div>
+                <div>
+                  <p className="font-bold text-gray-900 mb-1">Frete Grátis</p>
+                  <p className="text-xs text-gray-600">Acima de R$ 350</p>
+                </div>
+              </div>
             </div>
-            <div className="flex flex-col items-center gap-2">
-              <FiShield className="text-green-600 w-8 h-8" />
-              <p className="font-semibold text-sm">Compra 100% Segura</p>
-              <p className="text-xs text-gray-600">Seus dados protegidos</p>
+
+            {/* Compra Segura */}
+            <div className="group relative bg-white rounded-2xl p-6 shadow-md hover:shadow-2xl transition-all duration-300 border border-gray-100 hover:border-blue-200 hover:-translate-y-2">
+              <div className="absolute inset-0 bg-gradient-to-br from-blue-50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity rounded-2xl"></div>
+              <div className="relative flex flex-col items-center gap-3 text-center">
+                <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-blue-500 to-blue-600 text-white flex items-center justify-center shadow-lg group-hover:scale-110 group-hover:rotate-3 transition-transform duration-300">
+                  <FiShield className="w-7 h-7" />
+                </div>
+                <div>
+                  <p className="font-bold text-gray-900 mb-1">Compra 100% Segura</p>
+                  <p className="text-xs text-gray-600">Seus dados protegidos</p>
+                </div>
+              </div>
             </div>
-            <div className="flex flex-col items-center gap-2">
-              <FiCreditCard className="text-green-600 w-8 h-8" />
-              <p className="font-semibold text-sm">Parcele em até 3x</p>
-              <p className="text-xs text-gray-600">Sem juros no cartão</p>
+
+            {/* Parcelamento */}
+            <div className="group relative bg-white rounded-2xl p-6 shadow-md hover:shadow-2xl transition-all duration-300 border border-gray-100 hover:border-purple-200 hover:-translate-y-2">
+              <div className="absolute inset-0 bg-gradient-to-br from-purple-50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity rounded-2xl"></div>
+              <div className="relative flex flex-col items-center gap-3 text-center">
+                <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-purple-500 to-purple-600 text-white flex items-center justify-center shadow-lg group-hover:scale-110 group-hover:rotate-3 transition-transform duration-300">
+                  <FiCreditCard className="w-7 h-7" />
+                </div>
+                <div>
+                  <p className="font-bold text-gray-900 mb-1">Parcele em até 3x</p>
+                  <p className="text-xs text-gray-600">Sem juros no cartão</p>
+                </div>
+              </div>
             </div>
-            <div className="flex flex-col items-center gap-2">
-              <FiAward className="text-green-600 w-8 h-8" />
-              <p className="font-semibold text-sm">Garantia 30 dias</p>
-              <p className="text-xs text-gray-600">Devolução grátis</p>
+
+            {/* Garantia */}
+            <div className="group relative bg-white rounded-2xl p-6 shadow-md hover:shadow-2xl transition-all duration-300 border border-gray-100 hover:border-orange-200 hover:-translate-y-2">
+              <div className="absolute inset-0 bg-gradient-to-br from-orange-50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity rounded-2xl"></div>
+              <div className="relative flex flex-col items-center gap-3 text-center">
+                <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-orange-500 to-orange-600 text-white flex items-center justify-center shadow-lg group-hover:scale-110 group-hover:rotate-3 transition-transform duration-300">
+                  <FiAward className="w-7 h-7" />
+                </div>
+                <div>
+                  <p className="font-bold text-gray-900 mb-1">Garantia 30 dias</p>
+                  <p className="text-xs text-gray-600">Devolução grátis</p>
+                </div>
+              </div>
             </div>
           </div>
         </div>
       </section>
 
-      {/* Benefits Section */}
-      <section id="benefits" className="py-20 bg-white">
+      {/* Benefits Section - Modernizado */}
+      <section id="benefits" className="py-24 bg-gradient-to-b from-gray-50 to-white">
         <div className="container mx-auto px-4">
           <div className="text-center mb-16">
-            <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">
+            <h2 className="text-5xl md:text-6xl font-bold text-gray-900 mb-6">
               Por Que Escolher Nossas Cápsulas?
             </h2>
+            <div className="w-24 h-1 bg-gradient-to-r from-green-500 to-green-400 mx-auto mb-6"></div>
             <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-              Uma fórmula natural e eficaz que vai transformar sua rotina de emagrecimento
+              Uma fórmula natural e eficaz que vai transformar sua rotina
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+          <div className="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-6">
             {benefits.map((benefit, index) => (
               <div
                 key={index}
-                className="bg-gradient-to-br from-green-50 to-white p-8 rounded-2xl border border-green-100 hover:shadow-xl transition-all transform hover:-translate-y-2 duration-300"
+                className="group relative bg-white rounded-2xl p-8 shadow-md hover:shadow-2xl transition-all duration-300 border border-gray-100 overflow-hidden"
               >
-                <div className="bg-green-600 text-white w-16 h-16 rounded-xl flex items-center justify-center mb-6">
-                  {benefit.icon}
+                {/* Gradient overlay on hover */}
+                <div className="absolute inset-0 bg-gradient-to-br from-green-50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+
+                <div className="relative flex items-start gap-6">
+                  <div className="flex-shrink-0 w-16 h-16 rounded-xl bg-gradient-to-br from-green-500 to-green-600 text-white flex items-center justify-center shadow-lg group-hover:scale-110 group-hover:rotate-3 transition-transform duration-300">
+                    {benefit.icon}
+                  </div>
+                  <div className="flex-1">
+                    <h3 className="text-2xl font-bold text-gray-900 mb-3 group-hover:text-green-600 transition-colors">
+                      {benefit.title}
+                    </h3>
+                    <p className="text-gray-600 leading-relaxed">
+                      {benefit.description}
+                    </p>
+                  </div>
                 </div>
-                <h3 className="text-xl font-bold text-gray-900 mb-3">{benefit.title}</h3>
-                <p className="text-gray-600 leading-relaxed">{benefit.description}</p>
               </div>
             ))}
           </div>
         </div>
       </section>
 
-      {/* How It Works */}
-      <section className="py-20 bg-gradient-to-b from-green-50 to-white">
+      {/* How It Works - Modernizado com etapas e setas */}
+      <section className="py-24 bg-white">
         <div className="container mx-auto px-4">
           <div className="text-center mb-16">
-            <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">
+            <h2 className="text-5xl md:text-6xl font-bold text-gray-900 mb-6">
               Como Funciona?
             </h2>
+            <div className="w-24 h-1 bg-gradient-to-r from-green-500 to-green-400 mx-auto mb-6"></div>
             <p className="text-xl text-gray-600">
               Simples, prático e eficaz
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-5xl mx-auto">
+          <div className="max-w-5xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-6">
             {howItWorks.map((step, index) => (
-              <div key={index} className="relative">
-                <div className="text-center">
-                  <div className="bg-gradient-to-br from-green-600 to-green-500 text-white w-20 h-20 rounded-full flex items-center justify-center text-3xl font-bold mx-auto mb-6 shadow-lg">
-                    {step.step}
-                  </div>
-                  <h3 className="text-2xl font-bold text-gray-900 mb-4">{step.title}</h3>
-                  <p className="text-gray-600 leading-relaxed">{step.description}</p>
+              <div
+                key={index}
+                className="group relative bg-gradient-to-br from-white to-gray-50 rounded-2xl p-8 shadow-md hover:shadow-2xl transition-all duration-300 border border-gray-100 hover:border-green-200"
+              >
+                {/* Step number badge */}
+                <div className="absolute -top-4 -right-4 w-12 h-12 rounded-full bg-gradient-to-br from-green-500 to-green-600 text-white flex items-center justify-center text-xl font-bold shadow-lg group-hover:scale-110 transition-transform duration-300">
+                  {step.step}
                 </div>
+
+                <div className="relative">
+                  <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-green-500 to-green-600 text-white flex items-center justify-center mb-6 shadow-lg">
+                    <span className="text-3xl font-bold">{step.step}</span>
+                  </div>
+                  <h3 className="text-2xl font-bold text-gray-900 mb-4 group-hover:text-green-600 transition-colors">
+                    {step.title}
+                  </h3>
+                  <p className="text-gray-600 leading-relaxed">
+                    {step.description}
+                  </p>
+                </div>
+
+                {/* Arrow connector for desktop */}
                 {index < howItWorks.length - 1 && (
-                  <div className="hidden md:block absolute top-10 left-[60%] w-[80%] h-1 bg-gradient-to-r from-green-500 to-green-300"></div>
+                  <div className="hidden md:block absolute top-1/2 -right-3 transform -translate-y-1/2 text-green-400">
+                    <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 20 20">
+                      <path fillRule="evenodd" d="M10.293 3.293a1 1 0 011.414 0l6 6a1 1 0 010 1.414l-6 6a1 1 0 01-1.414-1.414L14.586 11H3a1 1 0 110-2h11.586l-4.293-4.293a1 1 0 010-1.414z" clipRule="evenodd" />
+                    </svg>
+                  </div>
                 )}
               </div>
             ))}
@@ -680,174 +698,14 @@ export const CapsulesLanding = () => {
         </div>
       </section>
 
-      {/* Social Proof */}
-      <section className="py-20 bg-gray-50">
-        <div className="container mx-auto px-4">
-          <div className="text-center mb-16">
-            <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">
-              O Que Nossos Clientes Dizem
-            </h2>
-            <p className="text-xl text-gray-600">
-              Mais de 10.000 pessoas já transformaram suas vidas
-            </p>
-          </div>
+      {/* Before & After Carousel - Igual da Home */}
+      <BeforeAfterCarousel />
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-6xl mx-auto">
-            {testimonials.map((testimonial, index) => (
-              <div
-                key={index}
-                className="bg-white p-8 rounded-2xl shadow-lg border border-gray-100 hover:shadow-xl transition-all"
-              >
-                <div className="flex items-center gap-4 mb-6">
-                  <img
-                    src={testimonial.image}
-                    alt={testimonial.name}
-                    className="w-16 h-16 rounded-full object-cover"
-                  />
-                  <div>
-                    <p className="font-bold text-gray-900">{testimonial.name}</p>
-                    <p className="text-sm text-gray-600">{testimonial.location}</p>
-                    {renderStars(testimonial.rating)}
-                  </div>
-                </div>
-                <p className="text-gray-700 leading-relaxed italic">"{testimonial.text}"</p>
-              </div>
-            ))}
-          </div>
+      {/* Video Testimonials - Apenas vídeos de cápsulas */}
+      <VideoCarousel productFilter="capsulas" />
 
-          {/* Stats */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-4xl mx-auto mt-16 text-center">
-            <div>
-              <div className="flex items-center justify-center gap-2 mb-2">
-                <FiUsers className="text-green-600 w-8 h-8" />
-                <p className="text-5xl font-bold text-gray-900">10k+</p>
-              </div>
-              <p className="text-gray-600 font-medium">Clientes Satisfeitos</p>
-            </div>
-            <div>
-              <div className="flex items-center justify-center gap-2 mb-2">
-                <FiTrendingUp className="text-green-600 w-8 h-8" />
-                <p className="text-5xl font-bold text-gray-900">95%</p>
-              </div>
-              <p className="text-gray-600 font-medium">Taxa de Satisfação</p>
-            </div>
-            <div>
-              <div className="flex items-center justify-center gap-2 mb-2">
-                <FiStar className="text-yellow-400 w-8 h-8" />
-                <p className="text-5xl font-bold text-gray-900">4.9</p>
-              </div>
-              <p className="text-gray-600 font-medium">Avaliação Média</p>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Video Testimonials */}
-      {videos.cha && videos.cha.length > 0 && (
-        <section className="py-20 bg-gradient-to-b from-white to-green-50">
-          <div className="container mx-auto px-4">
-            <div className="text-center mb-16">
-              <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">
-                Veja Depoimentos Reais
-              </h2>
-              <p className="text-xl text-gray-600">
-                Pessoas reais compartilhando suas experiências transformadoras
-              </p>
-            </div>
-
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 max-w-7xl mx-auto">
-              {videos.cha.map((video) => (
-                <div
-                  key={video.id}
-                  className="bg-white rounded-2xl shadow-lg overflow-hidden hover:shadow-xl transition-all transform hover:-translate-y-1"
-                >
-                  {/* Video */}
-                  <div className="relative bg-gray-900 aspect-[9/16] group overflow-hidden">
-                    {video.videoUrl.match(/\.(mp4|webm|ogg)$/i) ? (
-                      // Vídeo direto - mostra frame como thumbnail
-                      <div className="relative w-full h-full">
-                        <video
-                          src={video.videoUrl}
-                          poster={video.thumbnailUrl}
-                          className="w-full h-full object-cover"
-                          controls={playingVideo === video.id}
-                          autoPlay={playingVideo === video.id}
-                          playsInline
-                          loop
-                          preload="metadata"
-                        />
-                        {playingVideo !== video.id && (
-                          <>
-                            {/* Overlay escuro */}
-                            <div className="absolute inset-0 bg-black/30 group-hover:bg-black/40 transition-all pointer-events-none"></div>
-                            {/* Botão de play */}
-                            <div
-                              className="absolute inset-0 flex items-center justify-center cursor-pointer"
-                              onClick={() => setPlayingVideo(video.id)}
-                            >
-                              <div className="bg-green-600 hover:bg-green-700 text-white rounded-full p-6 transform group-hover:scale-110 transition-all shadow-2xl">
-                                <FiPlay size={40} className="ml-1" />
-                              </div>
-                            </div>
-                          </>
-                        )}
-                      </div>
-                    ) : playingVideo === video.id ? (
-                      // Iframe (YouTube, Vimeo, etc) - só carrega ao clicar
-                      <div className="relative w-full h-full overflow-hidden">
-                        <iframe
-                          src={getCleanYouTubeUrl(video.videoUrl)}
-                          title={video.title}
-                          className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[110%] h-[110%] pointer-events-auto"
-                          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                          allowFullScreen={false}
-                          style={{ border: 'none' }}
-                        ></iframe>
-                      </div>
-                    ) : (
-                      // Thumbnail para YouTube/outros
-                      <div
-                        className="relative w-full h-full cursor-pointer"
-                        onClick={() => setPlayingVideo(video.id)}
-                      >
-                        <img
-                          src={video.thumbnailUrl || 'https://via.placeholder.com/640x360/1a1a1a/ffffff?text=Video'}
-                          alt={video.title}
-                          className="w-full h-full object-cover"
-                        />
-                        {/* Overlay escuro */}
-                        <div className="absolute inset-0 bg-black/30 group-hover:bg-black/40 transition-all"></div>
-                        {/* Botão de play */}
-                        <div className="absolute inset-0 flex items-center justify-center">
-                          <div className="bg-green-600 hover:bg-green-700 text-white rounded-full p-6 transform group-hover:scale-110 transition-all shadow-2xl">
-                            <FiPlay size={40} className="ml-1" />
-                          </div>
-                        </div>
-                      </div>
-                    )}
-                  </div>
-
-                  {/* Video Info */}
-                  <div className="p-6">
-                    <h3 className="text-xl font-bold text-gray-900 mb-2">
-                      {video.title}
-                    </h3>
-                    <div className="flex items-center gap-2 text-gray-600">
-                      <FiUsers size={16} />
-                      <p className="text-sm">
-                        <span className="font-semibold">{video.customerName}</span>
-                        {video.customerLocation && (
-                          <span className="text-gray-500"> • {video.customerLocation}</span>
-                        )}
-                      </p>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        </section>
-      )}
+      {/* Reviews Section - Igual da Home */}
+      <ReviewsSection />
 
       {/* WhatsApp Community */}
       {settings.whatsappCommunityLink && (

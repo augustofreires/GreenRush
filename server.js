@@ -2059,6 +2059,23 @@ app.get('/api/admin/reviews', async (req, res) => {
 
     const [allReviews] = await db.execute(query, params);
 
+    // Buscar imagens e vídeos para cada avaliação
+    for (const review of allReviews) {
+      // Buscar imagens
+      const [images] = await db.execute(
+        "SELECT image_url FROM review_images WHERE review_id = ?",
+        [review.id]
+      );
+      review.images = images.map(img => img.image_url);
+
+      // Buscar vídeo
+      const [videos] = await db.execute(
+        "SELECT video_url FROM review_videos WHERE review_id = ? LIMIT 1",
+        [review.id]
+      );
+      review.videoUrl = videos.length > 0 ? videos[0].video_url : null;
+    }
+
     res.json(allReviews);
   } catch (error) {
     console.error('Erro ao buscar avaliações:', error);

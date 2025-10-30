@@ -129,7 +129,7 @@ export const Footer = () => {
             </ul>
             <div className="mt-6">
               <h5 className="text-white font-semibold mb-2">Newsletter</h5>
-              <form className="flex gap-2">
+              <form className="flex gap-2" onSubmit={(e) => { e.preventDefault(); const formData = new FormData(e.currentTarget); fetch((import.meta.env.VITE_API_BASE_URL || "/api") + "/leads", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ email: formData.get("email"), phone: "", acceptMarketing: true, source: "footer" }) }).then(r => r.ok ? (alert("Inscrição realizada!"), e.currentTarget.reset()) : alert("Erro")); }}>
                 <input
                   type="email"
                   placeholder="Seu e-mail"

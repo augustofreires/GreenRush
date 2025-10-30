@@ -59,6 +59,7 @@ export const PopupNewsletter = ({ isOpen, onClose }: PopupNewsletterProps) => {
         },
         body: JSON.stringify({
           phone: `${countryCode} ${phone}`,
+          source: "popup",
           email,
           acceptMarketing,
         }),

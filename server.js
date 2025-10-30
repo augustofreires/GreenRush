@@ -7,7 +7,6 @@ import bcrypt from 'bcrypt';
 import mysql from 'mysql2/promise';
 import fileUpload from 'express-fileupload';
 import dotenv from 'dotenv';
-import cloudinary from './backend/src/config/cloudinary.js';
 import {
   createReview,
   getProductReviews,
@@ -18,6 +17,8 @@ import {
 } from './backend/src/controllers/reviewController.js';
 
 dotenv.config();
+import { sendEmail, emailBoasVindas, emailConfirmacaoPedido, addContact, emailConfirmacaoNewsletter } from './reportana.js';
+
 
 const app = express();
 const PORT = 3001;
@@ -1124,7 +1125,7 @@ function mapAppmaxStatus(status) {
 // Salvar novo lead
 app.post('/api/leads', async (req, res) => {
   try {
-    const { phone, email, acceptMarketing } = req.body;
+    const { phone, email, acceptMarketing, source = "popup" } = req.body;
 
     if (!phone || !email) {
       return res.status(400).json({
@@ -1162,6 +1163,21 @@ app.post('/api/leads', async (req, res) => {
     );
 
     console.log(`📧 Novo lead capturado: ${email} - ${phone}`);
+    // Adicionar ao Reportana e enviar email de confirmação
+    try {
+      // Adicionar contato ao Reportana
+      await addContact({
+        email: email,
+        phone: phone,
+        name: email.split('@')[0]
+      });
+      // Email será enviado pela automação do Reportana
+      
+    } catch (reportanaError) {
+      console.error('⚠️ Erro ao processar Reportana:', reportanaError);
+      // Não falha a captura do lead se Reportana falhar
+    }
+
 
     res.json({
       success: true,
@@ -1315,6 +1331,34 @@ app.post('/api/auth/register', async (req, res) => {
 
       console.log(`👤 Lead convertido para customer: ${email}`);
 
+    // Adicionar cliente convertido à lista do Reportana
+    try {
+      await addContact({
+        email: email,
+        phone: phone || "",
+        name: name,
+        segmentId: process.env.REPORTANA_SEGMENT_CLIENTES
+      });
+      console.log(`✅ Cliente convertido adicionado ao Reportana: ${email}`);
+    } catch (reportanaError) {
+      console.error("⚠️ Erro ao adicionar cliente ao Reportana:", reportanaError);
+    }
+    // Enviar email de boas-vindas
+    if (email) {
+      try {
+        const htmlContent = emailBoasVindas(name, email);
+        await sendEmail({
+          to: email,
+          subject: 'Bem-vindo à Green Rush! 🌿',
+          html: htmlContent
+        });
+        console.log(`📧 Email de boas-vindas enviado para: ${email}`);
+      } catch (emailError) {
+        console.error('⚠️ Erro ao enviar email de boas-vindas:', emailError);
+      }
+    }
+
+
       return res.json({
         success: true,
         message: 'Cadastro realizado com sucesso!',
@@ -1336,6 +1380,34 @@ app.post('/api/auth/register', async (req, res) => {
     );
 
     console.log(`👤 Novo customer cadastrado: ${email}`);
+
+    // Adicionar cliente à lista do Reportana
+    try {
+      await addContact({
+        email: email,
+        phone: phone || "",
+        name: name,
+        segmentId: process.env.REPORTANA_SEGMENT_CLIENTES
+      });
+      console.log(`✅ Cliente adicionado ao Reportana: ${email}`);
+    } catch (reportanaError) {
+      console.error("⚠️ Erro ao adicionar cliente ao Reportana:", reportanaError);
+    }
+    // Enviar email de boas-vindas
+    if (email) {
+      try {
+        const htmlContent = emailBoasVindas(name, email);
+        await sendEmail({
+          to: email,
+          subject: 'Bem-vindo à Green Rush! 🌿',
+          html: htmlContent
+        });
+        console.log(`📧 Email de boas-vindas enviado para: ${email}`);
+      } catch (emailError) {
+        console.error('⚠️ Erro ao enviar email de boas-vindas:', emailError);
+      }
+    }
+
 
     res.json({
       success: true,
@@ -1677,6 +1749,7 @@ app.post('/api/orders', async (req, res) => {
     };
 
     console.log(`🛒 Novo pedido criado: ${orderId} - R$ ${total.toFixed(2)}`);
+
 
     res.json(newOrder);
   } catch (error) {
@@ -2053,9 +2126,6 @@ app.delete('/api/admin/reviews/:reviewId', async (req, res) => {
 // Listar todos os produtos
 app.get('/api/products', async (req, res) => {
   try {
-    // Cache por 5 minutos
-    res.set('Cache-Control', 'public, max-age=300, s-maxage=300');
-
     const [products] = await db.execute('SELECT * FROM products WHERE is_active = TRUE ORDER BY created_at DESC');
 
     const productsFormatted = products.map(p => {
@@ -2282,9 +2352,6 @@ app.get('/api/categories', async (req, res) => {
 
 app.get('/api/banners', async (req, res) => {
   try {
-    // Cache por 5 minutos (300 segundos)
-    res.set('Cache-Control', 'public, max-age=300, s-maxage=300');
-
     const [banners] = await db.execute('SELECT * FROM banners WHERE is_active = TRUE ORDER BY position');
     res.json(banners);
   } catch (error) {
@@ -2347,64 +2414,12 @@ app.delete('/api/banners/:id', async (req, res) => {
   }
 });
 
-// ==================== UPLOAD API ====================
-
-app.post('/api/upload/image', async (req, res) => {
-  try {
-    if (!req.files || !req.files.image) {
-      return res.status(400).json({ error: 'Nenhuma imagem foi enviada' });
-    }
-
-    const image = req.files.image;
-    const folder = req.body.folder || 'greenrush/banners';
-
-    console.log('📤 Fazendo upload para Cloudinary...');
-
-    const result = await cloudinary.uploader.upload(image.tempFilePath, {
-      folder: folder,
-      resource_type: 'image'
-    });
-
-    console.log('✅ Upload concluído:', result.secure_url);
-
-    res.json({
-      url: result.secure_url,
-      public_id: result.public_id,
-      width: result.width,
-      height: result.height
-    });
-  } catch (error) {
-    console.error('❌ Erro no upload:', error);
-    res.status(500).json({ error: { message: error.message } });
-  }
-});
-
 // ==================== BEFORE/AFTER API ====================
-
-// Helper para otimizar URLs do Cloudinary
-const optimizeCloudinaryImage = (url) => {
-  if (!url || !url.includes('cloudinary.com')) {
-    return url;
-  }
-  // Adicionar transformações: WebP, resize, qualidade 85
-  return url.replace('/upload/', '/upload/w_600,h_800,q_85,f_webp/');
-};
 
 app.get('/api/before-after', async (req, res) => {
   try {
-    // Cache por 5 minutos
-    res.set('Cache-Control', 'public, max-age=300, s-maxage=300');
-
     const [items] = await db.execute('SELECT * FROM before_after WHERE is_active = TRUE ORDER BY position');
-
-    // Otimizar imagens Cloudinary automaticamente
-    const optimizedItems = items.map(item => ({
-      ...item,
-      before_image: optimizeCloudinaryImage(item.before_image),
-      after_image: optimizeCloudinaryImage(item.after_image)
-    }));
-
-    res.json(optimizedItems);
+    res.json(items);
   } catch (error) {
     console.error('Erro ao listar antes/depois:', error);
     res.status(500).json({ error: { message: error.message } });
@@ -2507,9 +2522,6 @@ app.delete('/api/video-testimonials/:id', async (req, res) => {
 
 app.get('/api/carousel-images', async (req, res) => {
   try {
-    // Cache por 5 minutos
-    res.set('Cache-Control', 'public, max-age=300, s-maxage=300');
-
     const [images] = await db.execute('SELECT * FROM carousel_images WHERE is_active = TRUE ORDER BY product, position');
     res.json(images);
   } catch (error) {

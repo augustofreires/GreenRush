@@ -1,5 +1,5 @@
-import { create } from 'zustand';
-import { persist } from 'zustand/middleware';
+import { create } from "zustand";
+import { persist } from "zustand/middleware";
 
 export interface Category {
   id: string;
@@ -15,83 +15,144 @@ export interface Category {
 
 interface CategoryStore {
   categories: Category[];
-  addCategory: (category: Omit<Category, 'id'>) => void;
-  updateCategory: (id: string, category: Partial<Category>) => void;
-  deleteCategory: (id: string) => void;
+  loading: boolean;
+  fetchCategories: () => Promise<void>;
+  addCategory: (category: Omit<Category, "id">) => Promise<void>;
+  updateCategory: (id: string, category: Partial<Category>) => Promise<void>;
+  deleteCategory: (id: string) => Promise<void>;
   getActiveCategories: () => Category[];
   reorderCategories: (categories: Category[]) => void;
 }
 
-const defaultCategories: Category[] = [
-  {
-    id: '1',
-    name: 'Emagrecimento',
-    slug: 'emagrecimento',
-    description: 'Produtos naturais para perda de peso saudável',
-    color: 'from-green-500 to-green-600',
-    image: 'https://images.unsplash.com/photo-1490645935967-10de6ba17061?w=600&h=400&fit=crop',
-    isActive: true,
-    order: 1,
-  },
-  {
-    id: '2',
-    name: 'Cintas Modeladoras',
-    slug: 'cintas-modeladoras',
-    description: 'Cintas modeladoras para definição e contorno corporal',
-    color: 'from-pink-500 to-pink-600',
-    image: 'https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=600&h=400&fit=crop',
-    isActive: true,
-    order: 2,
-  },
-  {
-    id: '3',
-    name: 'Chás Detox',
-    slug: 'chas-detox',
-    description: 'Chás naturais para desintoxicação e emagrecimento',
-    color: 'from-green-400 to-green-500',
-    image: 'https://images.unsplash.com/photo-1556679343-c7306c1976bc?w=600&h=400&fit=crop',
-    isActive: true,
-    order: 3,
-  },
-  {
-    id: '4',
-    name: 'Suplementos',
-    slug: 'suplementos',
-    description: 'Suplementos naturais para auxiliar no emagrecimento',
-    color: 'from-purple-500 to-purple-600',
-    image: 'https://images.unsplash.com/photo-1505751172876-fa1923c5c528?w=600&h=400&fit=crop',
-    isActive: true,
-    order: 4,
-  },
-];
+const API_URL = import.meta.env.VITE_API_BASE_URL || "/api";
 
 export const useCategoryStore = create<CategoryStore>()(
   persist(
     (set, get) => ({
-      categories: defaultCategories,
+      categories: [],
+      loading: false,
 
-      addCategory: (category) => {
-        const newCategory: Category = {
-          ...category,
-          id: Date.now().toString(),
-        };
-        set((state) => ({
-          categories: [...state.categories, newCategory].sort((a, b) => a.order - b.order),
-        }));
+      fetchCategories: async () => {
+        set({ loading: true });
+        try {
+          const response = await fetch(`${API_URL}/admin/categories`);
+          
+          if (response.ok) {
+            const data = await response.json();
+            const mappedCategories: Category[] = data.map((cat: any) => ({
+              id: cat.id,
+              name: cat.name,
+              slug: cat.slug,
+              description: cat.description || "",
+              color: cat.color || "from-green-500 to-green-600",
+              image: cat.image || "",
+              showOverlay: cat.show_overlay !== 0,
+              isActive: cat.is_active !== 0,
+              order: cat.display_order || 0,
+            }));
+            
+            set({ categories: mappedCategories });
+          }
+        } catch (error) {
+          console.error("Erro ao buscar categorias:", error);
+        } finally {
+          set({ loading: false });
+        }
       },
 
-      updateCategory: (id, categoryUpdate) => {
-        set((state) => ({
-          categories: state.categories
-            .map((cat) => (cat.id === id ? { ...cat, ...categoryUpdate } : cat))
-            .sort((a, b) => a.order - b.order),
-        }));
+      addCategory: async (category) => {
+        try {
+          const response = await fetch(`${API_URL}/categories`, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              name: category.name,
+              slug: category.slug,
+              description: category.description,
+              color: category.color,
+              image: category.image,
+              showOverlay: category.showOverlay,
+              isActive: category.isActive,
+              order: category.order,
+            }),
+          });
+
+          if (response.ok) {
+            const data = await response.json();
+            const newCategory: Category = {
+              ...category,
+              id: data.id,
+            };
+            set((state) => ({
+              categories: [...state.categories, newCategory].sort((a, b) => a.order - b.order),
+            }));
+          } else {
+            throw new Error("Erro ao criar categoria");
+          }
+        } catch (error) {
+          console.error("Erro ao criar categoria:", error);
+          throw error;
+        }
       },
 
-      deleteCategory: (id) => {
-        set((state) => ({
-          categories: state.categories.filter((cat) => cat.id !== id),
-        }));
+      updateCategory: async (id, categoryUpdate) => {
+        const currentCategory = get().categories.find(cat => cat.id === id);
+        if (!currentCategory) return;
+
+        const updatedCategory = { ...currentCategory, ...categoryUpdate };
+
+        try {
+          const response = await fetch(`${API_URL}/categories/${id}`, {
+            method: "PUT",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              name: updatedCategory.name,
+              slug: updatedCategory.slug,
+              description: updatedCategory.description,
+              color: updatedCategory.color,
+              image: updatedCategory.image,
+              showOverlay: updatedCategory.showOverlay,
+              isActive: updatedCategory.isActive,
+              order: updatedCategory.order,
+            }),
+          });
+
+          if (response.ok) {
+            set((state) => ({
+              categories: state.categories
+                .map((cat) => (cat.id === id ? updatedCategory : cat))
+                .sort((a, b) => a.order - b.order),
+            }));
+          } else {
+            throw new Error("Erro ao atualizar categoria");
+          }
+        } catch (error) {
+          console.error("Erro ao atualizar categoria:", error);
+          throw error;
+        }
+      },
+
+      deleteCategory: async (id) => {
+        try {
+          const response = await fetch(`${API_URL}/categories/${id}`, {
+            method: "DELETE",
+          });
+
+          if (response.ok) {
+            set((state) => ({
+              categories: state.categories.filter((cat) => cat.id !== id),
+            }));
+          } else {
+            throw new Error("Erro ao deletar categoria");
+          }
+        } catch (error) {
+          console.error("Erro ao deletar categoria:", error);
+          throw error;
+        }
       },
 
       getActiveCategories: () => {
@@ -105,8 +166,8 @@ export const useCategoryStore = create<CategoryStore>()(
       },
     }),
     {
-      name: 'category-storage',
-      version: 3, // Atualizado para novas categorias de emagrecimento
+      name: "category-storage",
+      version: 4, // Atualizado para integração com backend
     }
   )
 );

@@ -2372,6 +2372,60 @@ app.get('/api/categories', async (req, res) => {
     console.error('Erro ao listar categorias:', error);
     res.status(500).json({ error: { message: error.message } });
   }
+
+// Admin endpoint - retorna TODAS as categorias
+app.get("/api/admin/categories", async (req, res) => {
+  try {
+    const [categories] = await db.execute("SELECT * FROM categories ORDER BY display_order");
+    res.json(categories);
+  } catch (error) {
+    console.error("Erro ao listar categorias:", error);
+    res.status(500).json({ error: { message: error.message } });
+  }
+});
+
+app.post("/api/categories", async (req, res) => {
+  try {
+    const { name, slug, description, color, image, showOverlay, isActive, order } = req.body;
+    const id = Date.now().toString();
+
+    await db.execute(
+      "INSERT INTO categories (id, name, slug, description, color, image, show_overlay, is_active, display_order) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
+      [id, name, slug, description || "", color || "from-green-500 to-green-600", image || "", showOverlay !== false ? 1 : 0, isActive !== false ? 1 : 0, order || 0]
+    );
+
+    res.json({ id, message: "Categoria criada com sucesso" });
+  } catch (error) {
+    console.error("Erro ao criar categoria:", error);
+    res.status(500).json({ error: { message: error.message } });
+  }
+});
+
+app.put("/api/categories/:id", async (req, res) => {
+  try {
+    const { name, slug, description, color, image, showOverlay, isActive, order } = req.body;
+
+    await db.execute(
+      "UPDATE categories SET name = ?, slug = ?, description = ?, color = ?, image = ?, show_overlay = ?, is_active = ?, display_order = ? WHERE id = ?",
+      [name, slug, description || "", color || "from-green-500 to-green-600", image || "", showOverlay !== false ? 1 : 0, isActive !== false ? 1 : 0, order || 0, req.params.id]
+    );
+
+    res.json({ message: "Categoria atualizada com sucesso" });
+  } catch (error) {
+    console.error("Erro ao atualizar categoria:", error);
+    res.status(500).json({ error: { message: error.message } });
+  }
+});
+
+app.delete("/api/categories/:id", async (req, res) => {
+  try {
+    await db.execute("DELETE FROM categories WHERE id = ?", [req.params.id]);
+    res.json({ message: "Categoria deletada com sucesso" });
+  } catch (error) {
+    console.error("Erro ao deletar categoria:", error);
+    res.status(500).json({ error: { message: error.message } });
+  }
+});
 });
 
 // ==================== BANNERS API ====================

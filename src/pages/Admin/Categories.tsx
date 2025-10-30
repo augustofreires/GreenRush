@@ -1,9 +1,14 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { FiPlus, FiEdit2, FiTrash2, FiEye, FiEyeOff, FiSave, FiX } from 'react-icons/fi';
 import { useCategoryStore, type Category } from '../../store/useCategoryStore';
 
 export const AdminCategories = () => {
-  const { categories, addCategory, updateCategory, deleteCategory } = useCategoryStore();
+  const { categories, loading, fetchCategories, addCategory, updateCategory, deleteCategory } = useCategoryStore();
+
+  // Buscar categorias ao carregar
+  useEffect(() => {
+    fetchCategories();
+  }, [fetchCategories]);
   const [isAdding, setIsAdding] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [formData, setFormData] = useState<Omit<Category, 'id'>>({

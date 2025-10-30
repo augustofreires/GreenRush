@@ -7,6 +7,7 @@ import bcrypt from 'bcrypt';
 import mysql from 'mysql2/promise';
 import fileUpload from 'express-fileupload';
 import dotenv from 'dotenv';
+import { v4 as uuidv4 } from 'uuid';
 import {
   createReview,
   getProductReviews,

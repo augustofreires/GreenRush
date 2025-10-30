@@ -17,6 +17,7 @@ interface CategoryStore {
   categories: Category[];
   loading: boolean;
   fetchCategories: () => Promise<void>;
+  fetchAllCategories: () => Promise<void>;
   addCategory: (category: Omit<Category, "id">) => Promise<void>;
   updateCategory: (id: string, category: Partial<Category>) => Promise<void>;
   deleteCategory: (id: string) => Promise<void>;
@@ -33,6 +34,34 @@ export const useCategoryStore = create<CategoryStore>()(
       loading: false,
 
       fetchCategories: async () => {
+        set({ loading: true });
+        try {
+          const response = await fetch(`${API_URL}/categories`);
+          
+          if (response.ok) {
+            const data = await response.json();
+            const mappedCategories: Category[] = data.map((cat: any) => ({
+              id: cat.id,
+              name: cat.name,
+              slug: cat.slug,
+              description: cat.description || "",
+              color: cat.color || "from-green-500 to-green-600",
+              image: cat.image || "",
+              showOverlay: cat.show_overlay !== 0,
+              isActive: cat.is_active !== 0,
+              order: cat.display_order || 0,
+            }));
+            
+            set({ categories: mappedCategories });
+          }
+        } catch (error) {
+          console.error("Erro ao buscar categorias:", error);
+        } finally {
+          set({ loading: false });
+        }
+      },
+
+      fetchAllCategories: async () => {
         set({ loading: true });
         try {
           const response = await fetch(`${API_URL}/admin/categories`);
@@ -54,7 +83,7 @@ export const useCategoryStore = create<CategoryStore>()(
             set({ categories: mappedCategories });
           }
         } catch (error) {
-          console.error("Erro ao buscar categorias:", error);
+          console.error("Erro ao buscar todas as categorias:", error);
         } finally {
           set({ loading: false });
         }

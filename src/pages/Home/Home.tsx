@@ -19,10 +19,15 @@ export const Home = () => {
   const { getActiveBanners, setBanners } = useBannerStore();
   const { getAvailableProducts } = useProductStore();
   const { getPublishedPosts } = useBlogStore();
-  const { getActiveCategories } = useCategoryStore();
+  const { getActiveCategories, fetchCategories } = useCategoryStore();
   const { settings } = useSettingsStore();
   const activeBanners = getActiveBanners() || [];
   const activeCategories = getActiveCategories() || [];
+
+  // Carregar categorias da API
+  useEffect(() => {
+    fetchCategories();
+  }, [fetchCategories]);
 
   // Carregar banners da API
   useEffect(() => {

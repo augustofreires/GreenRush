@@ -3,12 +3,12 @@ import { FiPlus, FiEdit2, FiTrash2, FiEye, FiEyeOff, FiSave, FiX } from 'react-i
 import { useCategoryStore, type Category } from '../../store/useCategoryStore';
 
 export const AdminCategories = () => {
-  const { categories, loading, fetchCategories, addCategory, updateCategory, deleteCategory } = useCategoryStore();
+  const { categories, loading, fetchAllCategories, addCategory, updateCategory, deleteCategory } = useCategoryStore();
 
   // Buscar categorias ao carregar
   useEffect(() => {
-    fetchCategories();
-  }, [fetchCategories]);
+    fetchAllCategories();
+  }, [fetchAllCategories]);
   const [isAdding, setIsAdding] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [formData, setFormData] = useState<Omit<Category, 'id'>>({

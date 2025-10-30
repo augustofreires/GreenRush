@@ -8,6 +8,7 @@ import mysql from 'mysql2/promise';
 import fileUpload from 'express-fileupload';
 import dotenv from 'dotenv';
 import { v4 as uuidv4 } from 'uuid';
+import { v2 as cloudinary } from 'cloudinary';
 import {
   createReview,
   getProductReviews,
@@ -18,6 +19,13 @@ import {
 } from './backend/src/controllers/reviewController.js';
 
 dotenv.config();
+
+// Configurar Cloudinary
+cloudinary.config({
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+  api_key: process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET
+});
 import { sendEmail, emailBoasVindas, emailConfirmacaoPedido, addContact, emailConfirmacaoNewsletter } from './reportana.js';
 
 

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { FiMapPin, FiCreditCard, FiLock, FiPackage, FiTruck, FiCheck, FiTag, FiX } from 'react-icons/fi';
 import { useCartStore } from '../../store/useCartStore';
@@ -17,6 +17,8 @@ export const CheckoutPage = () => {
   const { getAddressesByUserId } = useAddressStore();
   const [loading, setLoading] = useState(false);
   const [currentStep, setCurrentStep] = useState<'address' | 'payment'>('address');
+  const [createdOrder, setCreatedOrder] = useState<any>(null);
+  const pixSectionRef = useRef<HTMLDivElement>(null);
 
   const userAddresses = user ? getAddressesByUserId(user.id) : [];
   const [useExistingAddress, setUseExistingAddress] = useState(userAddresses.length > 0);
@@ -36,6 +38,13 @@ export const CheckoutPage = () => {
   });
 
   const [paymentMethod, setPaymentMethod] = useState('credit_card');
+  const [installments, setInstallments] = useState(1);
+
+  // Card state
+  const [cardNumber, setCardNumber] = useState('');
+  const [cardName, setCardName] = useState('');
+  const [cardExpiry, setCardExpiry] = useState('');
+  const [cardCvv, setCardCvv] = useState('');
 
   // Cupom state
   const [couponCode, setCouponCode] = useState('');
@@ -76,6 +85,13 @@ export const CheckoutPage = () => {
     setAppliedCoupon(null);
     setCouponError('');
   };
+
+  // Scroll automático quando o PIX for gerado
+  useEffect(() => {
+    if (createdOrder && createdOrder.pixData && pixSectionRef.current) {
+      pixSectionRef.current.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+  }, [createdOrder]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -130,6 +146,15 @@ export const CheckoutPage = () => {
         billingAddress: finalAddress,
         paymentMethod,
         userId: user?.id,
+        installments,
+        ...(paymentMethod === 'credit_card' && {
+          cardData: {
+            number: cardNumber.replace(/\s/g, ''),
+            name: cardName,
+            expiry: cardExpiry,
+            cvv: cardCvv,
+          }
+        })
       };
 
       console.log('Dados do pedido:', orderData);
@@ -137,16 +162,25 @@ export const CheckoutPage = () => {
       const order = await orderService.create(orderData);
 
       console.log('✅ Pedido criado:', order);
-      console.log('🚀 Redirecionando para confirmação...');
 
-      // Redirecionar ANTES de limpar o carrinho para evitar redirect indesejado
-      navigate(`/pedido/${order.id}/confirmacao`, { replace: true });
+      // Salvar o pedido criado no estado
+      setCreatedOrder(order);
 
-      // Limpar carrinho após um pequeno delay
-      setTimeout(() => {
-        clearCart();
-        console.log('🛒 Carrinho limpo');
-      }, 100);
+      // Se for PIX e tiver dados do PIX, não redirecionar ainda
+      if (paymentMethod === 'pix' && order.pixData) {
+        console.log('💰 Mostrando dados do PIX...');
+        // Não limpar o carrinho ainda
+      } else {
+        // Para outros métodos de pagamento, redirecionar normalmente
+        console.log('🚀 Redirecionando para confirmação...');
+        navigate(`/pedido/${order.id}/confirmacao`, { replace: true });
+
+        // Limpar carrinho após um pequeno delay
+        setTimeout(() => {
+          clearCart();
+          console.log('🛒 Carrinho limpo');
+        }, 100);
+      }
     } catch (error: any) {
       console.error('❌ Erro ao criar pedido:', error);
       console.error('Response:', error.response?.data);
@@ -187,7 +221,7 @@ export const CheckoutPage = () => {
     {
       id: 'credit_card',
       name: 'Cartão de Crédito',
-      description: 'Em até 3x sem juros',
+      description: 'Em até 12x sem juros',
       icon: FiCreditCard,
       badge: null,
     },
@@ -197,13 +231,6 @@ export const CheckoutPage = () => {
       description: 'Aprovação imediata',
       icon: FiCheck,
       badge: '5% OFF',
-    },
-    {
-      id: 'boleto',
-      name: 'Boleto Bancário',
-      description: 'Vencimento em 3 dias úteis',
-      icon: FiPackage,
-      badge: null,
     },
   ];
 
@@ -336,6 +363,90 @@ export const CheckoutPage = () => {
                   {/* New Address Form */}
                   {(!useExistingAddress || userAddresses.length === 0) && (
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      {/* Nome Completo */}
+                      <div className="md:col-span-2">
+                        <label className="block text-sm font-semibold text-gray-700 mb-2">
+                          Nome Completo *
+                        </label>
+                        <input
+                          type="text"
+                          required
+                          value={shippingAddress.name || ''}
+                          onChange={(e) =>
+                            setShippingAddress({
+                              ...shippingAddress,
+                              name: e.target.value,
+                            })
+                          }
+                          placeholder="Seu nome completo"
+                          className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:border-transparent"
+                          style={{ '--tw-ring-color': '#4a9d4e' } as React.CSSProperties}
+                        />
+                      </div>
+
+                      {/* Email */}
+                      <div className="md:col-span-2">
+                        <label className="block text-sm font-semibold text-gray-700 mb-2">
+                          E-mail *
+                        </label>
+                        <input
+                          type="email"
+                          required
+                          value={shippingAddress.email || ''}
+                          onChange={(e) =>
+                            setShippingAddress({
+                              ...shippingAddress,
+                              email: e.target.value,
+                            })
+                          }
+                          placeholder="seu@email.com"
+                          className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:border-transparent"
+                          style={{ '--tw-ring-color': '#4a9d4e' } as React.CSSProperties}
+                        />
+                      </div>
+
+                      {/* Telefone */}
+                      <div>
+                        <label className="block text-sm font-semibold text-gray-700 mb-2">
+                          Telefone *
+                        </label>
+                        <input
+                          type="tel"
+                          required
+                          value={shippingAddress.phone || ''}
+                          onChange={(e) =>
+                            setShippingAddress({
+                              ...shippingAddress,
+                              phone: e.target.value.replace(/\D/g, '').slice(0, 11),
+                            })
+                          }
+                          placeholder="(00) 00000-0000"
+                          className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:border-transparent"
+                          style={{ '--tw-ring-color': '#4a9d4e' } as React.CSSProperties}
+                        />
+                      </div>
+
+                      {/* CPF */}
+                      <div>
+                        <label className="block text-sm font-semibold text-gray-700 mb-2">
+                          CPF *
+                        </label>
+                        <input
+                          type="text"
+                          required
+                          value={shippingAddress.cpf || ''}
+                          onChange={(e) =>
+                            setShippingAddress({
+                              ...shippingAddress,
+                              cpf: e.target.value.replace(/\D/g, '').slice(0, 11),
+                            })
+                          }
+                          placeholder="000.000.000-00"
+                          className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:border-transparent"
+                          style={{ '--tw-ring-color': '#4a9d4e' } as React.CSSProperties}
+                        />
+                      </div>
+
                       <div className="md:col-span-2">
                         <label className="block text-sm font-semibold text-gray-700 mb-2">
                           CEP *
@@ -543,6 +654,112 @@ export const CheckoutPage = () => {
                       </label>
                     );
                   })}
+
+                  {/* Installments for Credit Card */}
+                  {paymentMethod === 'credit_card' && (
+                    <div className="pt-4 border-t">
+                      <label className="block text-sm font-semibold text-gray-700 mb-2">
+                        Número de Parcelas
+                      </label>
+                      <select
+                        value={installments}
+                        onChange={(e) => setInstallments(Number(e.target.value))}
+                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:border-transparent"
+                        style={{ '--tw-ring-color': '#4a9d4e' } as React.CSSProperties}
+                      >
+                        {[...Array(12)].map((_, i) => {
+                          const parcelas = i + 1;
+                          const valorParcela = total / parcelas;
+                          return (
+                            <option key={parcelas} value={parcelas}>
+                              {parcelas}x de R$ {valorParcela.toFixed(2).replace('.', ',')}
+                              {parcelas === 1 ? ' à vista' : ' sem juros'}
+                            </option>
+                          );
+                        })}
+                      </select>
+
+                      {/* Credit Card Fields */}
+                      <div className="mt-6 space-y-4">
+                        <h3 className="text-sm font-semibold text-gray-700 mb-3">Dados do Cartão</h3>
+
+                        {/* Número do Cartão */}
+                        <div>
+                          <label className="block text-sm font-semibold text-gray-700 mb-2">
+                            Número do Cartão *
+                          </label>
+                          <input
+                            type="text"
+                            required
+                            value={cardNumber}
+                            onChange={(e) => {
+                              const value = e.target.value.replace(/\D/g, '').slice(0, 16);
+                              setCardNumber(value.replace(/(\d{4})(?=\d)/g, '$1 '));
+                            }}
+                            placeholder="0000 0000 0000 0000"
+                            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:border-transparent"
+                            style={{ '--tw-ring-color': '#4a9d4e' } as React.CSSProperties}
+                          />
+                        </div>
+
+                        {/* Nome no Cartão */}
+                        <div>
+                          <label className="block text-sm font-semibold text-gray-700 mb-2">
+                            Nome no Cartão *
+                          </label>
+                          <input
+                            type="text"
+                            required
+                            value={cardName}
+                            onChange={(e) => setCardName(e.target.value.toUpperCase())}
+                            placeholder="NOME COMO ESTÁ NO CARTÃO"
+                            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:border-transparent uppercase"
+                            style={{ '--tw-ring-color': '#4a9d4e' } as React.CSSProperties}
+                          />
+                        </div>
+
+                        <div className="grid grid-cols-2 gap-4">
+                          {/* Validade */}
+                          <div>
+                            <label className="block text-sm font-semibold text-gray-700 mb-2">
+                              Validade *
+                            </label>
+                            <input
+                              type="text"
+                              required
+                              value={cardExpiry}
+                              onChange={(e) => {
+                                let value = e.target.value.replace(/\D/g, '').slice(0, 4);
+                                if (value.length >= 2) {
+                                  value = value.slice(0, 2) + '/' + value.slice(2);
+                                }
+                                setCardExpiry(value);
+                              }}
+                              placeholder="MM/AA"
+                              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:border-transparent"
+                              style={{ '--tw-ring-color': '#4a9d4e' } as React.CSSProperties}
+                            />
+                          </div>
+
+                          {/* CVV */}
+                          <div>
+                            <label className="block text-sm font-semibold text-gray-700 mb-2">
+                              CVV *
+                            </label>
+                            <input
+                              type="text"
+                              required
+                              value={cardCvv}
+                              onChange={(e) => setCardCvv(e.target.value.replace(/\D/g, '').slice(0, 4))}
+                              placeholder="000"
+                              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:border-transparent"
+                              style={{ '--tw-ring-color': '#4a9d4e' } as React.CSSProperties}
+                            />
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  )}
                 </div>
               </div>
 
@@ -552,9 +769,95 @@ export const CheckoutPage = () => {
                 className="w-full py-4 text-lg font-bold rounded-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-lg hover:shadow-xl"
                 style={{ backgroundColor: '#4a9d4e', color: '#ffffff' }}
               >
-                {loading ? 'Processando...' : 'Finalizar Pedido'}
+                {loading ? 'Processando...' : paymentMethod === 'pix' ? 'Gerar código PIX' : 'Finalizar Pedido'}
               </button>
             </form>
+
+            {/* PIX Payment Display - Aparece após gerar o código */}
+            {createdOrder && createdOrder.pixData && (
+              <div ref={pixSectionRef} className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden mt-6">
+                <div
+                  className="p-6 border-b flex items-center gap-3"
+                  style={{ backgroundColor: '#f8fdf9' }}
+                >
+                  <div
+                    className="w-12 h-12 rounded-full flex items-center justify-center"
+                    style={{ backgroundColor: '#e8f5e8' }}
+                  >
+                    <FiCheck size={24} style={{ color: '#4a9d4e' }} />
+                  </div>
+                  <div>
+                    <h2 className="text-xl font-bold text-gray-900">✅ PIX Gerado com Sucesso!</h2>
+                    <p className="text-sm text-gray-600">Escaneie o QR Code ou copie o código abaixo</p>
+                  </div>
+                </div>
+
+                <div className="p-6 space-y-4">
+                  {/* QR Code */}
+                  {createdOrder.pixData.pix_qrcode && (
+                    <div className="flex justify-center">
+                      <img
+                        src={`data:image/png;base64,${createdOrder.pixData.pix_qrcode}`}
+                        alt="QR Code PIX"
+                        className="w-64 h-64 border-2 border-gray-200 rounded-lg"
+                      />
+                    </div>
+                  )}
+
+                  {/* Valor */}
+                  <div className="text-center">
+                    <p className="text-sm text-gray-600 mb-1">Valor a pagar:</p>
+                    <p className="text-3xl font-bold" style={{ color: '#4a9d4e' }}>
+                      R$ {createdOrder.total.toFixed(2).replace('.', ',')}
+                    </p>
+                  </div>
+
+                  {/* Código PIX */}
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-700 mb-2">
+                      Código PIX (Copia e Cola)
+                    </label>
+                    <div className="flex gap-2">
+                      <input
+                        type="text"
+                        value={createdOrder.pixData.pix_emv || ''}
+                        readOnly
+                        className="flex-1 px-4 py-3 border border-gray-300 rounded-lg bg-gray-50 text-sm font-mono"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => {
+                          navigator.clipboard.writeText(createdOrder.pixData.pix_emv);
+                          alert('Código PIX copiado!');
+                        }}
+                        className="px-6 py-3 rounded-lg font-semibold text-white transition-colors"
+                        style={{ backgroundColor: '#4a9d4e' }}
+                      >
+                        Copiar
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Botão Já Paguei */}
+                  <button
+                    type="button"
+                    onClick={() => {
+                      clearCart();
+                      navigate(`/pedido/${createdOrder.id}/confirmacao`, { replace: true });
+                    }}
+                    className="w-full py-4 text-lg font-bold rounded-xl transition-all shadow-lg hover:shadow-xl"
+                    style={{ backgroundColor: '#4a9d4e', color: '#ffffff' }}
+                  >
+                    ✅ Já paguei
+                  </button>
+
+                  {/* Informação adicional */}
+                  <div className="text-center text-sm text-gray-600">
+                    <p>Após o pagamento, a confirmação pode levar alguns minutos.</p>
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
 
           {/* Summary */}

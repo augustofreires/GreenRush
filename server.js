@@ -46,6 +46,57 @@ const db = mysql.createPool({
 });
 
 console.log('✅ Pool de conexões MySQL criado!');
+// Função para salvar uma configuração no banco
+// Função para salvar uma configuração no banco
+async function saveSetting(key, value) {
+  try {
+    const valueStr = typeof value === 'object' ? JSON.stringify(value) : String(value);
+    const query = `
+      INSERT INTO settings (setting_key, setting_value) 
+      VALUES (?, ?) 
+      ON DUPLICATE KEY UPDATE setting_value = ?, updated_at = CURRENT_TIMESTAMP
+    `;
+    await db.execute(query, [key, valueStr, valueStr]);
+    console.log(`✅ Configuração salva: ${key}`);
+    return true;
+  } catch (error) {
+    console.error(`❌ Erro ao salvar configuração ${key}:`, error);
+    return false;
+  }
+}
+
+// Função para ler uma configuração do banco
+async function getSetting(key, defaultValue = null) {
+  try {
+    const [rows] = await db.execute(
+      'SELECT setting_value FROM settings WHERE setting_key = ?',
+      [key]
+    );
+    if (rows.length > 0) {
+      try {
+        return JSON.parse(rows[0].setting_value);
+      } catch {
+        return rows[0].setting_value;
+      }
+    }
+    return defaultValue;
+  } catch (error) {
+    console.error(`❌ Erro ao ler configuração ${key}:`, error);
+    return defaultValue;
+  }
+}
+
+// Função para deletar uma configuração
+async function deleteSetting(key) {
+  try {
+    await db.execute('DELETE FROM settings WHERE setting_key = ?', [key]);
+    console.log(`✅ Configuração deletada: ${key}`);
+    return true;
+  } catch (error) {
+    console.error(`❌ Erro ao deletar configuração ${key}:`, error);
+    return false;
+  }
+}
 
 // Compressão gzip para todas as respostas - melhora performance drasticamente!
 app.use(compression({
@@ -166,6 +217,23 @@ app.use('/api/bling/v3', async (req, res) => {
   }
 });
 
+// Função para carregar configuração do Appmax do banco de dados
+async function loadAppmaxConfig() {
+  try {
+    const config = await getSetting('appmax_config', {
+      accessToken: '',
+      publicKey: '',
+      apiUrl: 'https://admin.appmax.com.br/api/v3',
+      enabled: false,
+      trackingEnabled: true,
+      conversionPixel: '',
+    });
+    appmaxConfig = { ...appmaxConfig, ...config };
+    console.log('✅ Configuração Appmax carregada do banco de dados');
+  } catch (error) {
+    console.error('❌ Erro ao carregar configuração Appmax:', error);
+  }
+}
 // ==================== APPMAX API ====================
 
 // Configuração de armazenamento em memória (em produção, usar banco de dados)
@@ -254,14 +322,44 @@ app.post('/api/appmax/test-connection', async (req, res) => {
 });
 
 // Obter configuração do Appmax
-app.get('/api/appmax/config', (req, res) => {
-  res.json(appmaxConfig);
+// Obter configuração do Appmax do banco de dados
+app.get('/api/appmax/config', async (req, res) => {
+  try {
+    // Primeiro tenta carregar do banco
+    const savedConfig = await getSetting('appmax_config');
+    if (savedConfig) {
+      appmaxConfig = { ...appmaxConfig, ...savedConfig };
+    }
+    res.json(appmaxConfig);
+  } catch (error) {
+    console.error('Erro ao obter configuração Appmax:', error);
+    res.json(appmaxConfig); // Retorna config em memória se falhar
+  }
 });
 
-// Atualizar configuração do Appmax
-app.put('/api/appmax/config', (req, res) => {
-  appmaxConfig = { ...appmaxConfig, ...req.body };
-  res.json(appmaxConfig);
+// Atualizar configuração do Appmax e salvar no banco
+app.put('/api/appmax/config', async (req, res) => {
+  try {
+    console.log('📥 Recebendo configuração Appmax:', JSON.stringify(req.body, null, 2));
+    
+    // Atualiza em memória
+    appmaxConfig = { ...appmaxConfig, ...req.body };
+    
+    console.log('💾 Salvando no banco:', JSON.stringify(appmaxConfig, null, 2));
+    
+    // Salva no banco de dados
+    await saveSetting('appmax_config', appmaxConfig);
+    
+    console.log('✅ Configuração Appmax atualizada e salva no banco');
+    res.json({ success: true, config: appmaxConfig });
+  } catch (error) {
+    console.error('❌ Erro ao atualizar configuração Appmax:', error);
+    res.status(500).json({ 
+      success: false, 
+      message: 'Erro ao salvar configuração',
+      error: error.message 
+    });
+  }
 });
 
 // Criar pedido no Appmax
@@ -879,21 +977,50 @@ app.get('/api/dashboard/sales-chart', async (req, res) => {
 
 // ==================== ORDER TRACKING API ====================
 
-// Buscar pedido por ID (busca primeiro localmente, depois em Bling e Appmax)
+// Buscar pedido por ID (busca primeiro no banco, depois localmente, depois em Bling e Appmax)
 app.get('/api/orders/:id', async (req, res) => {
   try {
     const { id } = req.params;
     let foundOrder = null;
 
-    // Buscar primeiro nos pedidos locais (criados no site)
-    foundOrder = orders.find(o => o.id === id);
+    console.log(`🔍 Buscando pedido: ${id}`);
 
-    if (foundOrder) {
-      console.log(`✅ Pedido encontrado localmente: ${id}`);
-      return res.json(foundOrder);
+    // 1. Buscar primeiro no banco de dados MySQL
+    try {
+      const [dbOrders] = await db.execute('SELECT * FROM orders WHERE id = ?', [id]);
+      
+      if (dbOrders.length > 0) {
+        const dbOrder = dbOrders[0];
+        foundOrder = {
+          id: dbOrder.id,
+          userId: 'guest', // Pode adicionar userId na tabela futuramente
+          items: JSON.parse(dbOrder.items),
+          total: parseFloat(dbOrder.total),
+          subtotal: parseFloat(dbOrder.total), // Calcular se necessário
+          status: dbOrder.status,
+          paymentMethod: dbOrder.payment_method,
+          paymentStatus: 'pending',
+          shippingAddress: JSON.parse(dbOrder.shipping_address),
+          billingAddress: JSON.parse(dbOrder.shipping_address),
+          createdAt: dbOrder.created_at,
+          updatedAt: dbOrder.created_at,
+        };
+        console.log(`✅ Pedido encontrado no banco de dados: ${id}`);
+        return res.json(foundOrder);
+      }
+    } catch (dbError) {
+      console.warn('Erro ao buscar no banco:', dbError.message);
     }
 
-    // Se não encontrou localmente, buscar no Bling
+    // 2. Buscar nos pedidos locais (array em memória)
+    //     foundOrder = orders.find(o => o.id === id);
+
+    //     if (foundOrder) {
+    //       console.log(`✅ Pedido encontrado localmente: ${id}`);
+    //       return res.json(foundOrder);
+    //     }
+
+    // 3. Se não encontrou localmente, buscar no Bling
     if (blingAccessToken) {
       try {
         const blingResponse = await axios.get(
@@ -944,13 +1071,15 @@ app.get('/api/orders/:id', async (req, res) => {
             createdAt: new Date(pedido.data),
             updatedAt: new Date(pedido.data),
           };
+          console.log(`✅ Pedido encontrado no Bling: ${id}`);
+          return res.json(foundOrder);
         }
       } catch (error) {
         console.warn('Pedido não encontrado no Bling:', error.message);
       }
     }
 
-    // Se não encontrou no Bling, buscar na Appmax
+    // 4. Se não encontrou no Bling, buscar na Appmax
     if (!foundOrder && appmaxConfig.enabled && appmaxConfig.accessToken) {
       try {
         const appmaxResponse = await axios.get(
@@ -1002,6 +1131,8 @@ app.get('/api/orders/:id', async (req, res) => {
             createdAt: new Date(order.created_at || order.date),
             updatedAt: new Date(order.updated_at || order.date),
           };
+          console.log(`✅ Pedido encontrado na Appmax: ${id}`);
+          return res.json(foundOrder);
         }
       } catch (error) {
         console.warn('Pedido não encontrado na Appmax:', error.message);
@@ -1009,6 +1140,7 @@ app.get('/api/orders/:id', async (req, res) => {
     }
 
     if (!foundOrder) {
+      console.log(`❌ Pedido não encontrado: ${id}`);
       return res.status(404).json({ error: 'Pedido não encontrado' });
     }
 
@@ -1693,82 +1825,275 @@ app.post('/api/orders', async (req, res) => {
     const { items, shippingAddress, billingAddress, paymentMethod } = req.body;
 
     if (!items || items.length === 0) {
-      return res.status(400).json({
-        error: 'Carrinho vazio',
-      });
+      return res.status(400).json({ error: 'Carrinho vazio' });
     }
 
     if (!shippingAddress || !paymentMethod) {
-      return res.status(400).json({
-        error: 'Dados de envio ou pagamento faltando',
+      return res.status(400).json({ error: 'Dados de envio ou pagamento faltando' });
+    }
+
+    // Verificar se Appmax está configurada
+    if (!appmaxConfig.enabled || !appmaxConfig.accessToken) {
+      return res.status(500).json({ 
+        error: 'Sistema de pagamento não configurado. Entre em contato com o suporte.' 
       });
     }
 
-    // Calcular total
+    console.log('🛒 Iniciando criação de pedido na Appmax...');
+
+    // Calcular valores
     const subtotal = items.reduce((sum, item) => sum + (item.price * item.quantity), 0);
     const shipping = subtotal >= 350 ? 0 : 29.90;
     const pixDiscount = paymentMethod === 'pix' ? subtotal * 0.05 : 0;
     const total = subtotal + shipping - pixDiscount;
 
-    const orderId = `ORD-${Date.now()}`;
-    const createdAt = new Date();
-
-    const itemsJSON = JSON.stringify(items.map(item => ({
-      id: item.id,
-      name: item.name,
-      price: item.price,
-      quantity: item.quantity,
-      image: item.image || item.images?.[0] || '',
-    })));
-
-    const shippingJSON = JSON.stringify(shippingAddress);
-
-    await db.execute(
-      'INSERT INTO orders (id, customer_name, customer_email, customer_phone, customer_cpf, items, total, payment_method, shipping_address, status, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
-      [
-        orderId,
-        shippingAddress.name || 'Cliente',
-        shippingAddress.email || '',
-        shippingAddress.phone || '',
-        shippingAddress.cpf || '',
-        itemsJSON,
-        total,
-        paymentMethod,
-        shippingJSON,
-        'pending',
-        createdAt
-      ]
-    );
-
-    const newOrder = {
-      id: orderId,
-      userId: req.body.userId || 'guest',
-      items: JSON.parse(itemsJSON),
-      total,
-      subtotal,
-      shipping,
-      discount: pixDiscount,
-      status: 'pending',
-      paymentMethod,
-      paymentStatus: 'pending',
-      shippingAddress,
-      billingAddress: billingAddress || shippingAddress,
-      createdAt: createdAt.toISOString(),
-      updatedAt: createdAt.toISOString(),
+    // 1. Criar cliente na Appmax
+    console.log('👤 Criando cliente na Appmax...');
+    
+    const customerData = {
+      'access-token': appmaxConfig.accessToken,
+      firstname: shippingAddress.name?.split(' ')[0] || 'Cliente',
+      lastname: shippingAddress.name?.split(' ').slice(1).join(' ') || 'Appmax',
+      email: shippingAddress.email || 'nao-informado@exemplo.com',
+      telephone: shippingAddress.phone?.replace(/\D/g, '') || '11999999999',
+      postcode: shippingAddress.zipCode?.replace(/\D/g, '') || '00000000',
+      address_street: shippingAddress.street || 'Não informado',
+      address_street_number: shippingAddress.number || 'S/N',
+      address_street_district: shippingAddress.neighborhood || 'Centro',
+      address_city: shippingAddress.city || 'São Paulo',
+      address_state: shippingAddress.state || 'SP',
+      ip: req.ip || '127.0.0.1',
     };
 
-    console.log(`🛒 Novo pedido criado: ${orderId} - R$ ${total.toFixed(2)}`);
+    if (shippingAddress.complement) {
+      customerData.address_street_complement = shippingAddress.complement;
+    }
 
+    let customerId;
+    try {
+      const customerResponse = await axios.post(
+        `${appmaxConfig.apiUrl}/customer`,
+        customerData,
+        {
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        }
+      );
+      
+      console.log("📋 Resposta completa da criação de cliente:", JSON.stringify(customerResponse.data));
+      customerId = customerResponse.data.customer_id || customerResponse.data.id || customerResponse.data.data?.id || customerResponse.data.data?.customer_id;
+      console.log(`✅ Cliente criado na Appmax: ${customerId}`);
+    } catch (error) {
+      console.error('❌ Erro ao criar cliente na Appmax:', error.response?.data || error.message);
+      return res.status(500).json({
+        error: 'Erro ao processar pedido. Tente novamente.',
+        details: error.response?.data
+      });
+    }
 
-    res.json(newOrder);
+    // 2. Criar pedido na Appmax
+    console.log('📦 Criando pedido na Appmax...');
+    
+    const orderData = {
+      'access-token': appmaxConfig.accessToken,
+      total: total,
+      products: items.map(item => ({
+        sku: item.id?.toString() || 'SKU-' + Math.random().toString(36).substring(7),
+        name: item.name,
+        qty: item.quantity,
+        price: item.price
+      })),
+      shipping: shipping,
+      customer_id: customerId,
+      discount: pixDiscount,
+      freight_type: 'PAC'
+    };
+
+    let appmaxOrderId;
+    try {
+      const orderResponse = await axios.post(
+        `${appmaxConfig.apiUrl}/order`,
+        orderData,
+        {
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        }
+      );
+      
+      console.log("📋 Resposta completa da criação de pedido:", JSON.stringify(orderResponse.data));
+      appmaxOrderId = orderResponse.data.order_id || orderResponse.data.id || orderResponse.data.data?.id || orderResponse.data.data?.order_id;
+      console.log(`✅ Pedido criado na Appmax: ${appmaxOrderId}`);
+    } catch (error) {
+      console.error('❌ Erro ao criar pedido na Appmax:', error.response?.data || error.message);
+      return res.status(500).json({
+        error: 'Erro ao processar pedido. Tente novamente.',
+        details: error.response?.data
+      });
+    }
+
+    // 3. Processar pagamento conforme método escolhido
+    let pixData = null;
+    let cardPaymentData = null;
+
+    if (paymentMethod === 'credit_card') {
+      console.log('💳 Processando pagamento com cartão na Appmax...');
+
+      const { cardData, installments } = req.body;
+
+      if (!cardData || !cardData.number || !cardData.name || !cardData.expiry || !cardData.cvv) {
+        return res.status(400).json({
+          error: 'Dados do cartão incompletos'
+        });
+      }
+
+      // Separar mês e ano da validade
+      const [month, year] = cardData.expiry.split('/');
+
+      try {
+        const cardResponse = await axios.post(
+          `${appmaxConfig.apiUrl}/payment/credit-card`,
+          {
+            'access-token': appmaxConfig.accessToken,
+            cart: {
+              order_id: appmaxOrderId
+            },
+            customer: {
+              customer_id: customerId
+            },
+            payment: {
+              CreditCard: {  // Appmax usa CreditCard com C maiúsculo
+                number: cardData.number,
+                name: cardData.name,
+                month: month,
+                year: `20${year}`,
+                cvv: cardData.cvv,
+                document_number: shippingAddress.cpf?.replace(/\D/g, '') || '00000000000',
+                installments: installments || 1
+              }
+            }
+          },
+          {
+            headers: {
+              'Content-Type': 'application/json',
+            },
+          }
+        );
+
+        cardPaymentData = cardResponse.data.data;
+        console.log('📋 Resposta completa do pagamento com cartão:', JSON.stringify(cardResponse.data));
+        console.log('✅ Pagamento com cartão processado na Appmax');
+      } catch (error) {
+        console.error('❌ Erro ao processar pagamento com cartão:', error.response?.data || error.message);
+        return res.status(500).json({
+          error: 'Erro ao processar pagamento. Verifique os dados do cartão.',
+          details: error.response?.data
+        });
+      }
+    } else if (paymentMethod === 'pix') {
+      console.log('💳 Gerando PIX na Appmax...');
+      
+      const pixExpiration = new Date(Date.now() + 30 * 60 * 1000);
+      const pixExpirationStr = pixExpiration.toISOString().slice(0, 19).replace('T', ' ');
+      
+      try {
+        const pixResponse = await axios.post(
+          `${appmaxConfig.apiUrl}/payment/pix`,
+          {
+            'access-token': appmaxConfig.accessToken,
+            cart: {
+              order_id: appmaxOrderId
+            },
+            customer: {
+              customer_id: customerId
+            },
+            payment: {
+              pix: {
+                document_number: shippingAddress.cpf?.replace(/\D/g, '') || '00000000000',
+                expiration_date: pixExpirationStr
+              }
+            }
+          },
+          {
+            headers: {
+              'Content-Type': 'application/json',
+            },
+          }
+        );
+        
+        // A Appmax retorna { success, text, data: { pix_qrcode, pix_emv, ... } }
+        pixData = pixResponse.data.data;
+        console.log('📋 Resposta completa do PIX:', JSON.stringify(pixResponse.data));
+        console.log('✅ PIX gerado na Appmax com QR Code e código EMV');
+      } catch (error) {
+        console.error('⚠️  Erro ao gerar PIX na Appmax:', error.response?.data || error.message);
+        // Não falhar o pedido se o PIX falhar - pode ser gerado depois
+      }
+    }
+
+    // Criar ID local para rastreamento
+    const localOrderId = `ORD-${Date.now()}`;
+    
+    // Salvar referência no banco local (opcional, para histórico)
+    try {
+      const itemsJSON = JSON.stringify(items);
+      const shippingJSON = JSON.stringify(shippingAddress);
+      
+      await db.execute(
+        'INSERT INTO orders (id, customer_name, customer_email, customer_phone, customer_cpf, items, total, payment_method, shipping_address, status, created_at, appmax_order_id, appmax_customer_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
+        [
+          localOrderId,
+          shippingAddress.name || 'Cliente',
+          shippingAddress.email || '',
+          shippingAddress.phone || '',
+          shippingAddress.cpf || '',
+          itemsJSON,
+          total,
+          paymentMethod,
+          shippingJSON,
+          'pending',
+          new Date(),
+          appmaxOrderId,
+          customerId
+        ]
+      );
+    } catch (dbError) {
+      console.warn('⚠️  Erro ao salvar no banco local:', dbError.message);
+      // Não falhar o pedido se o banco local falhar
+    }
+
+    const responseOrder = {
+      id: appmaxOrderId.toString(), // Usar ID da Appmax
+      localId: localOrderId,
+      userId: req.body.userId || 'guest',
+      customerId: customerId,
+      items: items,
+      total: total,
+      subtotal: subtotal,
+      shipping: shipping,
+      discount: pixDiscount,
+      status: cardPaymentData ? (cardPaymentData.status === 'approved' ? 'confirmed' : 'pending') : 'pending',
+      paymentMethod: paymentMethod,
+      paymentStatus: cardPaymentData ? (cardPaymentData.status || 'pending') : 'pending',
+      shippingAddress: shippingAddress,
+      billingAddress: billingAddress || shippingAddress,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+      pixData: pixData,
+      cardPaymentData: cardPaymentData
+    };
+
+    console.log(`🎉 Pedido completo: ${appmaxOrderId}`);
+    res.json(responseOrder);
+    
   } catch (error) {
-    console.error('Erro ao criar pedido:', error);
+    console.error('❌ Erro ao criar pedido:', error);
     res.status(500).json({
       error: { message: error.message },
     });
   }
 });
-
 // Gerar código PIX para um pedido
 app.post('/api/orders/:id/generate-pix', async (req, res) => {
   try {
@@ -2682,6 +3007,7 @@ app.put('/api/settings/:key', async (req, res) => {
 
 app.listen(PORT, () => {
   console.log(`🚀 Servidor backend rodando em http://localhost:${PORT}`);
+  loadAppmaxConfig(); // Carrega configuração do banco ao iniciar
   console.log(`📡 Proxy do Bling configurado!`);
   console.log(`💰 API Appmax configurada!`);
   console.log(`📊 Dashboard API disponível!`);

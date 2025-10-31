@@ -11,37 +11,29 @@ export const AdminIntegrations = () => {
   const [testResult, setTestResult] = useState<{ success: boolean; message: string } | null>(null);
 
   // AppMax Config - usar dados do store
+  // AppMax Config - carregado do backend
   const [appmaxConfig, setAppmaxConfig] = useState<AppMaxConfig>({
-    accessToken: appmaxStore.accessToken,
-    publicKey: appmaxStore.publicKey,
-    apiUrl: appmaxStore.apiUrl,
-    enabled: appmaxStore.enabled,
-    trackingEnabled: appmaxStore.trackingEnabled,
-    conversionPixel: appmaxStore.conversionPixel,
+    accessToken: '',
+    publicKey: '',
+    apiUrl: 'https://admin.appmax.com.br/api/v3',
+    enabled: false,
+    trackingEnabled: true,
+    conversionPixel: '',
   });
 
   useEffect(() => {
     loadConfigs();
   }, []);
 
-  // Sincronizar com o store quando mudar
-  useEffect(() => {
-    setAppmaxConfig({
-      accessToken: appmaxStore.accessToken,
-      publicKey: appmaxStore.publicKey,
-      apiUrl: appmaxStore.apiUrl,
-      enabled: appmaxStore.enabled,
-      trackingEnabled: appmaxStore.trackingEnabled,
-      conversionPixel: appmaxStore.conversionPixel,
-    });
-  }, [appmaxStore]);
-
   const loadConfigs = async () => {
     try {
       // Carregar configuração do backend
       const appmax = await appmaxService.getConfig();
+      console.log('Configuração carregada do backend:', appmax);
+      setAppmaxConfig(appmax);
+      
+      // Atualizar store apenas se tiver dados
       if (appmax.accessToken) {
-        setAppmaxConfig(appmax);
         appmaxStore.setAccessToken(appmax.accessToken);
         appmaxStore.setPublicKey(appmax.publicKey);
         appmaxStore.setEnabled(appmax.enabled);

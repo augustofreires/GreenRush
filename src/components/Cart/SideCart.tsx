@@ -1,8 +1,11 @@
 import { Link } from 'react-router-dom';
-import { FiX, FiShoppingBag, FiTrash2, FiMinus, FiPlus } from 'react-icons/fi';
+import { FiX, FiShoppingBag, FiTrash2, FiMinus, FiPlus, FiTag } from 'react-icons/fi';
 import { useCartStore } from '../../store/useCartStore';
 import { useProductStore } from '../../store/useProductStore';
 import { useState } from 'react';
+import axios from 'axios';
+
+const API_URL = import.meta.env.VITE_API_BASE_URL || '/api';
 
 interface SideCartProps {
   isOpen: boolean;
@@ -19,9 +22,42 @@ export const SideCart = ({ isOpen, onClose }: SideCartProps) => {
   const products = useProductStore((state) => state.products);
   const [recommendedProducts] = useState(() => Array.isArray(products) ? products.slice(0, 3) : []);
 
+  // Cupom states
+  const [couponCode, setCouponCode] = useState('');
+  const [appliedCoupon, setAppliedCoupon] = useState<{ code: string; discount_percent: number } | null>(null);
+  const [couponLoading, setCouponLoading] = useState(false);
+  const [couponError, setCouponError] = useState('');
+
   // Helper para gerar ID único do item (id + variante)
   const getItemKey = (item: any) => {
     return item.selectedVariant ? `${item.id}-${item.selectedVariant}` : item.id;
+  };
+
+  // Função para aplicar cupom
+  const handleApplyCoupon = async () => {
+    if (!couponCode.trim()) return;
+
+    setCouponLoading(true);
+    setCouponError('');
+
+    try {
+      const response = await axios.get(`${API_URL}/coupons/validate/${couponCode.trim()}`);
+      setAppliedCoupon({
+        code: response.data.code,
+        discount_percent: response.data.discount_percent
+      });
+      setCouponCode('');
+    } catch (error: any) {
+      setCouponError(error.response?.data?.error || 'Cupom inválido');
+      setAppliedCoupon(null);
+    } finally {
+      setCouponLoading(false);
+    }
+  };
+
+  const handleRemoveCoupon = () => {
+    setAppliedCoupon(null);
+    setCouponError('');
   };
 
   // Calculate totals directly - will recalculate on every version change
@@ -29,10 +65,11 @@ export const SideCart = ({ isOpen, onClose }: SideCartProps) => {
     console.log(`[SideCart v${version}] ${item.name}: R$ ${item.price} x ${item.quantity} = R$ ${item.price * item.quantity}`);
     return sum + (item.price * item.quantity);
   }, 0);
-  const shipping = subtotal >= 350 ? 0 : 29.90;
-  const total = subtotal + shipping;
+  const shipping = 0; // Frete sempre grátis
+  const couponDiscount = appliedCoupon ? subtotal * (appliedCoupon.discount_percent / 100) : 0;
+  const total = subtotal + shipping - couponDiscount;
 
-  console.log(`[SideCart v${version}] TOTAL ITEMS: ${items.length} | SUBTOTAL: R$ ${subtotal.toFixed(2)} | FRETE: R$ ${shipping.toFixed(2)} | TOTAL: R$ ${total.toFixed(2)}`);
+  console.log(`[SideCart v${version}] TOTAL ITEMS: ${items.length} | SUBTOTAL: R$ ${subtotal.toFixed(2)} | FRETE: R$ ${shipping.toFixed(2)} | DESCONTO: R$ ${couponDiscount.toFixed(2)} | TOTAL: R$ ${total.toFixed(2)}`);
 
   const handleAddRecommended = (product: any) => {
     addItem(product, 1);
@@ -191,20 +228,65 @@ export const SideCart = ({ isOpen, onClose }: SideCartProps) => {
                 </div>
               )}
 
-              {/* Free Shipping Progress */}
-              {subtotal < 350 && (
-                <div className="bg-accent-green bg-opacity-20 p-3 rounded-lg">
-                  <p className="text-xs font-semibold text-gray-900 mb-2">
-                    Falta R$ {(350 - subtotal).toFixed(2).replace('.', ',')} para frete GRÁTIS!
-                  </p>
-                  <div className="w-full bg-gray-200 rounded-full h-1.5">
-                    <div
-                      className="bg-accent-green h-1.5 rounded-full transition-all"
-                      style={{ width: `${Math.min((subtotal / 350) * 100, 100)}%` }}
-                    />
+              {/* Cupom de Desconto */}
+              <div className="border-t pt-4">
+                <h3 className="font-bold text-sm mb-2 text-gray-900">
+                  Cupom de Desconto
+                </h3>
+                {!appliedCoupon ? (
+                  <div>
+                    <div className="flex gap-2">
+                      <div className="relative flex-1">
+                        <FiTag className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={14} />
+                        <input
+                          type="text"
+                          value={couponCode}
+                          onChange={(e) => {
+                            setCouponCode(e.target.value.toUpperCase());
+                            setCouponError('');
+                          }}
+                          onKeyPress={(e) => e.key === 'Enter' && handleApplyCoupon()}
+                          placeholder="Digite o código"
+                          className="w-full pl-9 pr-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#4a9d4e] uppercase text-xs"
+                        />
+                      </div>
+                      <button
+                        type="button"
+                        onClick={handleApplyCoupon}
+                        disabled={couponLoading || !couponCode.trim()}
+                        className="px-3 py-2 rounded-lg font-semibold text-white transition-colors disabled:opacity-50 text-xs"
+                        style={{ backgroundColor: '#4a9d4e' }}
+                      >
+                        {couponLoading ? 'Validando...' : 'Aplicar'}
+                      </button>
+                    </div>
+                    {couponError && (
+                      <p className="text-xs text-red-600 mt-1">{couponError}</p>
+                    )}
                   </div>
-                </div>
-              )}
+                ) : (
+                  <div className="flex items-center justify-between p-2 rounded-lg border border-[#4a9d4e]" style={{ backgroundColor: '#f8fdf9' }}>
+                    <div className="flex items-center gap-2">
+                      <FiTag size={14} style={{ color: '#4a9d4e' }} />
+                      <div>
+                        <p className="text-xs font-bold text-gray-900">
+                          {appliedCoupon.code}
+                        </p>
+                        <p className="text-xs" style={{ color: '#4a9d4e' }}>
+                          {appliedCoupon.discount_percent}% de desconto
+                        </p>
+                      </div>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={handleRemoveCoupon}
+                      className="text-red-600 hover:text-red-700"
+                    >
+                      <FiX size={16} />
+                    </button>
+                  </div>
+                )}
+              </div>
             </div>
           )}
         </div>
@@ -221,10 +303,18 @@ export const SideCart = ({ isOpen, onClose }: SideCartProps) => {
               </div>
               <div className="flex justify-between text-xs">
                 <span className="text-gray-600">Frete</span>
-                <span className={`font-semibold ${shipping === 0 ? 'text-green-600' : 'text-gray-900'}`} key={`shipping-${version}`}>
-                  {shipping === 0 ? 'GRÁTIS' : `R$ ${shipping.toFixed(2).replace('.', ',')}`}
+                <span className="font-semibold text-green-600" key={`shipping-${version}`}>
+                  GRÁTIS
                 </span>
               </div>
+              {couponDiscount > 0 && (
+                <div className="flex justify-between text-xs">
+                  <span className="text-gray-600">Desconto ({appliedCoupon?.discount_percent}%)</span>
+                  <span className="font-semibold text-green-600">
+                    - R$ {couponDiscount.toFixed(2).replace('.', ',')}
+                  </span>
+                </div>
+              )}
               <div className="flex justify-between text-base font-bold pt-1.5 border-t">
                 <span className="text-gray-900">Total</span>
                 <span style={{ color: '#4a9d4e' }} key={`total-${version}`}>

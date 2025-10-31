@@ -183,7 +183,7 @@ export const Home = () => {
               </div>
               <div>
                 <h3 className="font-bold text-sm text-gray-900 mb-0.5">Frete Grátis</h3>
-                <p className="text-xs text-gray-600">Nas compras a cima de R$ 350,00</p>
+                <p className="text-xs text-gray-600">Pra qualquer lugar do Brasil</p>
               </div>
             </div>
 

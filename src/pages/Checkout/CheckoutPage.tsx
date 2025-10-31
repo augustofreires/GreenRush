@@ -717,7 +717,7 @@ export const CheckoutPage = () => {
                                 const taxaPorParcela = 2.49;
                                 const taxaTotal = taxaBase + (taxaPorParcela * parcelas);
                                 valorComJuros = total * (1 + taxaTotal / 100);
-                                textoJuros = ` com juros (${taxaTotal.toFixed(2)}%)`;
+                                textoJuros = ' com juros';
                               }
 
                               const valorParcela = valorComJuros / parcelas;

@@ -19,59 +19,51 @@ interface AddressStore {
   getDefaultAddress: (userId: string) => AddressWithMeta | null;
 }
 
-// Mock addresses for demo
-const mockAddresses: AddressWithMeta[] = [
-  {
-    id: '1',
-    userId: '1',
-    label: 'Casa',
-    street: 'Rua das Flores',
-    number: '123',
-    complement: 'Apto 45',
-    neighborhood: 'Centro',
-    city: 'São Paulo',
-    state: 'SP',
-    zipCode: '01234-567',
-    country: 'Brasil',
-    isDefault: true,
-  },
-  {
-    id: '2',
-    userId: '1',
-    label: 'Trabalho',
-    street: 'Av. Paulista',
-    number: '1000',
-    complement: 'Sala 501',
-    neighborhood: 'Bela Vista',
-    city: 'São Paulo',
-    state: 'SP',
-    zipCode: '01310-100',
-    country: 'Brasil',
-    isDefault: false,
-  },
-];
-
 export const useAddressStore = create<AddressStore>()(
   persist(
     (set, get) => ({
-      addresses: mockAddresses,
+      addresses: [],
 
       addAddress: (userId, address) => {
+        const userAddresses = get().addresses.filter(addr => addr.userId === userId);
+        const isFirstAddress = userAddresses.length === 0;
+
         const newAddress: AddressWithMeta = {
           ...address,
           id: Date.now().toString(),
           userId,
+          // Se for o primeiro endereço do usuário, marcar como padrão automaticamente
+          isDefault: isFirstAddress ? true : address.isDefault,
         };
+
         set((state) => ({
-          addresses: [...state.addresses, newAddress],
+          addresses: [
+            // Se o novo endereço for padrão, desmarcar outros endereços do mesmo usuário
+            ...state.addresses.map((addr) =>
+              addr.userId === userId && newAddress.isDefault
+                ? { ...addr, isDefault: false }
+                : addr
+            ),
+            newAddress,
+          ],
         }));
       },
 
       updateAddress: (id, address) => {
+        const targetAddress = get().addresses.find(addr => addr.id === id);
+
         set((state) => ({
-          addresses: state.addresses.map((addr) =>
-            addr.id === id ? { ...addr, ...address } : addr
-          ),
+          addresses: state.addresses.map((addr) => {
+            // Se está marcando este endereço como padrão, desmarcar outros do mesmo usuário
+            if (addr.userId === targetAddress?.userId && address.isDefault && addr.id !== id) {
+              return { ...addr, isDefault: false };
+            }
+            // Atualizar o endereço alvo
+            if (addr.id === id) {
+              return { ...addr, ...address };
+            }
+            return addr;
+          }),
         }));
       },
 

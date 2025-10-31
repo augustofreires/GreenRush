@@ -136,12 +136,12 @@ export const SideCart = ({ isOpen, onClose }: SideCartProps) => {
                 {items.map((item) => {
                   const itemKey = getItemKey(item);
                   return (
-                    <div key={itemKey} className="flex gap-3 pb-3 border-b">
+                    <div key={itemKey} className="flex gap-2 pb-2 border-b">
                       {/* Image */}
                       <img
                         src={item.image}
                         alt={item.name}
-                        className="w-16 h-16 object-cover rounded"
+                        className="w-14 h-14 object-cover rounded-lg"
                       />
 
                       {/* Info */}
@@ -149,34 +149,34 @@ export const SideCart = ({ isOpen, onClose }: SideCartProps) => {
                         <h3 className="font-semibold text-xs line-clamp-2">
                           {item.name}
                         </h3>
-                        <p className="text-primary-green font-bold text-sm mt-0.5">
+                        <p className="text-primary-green font-bold text-xs mt-0.5">
                           R$ {item.price.toFixed(2).replace('.', ',')}
                         </p>
 
                         {/* Quantity Controls */}
                         <div className="flex items-center gap-2 mt-1">
-                          <div className="flex items-center border rounded">
+                          <div className="flex items-center border rounded-lg overflow-hidden">
                             <button
                               onClick={() => updateQuantity(itemKey, item.quantity - 1)}
-                              className="p-0.5 hover:bg-gray-100 transition-colors"
+                              className="p-1 hover:bg-gray-100 transition-colors"
                             >
-                              <FiMinus size={12} />
+                              <FiMinus size={10} />
                             </button>
-                            <span className="px-2 py-0.5 text-xs">{item.quantity}</span>
+                            <span className="px-2 py-0.5 text-xs min-w-[20px] text-center">{item.quantity}</span>
                             <button
                               onClick={() => updateQuantity(itemKey, item.quantity + 1)}
-                              className="p-0.5 hover:bg-gray-100 transition-colors"
+                              className="p-1 hover:bg-gray-100 transition-colors"
                               disabled={item.quantity >= item.stock}
                             >
-                              <FiPlus size={12} />
+                              <FiPlus size={10} />
                             </button>
                           </div>
 
                           <button
                             onClick={() => removeItem(itemKey)}
-                            className="text-red-600 hover:text-red-700 transition-colors p-0.5"
+                            className="text-red-600 hover:text-red-700 transition-colors p-1"
                           >
-                            <FiTrash2 size={14} />
+                            <FiTrash2 size={12} />
                           </button>
                         </div>
                       </div>
@@ -187,8 +187,8 @@ export const SideCart = ({ isOpen, onClose }: SideCartProps) => {
 
               {/* Recommended Products */}
               {recommendedProducts.length > 0 && (
-                <div className="border-t pt-4">
-                  <h3 className="font-bold text-sm mb-3 text-gray-900">
+                <div className="border-t pt-3">
+                  <h3 className="font-bold text-xs mb-2 text-gray-900">
                     Aproveite e leve junto! 🎁
                   </h3>
                   <div className="space-y-2">
@@ -198,12 +198,13 @@ export const SideCart = ({ isOpen, onClose }: SideCartProps) => {
                       .map((product) => (
                         <div
                           key={product.id}
-                          className="flex gap-2 p-2 bg-pink-50 rounded-lg border border-pink-200"
+                          className="flex gap-2 p-2 rounded-xl border"
+                          style={{ backgroundColor: '#f8fdf9', borderColor: '#e8f5e8' }}
                         >
                           <img
                             src={product.image}
                             alt={product.name}
-                            className="w-12 h-12 object-cover rounded"
+                            className="w-10 h-10 object-cover rounded-lg"
                           />
                           <div className="flex-1 min-w-0">
                             <h4 className="font-semibold text-xs line-clamp-2">
@@ -214,9 +215,9 @@ export const SideCart = ({ isOpen, onClose }: SideCartProps) => {
                             </p>
                             <button
                               onClick={() => handleAddRecommended(product)}
-                              className="text-xs px-2 py-0.5 rounded-full mt-1 transition-colors"
+                              className="text-xs px-2 py-0.5 rounded-full mt-0.5 transition-colors"
                               style={{ backgroundColor: '#4a9d4e', color: '#FFFFFF' }}
-                              onMouseOver={(e) => e.currentTarget.style.backgroundColor = '#E63980'}
+                              onMouseOver={(e) => e.currentTarget.style.backgroundColor = '#3d8440'}
                               onMouseOut={(e) => e.currentTarget.style.backgroundColor = '#4a9d4e'}
                             >
                               Adicionar
@@ -228,65 +229,6 @@ export const SideCart = ({ isOpen, onClose }: SideCartProps) => {
                 </div>
               )}
 
-              {/* Cupom de Desconto */}
-              <div className="border-t pt-4">
-                <h3 className="font-bold text-sm mb-2 text-gray-900">
-                  Cupom de Desconto
-                </h3>
-                {!appliedCoupon ? (
-                  <div>
-                    <div className="flex gap-2">
-                      <div className="relative flex-1">
-                        <FiTag className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={14} />
-                        <input
-                          type="text"
-                          value={couponCode}
-                          onChange={(e) => {
-                            setCouponCode(e.target.value.toUpperCase());
-                            setCouponError('');
-                          }}
-                          onKeyPress={(e) => e.key === 'Enter' && handleApplyCoupon()}
-                          placeholder="Digite o código"
-                          className="w-full pl-9 pr-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#4a9d4e] uppercase text-xs"
-                        />
-                      </div>
-                      <button
-                        type="button"
-                        onClick={handleApplyCoupon}
-                        disabled={couponLoading || !couponCode.trim()}
-                        className="px-3 py-2 rounded-lg font-semibold text-white transition-colors disabled:opacity-50 text-xs"
-                        style={{ backgroundColor: '#4a9d4e' }}
-                      >
-                        {couponLoading ? 'Validando...' : 'Aplicar'}
-                      </button>
-                    </div>
-                    {couponError && (
-                      <p className="text-xs text-red-600 mt-1">{couponError}</p>
-                    )}
-                  </div>
-                ) : (
-                  <div className="flex items-center justify-between p-2 rounded-lg border border-[#4a9d4e]" style={{ backgroundColor: '#f8fdf9' }}>
-                    <div className="flex items-center gap-2">
-                      <FiTag size={14} style={{ color: '#4a9d4e' }} />
-                      <div>
-                        <p className="text-xs font-bold text-gray-900">
-                          {appliedCoupon.code}
-                        </p>
-                        <p className="text-xs" style={{ color: '#4a9d4e' }}>
-                          {appliedCoupon.discount_percent}% de desconto
-                        </p>
-                      </div>
-                    </div>
-                    <button
-                      type="button"
-                      onClick={handleRemoveCoupon}
-                      className="text-red-600 hover:text-red-700"
-                    >
-                      <FiX size={16} />
-                    </button>
-                  </div>
-                )}
-              </div>
             </div>
           )}
         </div>
@@ -294,6 +236,63 @@ export const SideCart = ({ isOpen, onClose }: SideCartProps) => {
         {/* Footer */}
         {items.length > 0 && (
           <div className="absolute bottom-0 left-0 right-0 bg-white border-t p-4 shadow-lg">
+            {/* Cupom de Desconto */}
+            <div className="mb-3 pb-3 border-b">
+              {!appliedCoupon ? (
+                <div>
+                  <div className="flex gap-2">
+                    <div className="relative flex-1">
+                      <FiTag className="absolute left-2.5 top-1/2 transform -translate-y-1/2 text-gray-400" size={12} />
+                      <input
+                        type="text"
+                        value={couponCode}
+                        onChange={(e) => {
+                          setCouponCode(e.target.value.toUpperCase());
+                          setCouponError('');
+                        }}
+                        onKeyPress={(e) => e.key === 'Enter' && handleApplyCoupon()}
+                        placeholder="Cupom de desconto"
+                        className="w-full pl-8 pr-2 py-2 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#4a9d4e] uppercase text-xs"
+                      />
+                    </div>
+                    <button
+                      type="button"
+                      onClick={handleApplyCoupon}
+                      disabled={couponLoading || !couponCode.trim()}
+                      className="px-3 py-2 rounded-xl font-semibold text-white transition-colors disabled:opacity-50 text-xs"
+                      style={{ backgroundColor: '#4a9d4e' }}
+                    >
+                      {couponLoading ? '...' : 'Aplicar'}
+                    </button>
+                  </div>
+                  {couponError && (
+                    <p className="text-xs text-red-600 mt-1">{couponError}</p>
+                  )}
+                </div>
+              ) : (
+                <div className="flex items-center justify-between p-2 rounded-xl border border-[#4a9d4e]" style={{ backgroundColor: '#f8fdf9' }}>
+                  <div className="flex items-center gap-2">
+                    <FiTag size={12} style={{ color: '#4a9d4e' }} />
+                    <div>
+                      <p className="text-xs font-bold text-gray-900">
+                        {appliedCoupon.code}
+                      </p>
+                      <p className="text-xs" style={{ color: '#4a9d4e' }}>
+                        -{appliedCoupon.discount_percent}%
+                      </p>
+                    </div>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={handleRemoveCoupon}
+                    className="text-red-600 hover:text-red-700"
+                  >
+                    <FiX size={14} />
+                  </button>
+                </div>
+              )}
+            </div>
+
             <div className="space-y-1 mb-3" key={`cart-summary-${version}`}>
               <div className="flex justify-between text-xs">
                 <span className="text-gray-600">Subtotal</span>
@@ -322,32 +321,16 @@ export const SideCart = ({ isOpen, onClose }: SideCartProps) => {
                 </span>
               </div>
             </div>
-            <div className="space-y-2">
-              <Link
-                to="/checkout"
-                onClick={onClose}
-                className="w-full py-2.5 rounded-full font-bold text-sm text-center block transition-colors text-white"
-                style={{ backgroundColor: '#4a9d4e' }}
-                onMouseOver={(e) => e.currentTarget.style.backgroundColor = '#E63980'}
-                onMouseOut={(e) => e.currentTarget.style.backgroundColor = '#4a9d4e'}
-              >
-                Finalizar Compra
-              </Link>
-              <Link
-                to="/carrinho"
-                onClick={onClose}
-                className="w-full py-2.5 rounded-full font-bold text-sm text-center block border-2 transition-colors"
-                style={{ borderColor: '#4a9d4e', color: '#4a9d4e' }}
-                onMouseOver={(e) => {
-                  e.currentTarget.style.backgroundColor = '#FDF2F8';
-                }}
-                onMouseOut={(e) => {
-                  e.currentTarget.style.backgroundColor = 'transparent';
-                }}
-              >
-                Ir para o Carrinho
-              </Link>
-            </div>
+            <Link
+              to="/checkout"
+              onClick={onClose}
+              className="w-full py-3 rounded-xl font-bold text-sm text-center block transition-colors text-white"
+              style={{ backgroundColor: '#4a9d4e' }}
+              onMouseOver={(e) => e.currentTarget.style.backgroundColor = '#3d8440'}
+              onMouseOut={(e) => e.currentTarget.style.backgroundColor = '#4a9d4e'}
+            >
+              Finalizar Compra
+            </Link>
           </div>
         )}
       </div>

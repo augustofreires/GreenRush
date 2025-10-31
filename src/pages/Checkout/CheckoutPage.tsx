@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { FiMapPin, FiCreditCard, FiLock, FiPackage, FiTruck, FiCheck, FiTag, FiX } from 'react-icons/fi';
+import { FiMapPin, FiCreditCard, FiLock, FiPackage, FiTruck, FiCheck, FiTag, FiX, FiUser } from 'react-icons/fi';
 import { useCartStore } from '../../store/useCartStore';
 import { useAuthStore } from '../../store/useAuthStore';
 import { useAddressStore } from '../../store/useAddressStore';
@@ -16,7 +16,7 @@ export const CheckoutPage = () => {
   const { user } = useAuthStore();
   const { getAddressesByUserId } = useAddressStore();
   const [loading, setLoading] = useState(false);
-  const [currentStep, setCurrentStep] = useState<'address' | 'payment'>('address');
+  const [currentStep, setCurrentStep] = useState<'contact' | 'shipping' | 'payment'>('contact');
   const [createdOrder, setCreatedOrder] = useState<any>(null);
   const pixSectionRef = useRef<HTMLDivElement>(null);
 
@@ -25,6 +25,14 @@ export const CheckoutPage = () => {
   const [selectedAddressId, setSelectedAddressId] = useState(
     userAddresses.find(a => a.isDefault)?.id || userAddresses[0]?.id || ''
   );
+
+  // Estado separado para informações de contato
+  const [contactInfo, setContactInfo] = useState({
+    name: '',
+    email: '',
+    phone: '',
+    cpf: ''
+  });
 
   const [shippingAddress, setShippingAddress] = useState<Address>({
     street: '',
@@ -53,7 +61,7 @@ export const CheckoutPage = () => {
   const [couponError, setCouponError] = useState('');
 
   const subtotal = getTotal();
-  const shipping = subtotal >= 350 ? 0 : 29.90;
+  const shipping = 0; // Frete grátis sempre
   const pixDiscount = paymentMethod === 'pix' ? subtotal * 0.05 : 0;
   const couponDiscount = appliedCoupon ? subtotal * (appliedCoupon.discount_percent / 100) : 0;
   const totalDiscount = pixDiscount + couponDiscount;
@@ -93,11 +101,65 @@ export const CheckoutPage = () => {
     }
   }, [createdOrder]);
 
+  // Validação da etapa de contato
+  const validateContactStep = () => {
+    if (!contactInfo.name.trim()) {
+      alert('Por favor, preencha seu nome completo.');
+      return false;
+    }
+    if (!contactInfo.email.trim()) {
+      alert('Por favor, preencha seu e-mail.');
+      return false;
+    }
+    if (!contactInfo.phone.trim() || contactInfo.phone.length < 10) {
+      alert('Por favor, preencha um telefone válido.');
+      return false;
+    }
+    if (!contactInfo.cpf.trim() || contactInfo.cpf.length !== 11) {
+      alert('Por favor, preencha um CPF válido.');
+      return false;
+    }
+    return true;
+  };
+
+  // Validação da etapa de endereço
+  const validateShippingStep = () => {
+    let finalAddress = shippingAddress;
+
+    if (useExistingAddress && selectedAddressId) {
+      const selectedAddr = userAddresses.find(a => a.id === selectedAddressId);
+      if (selectedAddr) {
+        return true; // Endereço salvo já está validado
+      }
+    }
+
+    if (!finalAddress.zipCode || !finalAddress.street || !finalAddress.number ||
+        !finalAddress.neighborhood || !finalAddress.city || !finalAddress.state) {
+      alert('Por favor, preencha todos os campos obrigatórios do endereço.');
+      return false;
+    }
+    return true;
+  };
+
+  // Navegação entre etapas
+  const handleContinueToShipping = () => {
+    if (validateContactStep()) {
+      setCurrentStep('shipping');
+    }
+  };
+
+  const handleContinueToPayment = () => {
+    if (validateShippingStep()) {
+      setCurrentStep('payment');
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     console.log('🛒 Iniciando checkout...');
     console.log('Items:', items);
+    console.log('Contato:', contactInfo);
     console.log('Endereço:', shippingAddress);
     console.log('Método de pagamento:', paymentMethod);
 
@@ -142,8 +204,20 @@ export const CheckoutPage = () => {
 
       const orderData = {
         items,
-        shippingAddress: finalAddress,
-        billingAddress: finalAddress,
+        shippingAddress: {
+          ...finalAddress,
+          name: contactInfo.name,
+          email: contactInfo.email,
+          phone: contactInfo.phone,
+          cpf: contactInfo.cpf,
+        },
+        billingAddress: {
+          ...finalAddress,
+          name: contactInfo.name,
+          email: contactInfo.email,
+          phone: contactInfo.phone,
+          cpf: contactInfo.cpf,
+        },
         paymentMethod,
         userId: user?.id,
         installments,
@@ -246,27 +320,39 @@ export const CheckoutPage = () => {
           </div>
         </div>
 
-        {/* Progress Steps */}
+        {/* Progress Steps - 3 etapas */}
         <div className="mb-8">
-          <div className="flex items-center justify-center gap-4 max-w-md mx-auto">
-            <div className="flex items-center gap-2">
-              <div
-                className="w-10 h-10 rounded-full flex items-center justify-center text-white font-semibold"
-                style={{ backgroundColor: currentStep === 'address' ? '#4a9d4e' : '#d1d5db' }}
-              >
+          <div className="flex items-center justify-center gap-4 max-w-3xl mx-auto">
+            {/* Step 1: Contato */}
+            <div className="flex items-center gap-3">
+              <div className={`w-10 h-10 rounded-full flex items-center justify-center font-bold ${currentStep === 'contact' ? 'bg-[#4a9d4e] text-white' : 'bg-gray-200 text-gray-500'}`}>
                 1
               </div>
-              <span className={`font-medium ${currentStep === 'address' ? 'text-gray-900' : 'text-gray-400'}`}>
-                Entrega
+              <span className={`font-medium ${currentStep === 'contact' ? 'text-gray-900' : 'text-gray-400'}`}>
+                Contato
               </span>
             </div>
-            <div className="w-16 h-0.5 bg-gray-300"></div>
-            <div className="flex items-center gap-2">
-              <div
-                className="w-10 h-10 rounded-full flex items-center justify-center text-white font-semibold"
-                style={{ backgroundColor: currentStep === 'payment' ? '#4a9d4e' : '#d1d5db' }}
-              >
+
+            {/* Linha */}
+            <div className="flex-1 h-0.5 bg-gray-200" />
+
+            {/* Step 2: Frete */}
+            <div className="flex items-center gap-3">
+              <div className={`w-10 h-10 rounded-full flex items-center justify-center font-bold ${currentStep === 'shipping' ? 'bg-[#4a9d4e] text-white' : 'bg-gray-200 text-gray-500'}`}>
                 2
+              </div>
+              <span className={`font-medium ${currentStep === 'shipping' ? 'text-gray-900' : 'text-gray-400'}`}>
+                Frete
+              </span>
+            </div>
+
+            {/* Linha */}
+            <div className="flex-1 h-0.5 bg-gray-200" />
+
+            {/* Step 3: Pagamento */}
+            <div className="flex items-center gap-3">
+              <div className={`w-10 h-10 rounded-full flex items-center justify-center font-bold ${currentStep === 'payment' ? 'bg-[#4a9d4e] text-white' : 'bg-gray-200 text-gray-500'}`}>
+                3
               </div>
               <span className={`font-medium ${currentStep === 'payment' ? 'text-gray-900' : 'text-gray-400'}`}>
                 Pagamento
@@ -279,90 +365,29 @@ export const CheckoutPage = () => {
           {/* Form */}
           <div className="lg:col-span-2">
             <form onSubmit={handleSubmit} className="space-y-6">
-              {/* Shipping Address */}
-              <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
-                <div
-                  className="p-6 border-b flex items-center gap-3"
-                  style={{ backgroundColor: '#f8fdf9' }}
-                >
+              {/* ETAPA 1 - CONTATO */}
+              {currentStep === 'contact' && (
+                <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
                   <div
-                    className="w-12 h-12 rounded-full flex items-center justify-center"
-                    style={{ backgroundColor: '#e8f5e8' }}
+                    className="p-6 border-b flex items-center gap-3"
+                    style={{
+                      background: 'linear-gradient(135deg, #f8fdf9 0%, #e8f5e8 100%)'
+                    }}
                   >
-                    <FiMapPin size={24} style={{ color: '#4a9d4e' }} />
-                  </div>
-                  <div>
-                    <h2 className="text-xl font-bold text-gray-900">Endereço de Entrega</h2>
-                    <p className="text-sm text-gray-600">Para onde devemos enviar seu pedido?</p>
-                  </div>
-                </div>
-
-                <div className="p-6">
-                  {/* Use Saved Address */}
-                  {userAddresses.length > 0 && (
-                    <div className="mb-6">
-                      <label className="flex items-center gap-3 mb-4">
-                        <input
-                          type="checkbox"
-                          checked={useExistingAddress}
-                          onChange={(e) => setUseExistingAddress(e.target.checked)}
-                          className="w-4 h-4 rounded"
-                          style={{ accentColor: '#4a9d4e' }}
-                        />
-                        <span className="font-medium text-gray-700">Usar um endereço salvo</span>
-                      </label>
-
-                      {useExistingAddress && (
-                        <div className="space-y-3">
-                          {userAddresses.map((addr) => (
-                            <label
-                              key={addr.id}
-                              className={`flex items-start gap-3 p-4 border-2 rounded-xl cursor-pointer transition-all ${
-                                selectedAddressId === addr.id
-                                  ? 'border-2'
-                                  : 'border-gray-200 hover:border-gray-300'
-                              }`}
-                              style={selectedAddressId === addr.id ? { borderColor: '#4a9d4e', backgroundColor: '#f8fdf9' } : {}}
-                            >
-                              <input
-                                type="radio"
-                                name="saved-address"
-                                value={addr.id}
-                                checked={selectedAddressId === addr.id}
-                                onChange={(e) => setSelectedAddressId(e.target.value)}
-                                className="mt-1"
-                                style={{ accentColor: '#4a9d4e' }}
-                              />
-                              <div className="flex-1">
-                                <div className="flex items-center gap-2 mb-1">
-                                  <span className="font-semibold text-gray-900">{addr.label}</span>
-                                  {addr.isDefault && (
-                                    <span
-                                      className="px-2 py-0.5 text-xs font-semibold rounded"
-                                      style={{ backgroundColor: '#e8f5e8', color: '#4a9d4e' }}
-                                    >
-                                      Padrão
-                                    </span>
-                                  )}
-                                </div>
-                                <p className="text-sm text-gray-600">
-                                  {addr.street}, {addr.number}
-                                  {addr.complement && ` - ${addr.complement}`}
-                                </p>
-                                <p className="text-sm text-gray-600">
-                                  {addr.neighborhood}, {addr.city}/{addr.state} - CEP: {addr.zipCode}
-                                </p>
-                              </div>
-                            </label>
-                          ))}
-                        </div>
-                      )}
+                    <div
+                      className="w-12 h-12 rounded-full flex items-center justify-center shadow-sm"
+                      style={{ backgroundColor: '#4a9d4e' }}
+                    >
+                      <FiUser size={24} style={{ color: '#ffffff' }} />
                     </div>
-                  )}
+                    <div>
+                      <h2 className="text-xl font-bold text-gray-900">Informações de Contato</h2>
+                      <p className="text-sm text-gray-600">Como podemos entrar em contato com você?</p>
+                    </div>
+                  </div>
 
-                  {/* New Address Form */}
-                  {(!useExistingAddress || userAddresses.length === 0) && (
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="p-6">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                       {/* Nome Completo */}
                       <div className="md:col-span-2">
                         <label className="block text-sm font-semibold text-gray-700 mb-2">
@@ -371,16 +396,15 @@ export const CheckoutPage = () => {
                         <input
                           type="text"
                           required
-                          value={shippingAddress.name || ''}
+                          value={contactInfo.name}
                           onChange={(e) =>
-                            setShippingAddress({
-                              ...shippingAddress,
+                            setContactInfo({
+                              ...contactInfo,
                               name: e.target.value,
                             })
                           }
                           placeholder="Seu nome completo"
-                          className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:border-transparent"
-                          style={{ '--tw-ring-color': '#4a9d4e' } as React.CSSProperties}
+                          className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#4a9d4e] focus:border-transparent transition-all"
                         />
                       </div>
 
@@ -392,16 +416,15 @@ export const CheckoutPage = () => {
                         <input
                           type="email"
                           required
-                          value={shippingAddress.email || ''}
+                          value={contactInfo.email}
                           onChange={(e) =>
-                            setShippingAddress({
-                              ...shippingAddress,
+                            setContactInfo({
+                              ...contactInfo,
                               email: e.target.value,
                             })
                           }
                           placeholder="seu@email.com"
-                          className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:border-transparent"
-                          style={{ '--tw-ring-color': '#4a9d4e' } as React.CSSProperties}
+                          className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#4a9d4e] focus:border-transparent transition-all"
                         />
                       </div>
 
@@ -413,16 +436,15 @@ export const CheckoutPage = () => {
                         <input
                           type="tel"
                           required
-                          value={shippingAddress.phone || ''}
+                          value={contactInfo.phone}
                           onChange={(e) =>
-                            setShippingAddress({
-                              ...shippingAddress,
+                            setContactInfo({
+                              ...contactInfo,
                               phone: e.target.value.replace(/\D/g, '').slice(0, 11),
                             })
                           }
                           placeholder="(00) 00000-0000"
-                          className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:border-transparent"
-                          style={{ '--tw-ring-color': '#4a9d4e' } as React.CSSProperties}
+                          className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#4a9d4e] focus:border-transparent transition-all"
                         />
                       </div>
 
@@ -434,343 +456,474 @@ export const CheckoutPage = () => {
                         <input
                           type="text"
                           required
-                          value={shippingAddress.cpf || ''}
+                          value={contactInfo.cpf}
                           onChange={(e) =>
-                            setShippingAddress({
-                              ...shippingAddress,
+                            setContactInfo({
+                              ...contactInfo,
                               cpf: e.target.value.replace(/\D/g, '').slice(0, 11),
                             })
                           }
                           placeholder="000.000.000-00"
-                          className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:border-transparent"
-                          style={{ '--tw-ring-color': '#4a9d4e' } as React.CSSProperties}
-                        />
-                      </div>
-
-                      <div className="md:col-span-2">
-                        <label className="block text-sm font-semibold text-gray-700 mb-2">
-                          CEP *
-                        </label>
-                        <input
-                          type="text"
-                          required
-                          value={shippingAddress.zipCode}
-                          onChange={(e) =>
-                            setShippingAddress({
-                              ...shippingAddress,
-                              zipCode: e.target.value,
-                            })
-                          }
-                          onBlur={handleZipCodeBlur}
-                          placeholder="00000-000"
-                          className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:border-transparent"
-                          style={{ '--tw-ring-color': '#4a9d4e' } as React.CSSProperties}
-                        />
-                      </div>
-
-                      <div className="md:col-span-2">
-                        <label className="block text-sm font-semibold text-gray-700 mb-2">
-                          Rua *
-                        </label>
-                        <input
-                          type="text"
-                          required
-                          value={shippingAddress.street}
-                          onChange={(e) =>
-                            setShippingAddress({
-                              ...shippingAddress,
-                              street: e.target.value,
-                            })
-                          }
-                          className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:border-transparent"
-                          style={{ '--tw-ring-color': '#4a9d4e' } as React.CSSProperties}
-                        />
-                      </div>
-
-                      <div>
-                        <label className="block text-sm font-semibold text-gray-700 mb-2">
-                          Número *
-                        </label>
-                        <input
-                          type="text"
-                          required
-                          value={shippingAddress.number}
-                          onChange={(e) =>
-                            setShippingAddress({
-                              ...shippingAddress,
-                              number: e.target.value,
-                            })
-                          }
-                          className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:border-transparent"
-                          style={{ '--tw-ring-color': '#4a9d4e' } as React.CSSProperties}
-                        />
-                      </div>
-
-                      <div>
-                        <label className="block text-sm font-semibold text-gray-700 mb-2">
-                          Complemento
-                        </label>
-                        <input
-                          type="text"
-                          value={shippingAddress.complement}
-                          onChange={(e) =>
-                            setShippingAddress({
-                              ...shippingAddress,
-                              complement: e.target.value,
-                            })
-                          }
-                          placeholder="Apto, Bloco, etc"
-                          className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:border-transparent"
-                          style={{ '--tw-ring-color': '#4a9d4e' } as React.CSSProperties}
-                        />
-                      </div>
-
-                      <div>
-                        <label className="block text-sm font-semibold text-gray-700 mb-2">
-                          Bairro *
-                        </label>
-                        <input
-                          type="text"
-                          required
-                          value={shippingAddress.neighborhood}
-                          onChange={(e) =>
-                            setShippingAddress({
-                              ...shippingAddress,
-                              neighborhood: e.target.value,
-                            })
-                          }
-                          className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:border-transparent"
-                          style={{ '--tw-ring-color': '#4a9d4e' } as React.CSSProperties}
-                        />
-                      </div>
-
-                      <div>
-                        <label className="block text-sm font-semibold text-gray-700 mb-2">
-                          Cidade *
-                        </label>
-                        <input
-                          type="text"
-                          required
-                          value={shippingAddress.city}
-                          onChange={(e) =>
-                            setShippingAddress({
-                              ...shippingAddress,
-                              city: e.target.value,
-                            })
-                          }
-                          className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:border-transparent"
-                          style={{ '--tw-ring-color': '#4a9d4e' } as React.CSSProperties}
-                        />
-                      </div>
-
-                      <div>
-                        <label className="block text-sm font-semibold text-gray-700 mb-2">
-                          Estado *
-                        </label>
-                        <input
-                          type="text"
-                          required
-                          maxLength={2}
-                          value={shippingAddress.state}
-                          onChange={(e) =>
-                            setShippingAddress({
-                              ...shippingAddress,
-                              state: e.target.value.toUpperCase(),
-                            })
-                          }
-                          placeholder="SP"
-                          className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:border-transparent uppercase"
-                          style={{ '--tw-ring-color': '#4a9d4e' } as React.CSSProperties}
+                          className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#4a9d4e] focus:border-transparent transition-all"
                         />
                       </div>
                     </div>
-                  )}
-                </div>
-              </div>
 
-              {/* Payment */}
-              <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
-                <div
-                  className="p-6 border-b flex items-center gap-3"
-                  style={{ backgroundColor: '#f8fdf9' }}
-                >
+                    {/* Botão Continuar */}
+                    <div className="mt-6">
+                      <button
+                        type="button"
+                        onClick={handleContinueToShipping}
+                        className="w-full py-4 text-lg font-bold rounded-xl transition-all shadow-md hover:shadow-lg hover:scale-[1.02]"
+                        style={{ backgroundColor: '#4a9d4e', color: '#ffffff' }}
+                      >
+                        Continuar para Endereço
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* ETAPA 2 - FRETE/ENDEREÇO */}
+              {currentStep === 'shipping' && (
+                <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
                   <div
-                    className="w-12 h-12 rounded-full flex items-center justify-center"
-                    style={{ backgroundColor: '#e8f5e8' }}
+                    className="p-6 border-b flex items-center justify-between"
+                    style={{
+                      background: 'linear-gradient(135deg, #f8fdf9 0%, #e8f5e8 100%)'
+                    }}
                   >
-                    <FiCreditCard size={24} style={{ color: '#4a9d4e' }} />
+                    <div className="flex items-center gap-3">
+                      <div
+                        className="w-12 h-12 rounded-full flex items-center justify-center shadow-sm"
+                        style={{ backgroundColor: '#4a9d4e' }}
+                      >
+                        <FiTruck size={24} style={{ color: '#ffffff' }} />
+                      </div>
+                      <div>
+                        <h2 className="text-xl font-bold text-gray-900">Endereço de Entrega</h2>
+                        <p className="text-sm text-gray-600">Para onde devemos enviar seu pedido?</p>
+                      </div>
+                    </div>
+                    <span
+                      className="px-4 py-2 text-sm font-bold rounded-full shadow-sm"
+                      style={{ backgroundColor: '#4a9d4e', color: '#ffffff' }}
+                    >
+                      FRETE GRÁTIS
+                    </span>
                   </div>
-                  <div>
-                    <h2 className="text-xl font-bold text-gray-900">Forma de Pagamento</h2>
-                    <p className="text-sm text-gray-600">Escolha como deseja pagar</p>
+
+                  <div className="p-6">
+                    {/* Use Saved Address */}
+                    {userAddresses.length > 0 && (
+                      <div className="mb-6">
+                        <label className="flex items-center gap-3 mb-4">
+                          <input
+                            type="checkbox"
+                            checked={useExistingAddress}
+                            onChange={(e) => setUseExistingAddress(e.target.checked)}
+                            className="w-4 h-4 rounded"
+                            style={{ accentColor: '#4a9d4e' }}
+                          />
+                          <span className="font-medium text-gray-700">Usar um endereço salvo</span>
+                        </label>
+
+                        {useExistingAddress && (
+                          <div className="space-y-3">
+                            {userAddresses.map((addr) => (
+                              <label
+                                key={addr.id}
+                                className={`flex items-start gap-3 p-4 border-2 rounded-xl cursor-pointer transition-all ${
+                                  selectedAddressId === addr.id
+                                    ? 'border-2'
+                                    : 'border-gray-200 hover:border-gray-300'
+                                }`}
+                                style={selectedAddressId === addr.id ? { borderColor: '#4a9d4e', backgroundColor: '#f8fdf9' } : {}}
+                              >
+                                <input
+                                  type="radio"
+                                  name="saved-address"
+                                  value={addr.id}
+                                  checked={selectedAddressId === addr.id}
+                                  onChange={(e) => setSelectedAddressId(e.target.value)}
+                                  className="mt-1"
+                                  style={{ accentColor: '#4a9d4e' }}
+                                />
+                                <div className="flex-1">
+                                  <div className="flex items-center gap-2 mb-1">
+                                    <span className="font-semibold text-gray-900">{addr.label}</span>
+                                    {addr.isDefault && (
+                                      <span
+                                        className="px-2 py-0.5 text-xs font-semibold rounded"
+                                        style={{ backgroundColor: '#e8f5e8', color: '#4a9d4e' }}
+                                      >
+                                        Padrão
+                                      </span>
+                                    )}
+                                  </div>
+                                  <p className="text-sm text-gray-600">
+                                    {addr.street}, {addr.number}
+                                    {addr.complement && ` - ${addr.complement}`}
+                                  </p>
+                                  <p className="text-sm text-gray-600">
+                                    {addr.neighborhood}, {addr.city}/{addr.state} - CEP: {addr.zipCode}
+                                  </p>
+                                </div>
+                              </label>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    )}
+
+                    {/* New Address Form */}
+                    {(!useExistingAddress || userAddresses.length === 0) && (
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                        <div className="md:col-span-2">
+                          <label className="block text-sm font-semibold text-gray-700 mb-2">
+                            CEP *
+                          </label>
+                          <input
+                            type="text"
+                            required
+                            value={shippingAddress.zipCode}
+                            onChange={(e) =>
+                              setShippingAddress({
+                                ...shippingAddress,
+                                zipCode: e.target.value,
+                              })
+                            }
+                            onBlur={handleZipCodeBlur}
+                            placeholder="00000-000"
+                            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#4a9d4e] focus:border-transparent transition-all"
+                          />
+                        </div>
+
+                        <div className="md:col-span-2">
+                          <label className="block text-sm font-semibold text-gray-700 mb-2">
+                            Rua *
+                          </label>
+                          <input
+                            type="text"
+                            required
+                            value={shippingAddress.street}
+                            onChange={(e) =>
+                              setShippingAddress({
+                                ...shippingAddress,
+                                street: e.target.value,
+                              })
+                            }
+                            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#4a9d4e] focus:border-transparent transition-all"
+                          />
+                        </div>
+
+                        <div>
+                          <label className="block text-sm font-semibold text-gray-700 mb-2">
+                            Número *
+                          </label>
+                          <input
+                            type="text"
+                            required
+                            value={shippingAddress.number}
+                            onChange={(e) =>
+                              setShippingAddress({
+                                ...shippingAddress,
+                                number: e.target.value,
+                              })
+                            }
+                            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#4a9d4e] focus:border-transparent transition-all"
+                          />
+                        </div>
+
+                        <div>
+                          <label className="block text-sm font-semibold text-gray-700 mb-2">
+                            Complemento
+                          </label>
+                          <input
+                            type="text"
+                            value={shippingAddress.complement}
+                            onChange={(e) =>
+                              setShippingAddress({
+                                ...shippingAddress,
+                                complement: e.target.value,
+                              })
+                            }
+                            placeholder="Apto, Bloco, etc"
+                            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#4a9d4e] focus:border-transparent transition-all"
+                          />
+                        </div>
+
+                        <div>
+                          <label className="block text-sm font-semibold text-gray-700 mb-2">
+                            Bairro *
+                          </label>
+                          <input
+                            type="text"
+                            required
+                            value={shippingAddress.neighborhood}
+                            onChange={(e) =>
+                              setShippingAddress({
+                                ...shippingAddress,
+                                neighborhood: e.target.value,
+                              })
+                            }
+                            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#4a9d4e] focus:border-transparent transition-all"
+                          />
+                        </div>
+
+                        <div>
+                          <label className="block text-sm font-semibold text-gray-700 mb-2">
+                            Cidade *
+                          </label>
+                          <input
+                            type="text"
+                            required
+                            value={shippingAddress.city}
+                            onChange={(e) =>
+                              setShippingAddress({
+                                ...shippingAddress,
+                                city: e.target.value,
+                              })
+                            }
+                            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#4a9d4e] focus:border-transparent transition-all"
+                          />
+                        </div>
+
+                        <div>
+                          <label className="block text-sm font-semibold text-gray-700 mb-2">
+                            Estado *
+                          </label>
+                          <input
+                            type="text"
+                            required
+                            maxLength={2}
+                            value={shippingAddress.state}
+                            onChange={(e) =>
+                              setShippingAddress({
+                                ...shippingAddress,
+                                state: e.target.value.toUpperCase(),
+                              })
+                            }
+                            placeholder="SP"
+                            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#4a9d4e] focus:border-transparent uppercase transition-all"
+                          />
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Botões Voltar e Continuar */}
+                    <div className="mt-6 flex gap-4">
+                      <button
+                        type="button"
+                        onClick={() => setCurrentStep('contact')}
+                        className="flex-1 py-4 text-lg font-bold rounded-xl transition-all shadow-md hover:shadow-lg border-2 border-gray-300 bg-white text-gray-700 hover:bg-gray-50"
+                      >
+                        Voltar
+                      </button>
+                      <button
+                        type="button"
+                        onClick={handleContinueToPayment}
+                        className="flex-1 py-4 text-lg font-bold rounded-xl transition-all shadow-md hover:shadow-lg hover:scale-[1.02]"
+                        style={{ backgroundColor: '#4a9d4e', color: '#ffffff' }}
+                      >
+                        Continuar para Pagamento
+                      </button>
+                    </div>
                   </div>
                 </div>
+              )}
 
-                <div className="p-6 space-y-3">
-                  {paymentOptions.map((option) => {
-                    const Icon = option.icon;
-                    return (
-                      <label
-                        key={option.id}
-                        className={`flex items-center gap-4 p-4 border-2 rounded-xl cursor-pointer transition-all ${
-                          paymentMethod === option.id
-                            ? 'border-2'
-                            : 'border-gray-200 hover:border-gray-300'
-                        }`}
-                        style={paymentMethod === option.id ? { borderColor: '#4a9d4e', backgroundColor: '#f8fdf9' } : {}}
-                      >
-                        <input
-                          type="radio"
-                          name="payment"
-                          value={option.id}
-                          checked={paymentMethod === option.id}
-                          onChange={(e) => {
-                            setPaymentMethod(e.target.value);
-                            setCurrentStep('payment');
-                          }}
-                          className="w-5 h-5"
-                          style={{ accentColor: '#4a9d4e' }}
-                        />
-                        <div
-                          className="w-12 h-12 rounded-lg flex items-center justify-center"
-                          style={{ backgroundColor: '#e8f5e8' }}
+              {/* ETAPA 3 - PAGAMENTO */}
+              {currentStep === 'payment' && (
+                <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+                  <div
+                    className="p-6 border-b flex items-center gap-3"
+                    style={{
+                      background: 'linear-gradient(135deg, #f8fdf9 0%, #e8f5e8 100%)'
+                    }}
+                  >
+                    <div
+                      className="w-12 h-12 rounded-full flex items-center justify-center shadow-sm"
+                      style={{ backgroundColor: '#4a9d4e' }}
+                    >
+                      <FiCreditCard size={24} style={{ color: '#ffffff' }} />
+                    </div>
+                    <div>
+                      <h2 className="text-xl font-bold text-gray-900">Forma de Pagamento</h2>
+                      <p className="text-sm text-gray-600">Escolha como deseja pagar</p>
+                    </div>
+                  </div>
+
+                  <div className="p-6 space-y-4">
+                    {paymentOptions.map((option) => {
+                      const Icon = option.icon;
+                      return (
+                        <label
+                          key={option.id}
+                          className={`flex items-center gap-4 p-4 border-2 rounded-xl cursor-pointer transition-all ${
+                            paymentMethod === option.id
+                              ? 'border-2'
+                              : 'border-gray-200 hover:border-gray-300'
+                          }`}
+                          style={paymentMethod === option.id ? { borderColor: '#4a9d4e', backgroundColor: '#f8fdf9' } : {}}
                         >
-                          <Icon size={24} style={{ color: '#4a9d4e' }} />
-                        </div>
-                        <div className="flex-1">
-                          <div className="flex items-center gap-2">
-                            <p className="font-semibold text-gray-900">{option.name}</p>
-                            {option.badge && (
-                              <span
-                                className="px-2 py-0.5 text-xs font-bold rounded"
-                                style={{ backgroundColor: '#4a9d4e', color: '#ffffff' }}
-                              >
-                                {option.badge}
-                              </span>
-                            )}
+                          <input
+                            type="radio"
+                            name="payment"
+                            value={option.id}
+                            checked={paymentMethod === option.id}
+                            onChange={(e) => setPaymentMethod(e.target.value)}
+                            className="w-5 h-5"
+                            style={{ accentColor: '#4a9d4e' }}
+                          />
+                          <div
+                            className="w-12 h-12 rounded-lg flex items-center justify-center"
+                            style={{ backgroundColor: '#e8f5e8' }}
+                          >
+                            <Icon size={24} style={{ color: '#4a9d4e' }} />
                           </div>
-                          <p className="text-sm text-gray-600">{option.description}</p>
-                        </div>
-                      </label>
-                    );
-                  })}
+                          <div className="flex-1">
+                            <div className="flex items-center gap-2">
+                              <p className="font-semibold text-gray-900">{option.name}</p>
+                              {option.badge && (
+                                <span
+                                  className="px-2 py-0.5 text-xs font-bold rounded"
+                                  style={{ backgroundColor: '#4a9d4e', color: '#ffffff' }}
+                                >
+                                  {option.badge}
+                                </span>
+                              )}
+                            </div>
+                            <p className="text-sm text-gray-600">{option.description}</p>
+                          </div>
+                        </label>
+                      );
+                    })}
 
-                  {/* Installments for Credit Card */}
-                  {paymentMethod === 'credit_card' && (
-                    <div className="pt-4 border-t">
-                      <label className="block text-sm font-semibold text-gray-700 mb-2">
-                        Número de Parcelas
-                      </label>
-                      <select
-                        value={installments}
-                        onChange={(e) => setInstallments(Number(e.target.value))}
-                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:border-transparent"
-                        style={{ '--tw-ring-color': '#4a9d4e' } as React.CSSProperties}
-                      >
-                        {[...Array(12)].map((_, i) => {
-                          const parcelas = i + 1;
-                          const valorParcela = total / parcelas;
-                          return (
-                            <option key={parcelas} value={parcelas}>
-                              {parcelas}x de R$ {valorParcela.toFixed(2).replace('.', ',')}
-                              {parcelas === 1 ? ' à vista' : ' sem juros'}
-                            </option>
-                          );
-                        })}
-                      </select>
+                    {/* Installments for Credit Card */}
+                    {paymentMethod === 'credit_card' && (
+                      <div className="pt-4 border-t">
+                        <label className="block text-sm font-semibold text-gray-700 mb-2">
+                          Número de Parcelas
+                        </label>
+                        <select
+                          value={installments}
+                          onChange={(e) => setInstallments(Number(e.target.value))}
+                          className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#4a9d4e] focus:border-transparent transition-all"
+                        >
+                          {[...Array(12)].map((_, i) => {
+                            const parcelas = i + 1;
+                            const valorParcela = total / parcelas;
+                            return (
+                              <option key={parcelas} value={parcelas}>
+                                {parcelas}x de R$ {valorParcela.toFixed(2).replace('.', ',')}
+                                {parcelas === 1 ? ' à vista' : ' sem juros'}
+                              </option>
+                            );
+                          })}
+                        </select>
 
-                      {/* Credit Card Fields */}
-                      <div className="mt-6 space-y-4">
-                        <h3 className="text-sm font-semibold text-gray-700 mb-3">Dados do Cartão</h3>
+                        {/* Credit Card Fields */}
+                        <div className="mt-6 space-y-4">
+                          <h3 className="text-sm font-semibold text-gray-700 mb-3">Dados do Cartão</h3>
 
-                        {/* Número do Cartão */}
-                        <div>
-                          <label className="block text-sm font-semibold text-gray-700 mb-2">
-                            Número do Cartão *
-                          </label>
-                          <input
-                            type="text"
-                            required
-                            value={cardNumber}
-                            onChange={(e) => {
-                              const value = e.target.value.replace(/\D/g, '').slice(0, 16);
-                              setCardNumber(value.replace(/(\d{4})(?=\d)/g, '$1 '));
-                            }}
-                            placeholder="0000 0000 0000 0000"
-                            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:border-transparent"
-                            style={{ '--tw-ring-color': '#4a9d4e' } as React.CSSProperties}
-                          />
-                        </div>
-
-                        {/* Nome no Cartão */}
-                        <div>
-                          <label className="block text-sm font-semibold text-gray-700 mb-2">
-                            Nome no Cartão *
-                          </label>
-                          <input
-                            type="text"
-                            required
-                            value={cardName}
-                            onChange={(e) => setCardName(e.target.value.toUpperCase())}
-                            placeholder="NOME COMO ESTÁ NO CARTÃO"
-                            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:border-transparent uppercase"
-                            style={{ '--tw-ring-color': '#4a9d4e' } as React.CSSProperties}
-                          />
-                        </div>
-
-                        <div className="grid grid-cols-2 gap-4">
-                          {/* Validade */}
+                          {/* Número do Cartão */}
                           <div>
                             <label className="block text-sm font-semibold text-gray-700 mb-2">
-                              Validade *
+                              Número do Cartão *
                             </label>
                             <input
                               type="text"
                               required
-                              value={cardExpiry}
+                              value={cardNumber}
                               onChange={(e) => {
-                                let value = e.target.value.replace(/\D/g, '').slice(0, 4);
-                                if (value.length >= 2) {
-                                  value = value.slice(0, 2) + '/' + value.slice(2);
-                                }
-                                setCardExpiry(value);
+                                const value = e.target.value.replace(/\D/g, '').slice(0, 16);
+                                setCardNumber(value.replace(/(\d{4})(?=\d)/g, '$1 '));
                               }}
-                              placeholder="MM/AA"
-                              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:border-transparent"
-                              style={{ '--tw-ring-color': '#4a9d4e' } as React.CSSProperties}
+                              placeholder="0000 0000 0000 0000"
+                              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#4a9d4e] focus:border-transparent transition-all"
                             />
                           </div>
 
-                          {/* CVV */}
+                          {/* Nome no Cartão */}
                           <div>
                             <label className="block text-sm font-semibold text-gray-700 mb-2">
-                              CVV *
+                              Nome no Cartão *
                             </label>
                             <input
                               type="text"
                               required
-                              value={cardCvv}
-                              onChange={(e) => setCardCvv(e.target.value.replace(/\D/g, '').slice(0, 4))}
-                              placeholder="000"
-                              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:border-transparent"
-                              style={{ '--tw-ring-color': '#4a9d4e' } as React.CSSProperties}
+                              value={cardName}
+                              onChange={(e) => setCardName(e.target.value.toUpperCase())}
+                              placeholder="NOME COMO ESTÁ NO CARTÃO"
+                              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#4a9d4e] focus:border-transparent uppercase transition-all"
                             />
+                          </div>
+
+                          <div className="grid grid-cols-2 gap-4">
+                            {/* Validade */}
+                            <div>
+                              <label className="block text-sm font-semibold text-gray-700 mb-2">
+                                Validade *
+                              </label>
+                              <input
+                                type="text"
+                                required
+                                value={cardExpiry}
+                                onChange={(e) => {
+                                  let value = e.target.value.replace(/\D/g, '').slice(0, 4);
+                                  if (value.length >= 2) {
+                                    value = value.slice(0, 2) + '/' + value.slice(2);
+                                  }
+                                  setCardExpiry(value);
+                                }}
+                                placeholder="MM/AA"
+                                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#4a9d4e] focus:border-transparent transition-all"
+                              />
+                            </div>
+
+                            {/* CVV */}
+                            <div>
+                              <label className="block text-sm font-semibold text-gray-700 mb-2">
+                                CVV *
+                              </label>
+                              <input
+                                type="text"
+                                required
+                                value={cardCvv}
+                                onChange={(e) => setCardCvv(e.target.value.replace(/\D/g, '').slice(0, 4))}
+                                placeholder="000"
+                                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#4a9d4e] focus:border-transparent transition-all"
+                              />
+                            </div>
                           </div>
                         </div>
                       </div>
-                    </div>
-                  )}
-                </div>
-              </div>
+                    )}
+                  </div>
 
-              <button
-                type="submit"
-                disabled={loading}
-                className="w-full py-4 text-lg font-bold rounded-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-lg hover:shadow-xl"
-                style={{ backgroundColor: '#4a9d4e', color: '#ffffff' }}
-              >
-                {loading ? 'Processando...' : paymentMethod === 'pix' ? 'Gerar código PIX' : 'Finalizar Pedido'}
-              </button>
+                  {/* Botões Voltar e Finalizar */}
+                  <div className="p-6 pt-0">
+                    <div className="flex gap-4">
+                      <button
+                        type="button"
+                        onClick={() => setCurrentStep('shipping')}
+                        className="flex-1 py-4 text-lg font-bold rounded-xl transition-all shadow-md hover:shadow-lg border-2 border-gray-300 bg-white text-gray-700 hover:bg-gray-50"
+                      >
+                        Voltar
+                      </button>
+                      <button
+                        type="submit"
+                        disabled={loading}
+                        className="flex-1 py-4 text-lg font-bold rounded-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-md hover:shadow-lg hover:scale-[1.02]"
+                        style={{ backgroundColor: '#4a9d4e', color: '#ffffff' }}
+                      >
+                        {loading ? 'Processando...' : paymentMethod === 'pix' ? 'Gerar código PIX' : 'Finalizar Pedido'}
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              )}
             </form>
 
             {/* PIX Payment Display - Aparece após gerar o código */}
@@ -778,16 +931,18 @@ export const CheckoutPage = () => {
               <div ref={pixSectionRef} className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden mt-6">
                 <div
                   className="p-6 border-b flex items-center gap-3"
-                  style={{ backgroundColor: '#f8fdf9' }}
+                  style={{
+                    background: 'linear-gradient(135deg, #f8fdf9 0%, #e8f5e8 100%)'
+                  }}
                 >
                   <div
-                    className="w-12 h-12 rounded-full flex items-center justify-center"
-                    style={{ backgroundColor: '#e8f5e8' }}
+                    className="w-12 h-12 rounded-full flex items-center justify-center shadow-sm"
+                    style={{ backgroundColor: '#4a9d4e' }}
                   >
-                    <FiCheck size={24} style={{ color: '#4a9d4e' }} />
+                    <FiCheck size={24} style={{ color: '#ffffff' }} />
                   </div>
                   <div>
-                    <h2 className="text-xl font-bold text-gray-900">✅ PIX Gerado com Sucesso!</h2>
+                    <h2 className="text-xl font-bold text-gray-900">PIX Gerado com Sucesso!</h2>
                     <p className="text-sm text-gray-600">Escaneie o QR Code ou copie o código abaixo</p>
                   </div>
                 </div>
@@ -830,7 +985,7 @@ export const CheckoutPage = () => {
                           navigator.clipboard.writeText(createdOrder.pixData.pix_emv);
                           alert('Código PIX copiado!');
                         }}
-                        className="px-6 py-3 rounded-lg font-semibold text-white transition-colors"
+                        className="px-6 py-3 rounded-lg font-semibold text-white transition-colors hover:opacity-90"
                         style={{ backgroundColor: '#4a9d4e' }}
                       >
                         Copiar
@@ -845,10 +1000,10 @@ export const CheckoutPage = () => {
                       clearCart();
                       navigate(`/pedido/${createdOrder.id}/confirmacao`, { replace: true });
                     }}
-                    className="w-full py-4 text-lg font-bold rounded-xl transition-all shadow-lg hover:shadow-xl"
+                    className="w-full py-4 text-lg font-bold rounded-xl transition-all shadow-md hover:shadow-lg hover:scale-[1.02]"
                     style={{ backgroundColor: '#4a9d4e', color: '#ffffff' }}
                   >
-                    ✅ Já paguei
+                    Já paguei
                   </button>
 
                   {/* Informação adicional */}
@@ -865,7 +1020,9 @@ export const CheckoutPage = () => {
             <div className="bg-white rounded-2xl shadow-sm border border-gray-100 sticky top-24 overflow-hidden">
               <div
                 className="p-6 border-b"
-                style={{ backgroundColor: '#f8fdf9' }}
+                style={{
+                  background: 'linear-gradient(135deg, #f8fdf9 0%, #e8f5e8 100%)'
+                }}
               >
                 <h2 className="font-bold text-xl text-gray-900">Resumo do Pedido</h2>
               </div>
@@ -919,8 +1076,7 @@ export const CheckoutPage = () => {
                             }}
                             onKeyPress={(e) => e.key === 'Enter' && handleApplyCoupon()}
                             placeholder="Digite o código"
-                            className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:border-transparent uppercase"
-                            style={{ '--tw-ring-color': '#4a9d4e' } as React.CSSProperties}
+                            className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#4a9d4e] focus:border-transparent uppercase transition-all"
                           />
                         </div>
                         <button
@@ -962,18 +1118,16 @@ export const CheckoutPage = () => {
                   )}
                 </div>
 
-                {/* Shipping Info */}
-                {shipping === 0 && (
-                  <div
-                    className="flex items-center gap-2 p-3 rounded-lg mb-6"
-                    style={{ backgroundColor: '#e8f5e8' }}
-                  >
-                    <FiTruck size={20} style={{ color: '#4a9d4e' }} />
-                    <span className="text-sm font-semibold" style={{ color: '#4a9d4e' }}>
-                      Você ganhou frete grátis!
-                    </span>
-                  </div>
-                )}
+                {/* Shipping Info - Sempre mostra frete grátis */}
+                <div
+                  className="flex items-center gap-2 p-3 rounded-lg mb-6"
+                  style={{ backgroundColor: '#e8f5e8' }}
+                >
+                  <FiTruck size={20} style={{ color: '#4a9d4e' }} />
+                  <span className="text-sm font-semibold" style={{ color: '#4a9d4e' }}>
+                    Você ganhou frete grátis!
+                  </span>
+                </div>
 
                 {/* Totals */}
                 <div className="space-y-3 border-t pt-4">
@@ -985,8 +1139,8 @@ export const CheckoutPage = () => {
                   </div>
                   <div className="flex justify-between text-gray-700">
                     <span>Frete</span>
-                    <span className={`font-semibold ${shipping === 0 ? '' : ''}`} style={shipping === 0 ? { color: '#4a9d4e' } : {}}>
-                      {shipping === 0 ? 'GRÁTIS' : `R$ ${shipping.toFixed(2).replace('.', ',')}`}
+                    <span className="font-semibold" style={{ color: '#4a9d4e' }}>
+                      GRÁTIS
                     </span>
                   </div>
                   {pixDiscount > 0 && (

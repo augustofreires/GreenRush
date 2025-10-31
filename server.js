@@ -1843,7 +1843,7 @@ app.post('/api/orders', async (req, res) => {
 
     // Calcular valores
     const subtotal = items.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-    const shipping = subtotal >= 350 ? 0 : 29.90;
+    const shipping = 0; // Frete grátis sempre
     const pixDiscount = paymentMethod === 'pix' ? subtotal * 0.05 : 0;
     const total = subtotal + shipping - pixDiscount;
 

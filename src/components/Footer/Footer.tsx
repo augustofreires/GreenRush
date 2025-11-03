@@ -111,19 +111,19 @@ export const Footer = () => {
               <li className="flex items-center gap-2">
                 <FiMail size={18} />
                 <a
-                  href="mailto:contato@greenrush.com.br"
+                  href="mailto:contato@greenrushoficial.com"
                   className="hover:text-primary-green transition-colors"
                 >
-                  contato@greenrush.com.br
+                  contato@greenrushoficial.com
                 </a>
               </li>
               <li className="flex items-center gap-2">
                 <FiPhone size={18} />
                 <a
-                  href="tel:+5511999999999"
+                  href="tel:+5519982284846"
                   className="hover:text-primary-green transition-colors"
                 >
-                  (11) 99999-9999
+                  (19) 98228-4846
                 </a>
               </li>
             </ul>

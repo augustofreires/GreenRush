@@ -3364,3 +3364,37 @@ app.post('/api/upload/image', async (req, res) => {
   }
 });
 
+
+// ==================== ROTA DE CONTATO ====================
+app.post('/api/contact', async (req, res) => {
+  try {
+    const { name, email, phone, subject, message } = req.body;
+
+    // Validação básica
+    if (!name || !email || !subject || !message) {
+      return res.status(400).json({ 
+        error: 'Por favor, preencha todos os campos obrigatórios' 
+      });
+    }
+
+    // Inserir no banco de dados
+    const [result] = await db.execute(
+      'INSERT INTO contact_messages (name, email, phone, subject, message, created_at) VALUES (?, ?, ?, ?, ?, NOW())',
+      [name, email, phone || null, subject, message]
+    );
+
+    console.log('✅ Mensagem de contato recebida:', { name, email, subject });
+
+    res.json({ 
+      success: true,
+      message: 'Mensagem enviada com sucesso! Entraremos em contato em breve.' 
+    });
+
+  } catch (error) {
+    console.error('❌ Erro ao salvar mensagem de contato:', error);
+    res.status(500).json({ 
+      error: 'Erro ao enviar mensagem',
+      message: error.message 
+    });
+  }
+});

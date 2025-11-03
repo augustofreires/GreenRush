@@ -52,6 +52,14 @@ const CarouselImages = lazy(() => import('./pages/Admin/CarouselImages').then(m 
 const TestimonialsVideo = lazy(() => import('./pages/Admin/TestimonialsVideo').then(m => ({ default: m.TestimonialsVideo })));
 const Settings = lazy(() => import('./pages/Admin/Settings').then(m => ({ default: m.Settings })));
 
+// Legal Pages
+const FAQ = lazy(() => import('./pages/Legal/FAQ').then(m => ({ default: m.FAQ })));
+const PrivacyPolicy = lazy(() => import('./pages/Legal/PrivacyPolicy').then(m => ({ default: m.PrivacyPolicy })));
+const TermsOfUse = lazy(() => import('./pages/Legal/TermsOfUse').then(m => ({ default: m.TermsOfUse })));
+const ReturnPolicy = lazy(() => import('./pages/Legal/ReturnPolicy').then(m => ({ default: m.ReturnPolicy })));
+const About = lazy(() => import('./pages/Legal/About').then(m => ({ default: m.About })));
+const Contact = lazy(() => import('./pages/Legal/Contact').then(m => ({ default: m.Contact })));
+
 // Loading component para Suspense
 function PageLoader() {
   return (
@@ -105,9 +113,16 @@ function App() {
             {/* Landing Pages */}
             <Route path="/cha" element={<ChaLanding />} />
             <Route path="/capsulas" element={<CapsulesLanding />} />
-            <Route path="/slimshot" element={<SlimShotLanding />} />
-            <Route path="/cinta-modeladora" element={<CintaLanding />} />
+            <Route path="/slimshot" element={<SlimShotLanding />} />            <Route path="/cinta-modeladora" element={<CintaLanding />} />
             <Route path="/combos" element={<CombosLanding />} />
+
+            {/* Legal Pages */}
+            <Route path="/faq" element={<FAQ />} />
+            <Route path="/politica-privacidade" element={<PrivacyPolicy />} />
+            <Route path="/termos-uso" element={<TermsOfUse />} />
+            <Route path="/trocas-devolucoes" element={<ReturnPolicy />} />
+            <Route path="/sobre" element={<About />} />
+            <Route path="/contato" element={<Contact />} />
           </Route>
 
           {/* Admin Login */}

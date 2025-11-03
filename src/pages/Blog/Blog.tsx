@@ -4,10 +4,14 @@ import { FiSearch, FiArrowRight } from 'react-icons/fi';
 import { useBlogStore } from '../../store/useBlogStore';
 
 export const Blog = () => {
-  const { getPublishedPosts } = useBlogStore();
+  const { getPublishedPosts, loadPosts } = useBlogStore();
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
   const [searchQuery, setSearchQuery] = useState('');
   const [currentPage, setCurrentPage] = useState(0);
+
+  useEffect(() => {
+    loadPosts();
+  }, []);
 
   const allPosts = getPublishedPosts();
   const categories = ['Todos', 'Emagrecimento', 'Saúde', 'Bem-estar', 'Nutrição', 'Dicas'];

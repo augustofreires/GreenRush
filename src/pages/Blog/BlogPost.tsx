@@ -4,7 +4,11 @@ import { useBlogStore } from '../../store/useBlogStore';
 
 export const BlogPost = () => {
   const { slug } = useParams<{ slug: string }>();
-  const { getPostBySlug, getPublishedPosts } = useBlogStore();
+  const { getPostBySlug, getPublishedPosts, loadPosts } = useBlogStore();
+
+  useEffect(() => {
+    loadPosts();
+  }, []);
 
   if (!slug) {
     return <Navigate to="/blog" replace />;

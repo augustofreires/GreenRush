@@ -6,6 +6,7 @@ interface CartStore {
   items: CartItem[];
   version: number;
   isCartOpen: boolean;
+  appliedCoupon: { code: string; discount_percent: number } | null;
   addItem: (product: Product, quantity?: number) => void;
   removeItem: (productId: string) => void;
   updateQuantity: (productId: string, quantity: number) => void;
@@ -14,6 +15,8 @@ interface CartStore {
   closeCart: () => void;
   getTotal: () => number;
   getItemsCount: () => number;
+  setAppliedCoupon: (coupon: { code: string; discount_percent: number } | null) => void;
+  clearCoupon: () => void;
 }
 
 // Custom storage with quota error handling
@@ -68,6 +71,7 @@ export const useCartStore = create<CartStore>()(
       items: [],
       version: 0,
       isCartOpen: false,
+      appliedCoupon: null,
 
       addItem: (product, quantity = 1) => {
         set((state) => {
@@ -130,7 +134,8 @@ export const useCartStore = create<CartStore>()(
       clearCart: () => {
         set((state) => ({
           items: [],
-          version: state.version + 1
+          version: state.version + 1,
+          appliedCoupon: null
         }));
       },
 
@@ -152,6 +157,14 @@ export const useCartStore = create<CartStore>()(
       getItemsCount: () => {
         return get().items.reduce((count, item) => count + item.quantity, 0);
       },
+
+      setAppliedCoupon: (coupon) => {
+        set({ appliedCoupon: coupon });
+      },
+
+      clearCoupon: () => {
+        set({ appliedCoupon: null });
+      },
     }),
     {
       name: 'cart-storage',
@@ -159,6 +172,7 @@ export const useCartStore = create<CartStore>()(
       partialize: (state) => ({
         items: state.items,
         version: state.version,
+        appliedCoupon: state.appliedCoupon,
         // Don't persist isCartOpen
       }),
     }

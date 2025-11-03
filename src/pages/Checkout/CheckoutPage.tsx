@@ -54,9 +54,13 @@ export const CheckoutPage = () => {
   const [cardExpiry, setCardExpiry] = useState('');
   const [cardCvv, setCardCvv] = useState('');
 
-  // Cupom state
+  // Cupom - usar store global
+  const appliedCoupon = useCartStore((state) => state.appliedCoupon);
+  const setAppliedCoupon = useCartStore((state) => state.setAppliedCoupon);
+  const clearCoupon = useCartStore((state) => state.clearCoupon);
+
+  // Cupom local states (apenas para UI)
   const [couponCode, setCouponCode] = useState('');
-  const [appliedCoupon, setAppliedCoupon] = useState<{ code: string; discount_percent: number } | null>(null);
   const [couponLoading, setCouponLoading] = useState(false);
   const [couponError, setCouponError] = useState('');
 
@@ -90,7 +94,7 @@ export const CheckoutPage = () => {
   };
 
   const handleRemoveCoupon = () => {
-    setAppliedCoupon(null);
+    clearCoupon();
     setCouponError('');
   };
 

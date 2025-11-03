@@ -21,7 +21,12 @@ export const SideCart = ({ isOpen, onClose }: SideCartProps) => {
   const updateQuantity = useCartStore((state) => state.updateQuantity);
   const addItem = useCartStore((state) => state.addItem);
   const products = useProductStore((state) => state.products);
-  
+
+  // Cupom - usar store global
+  const appliedCoupon = useCartStore((state) => state.appliedCoupon);
+  const setAppliedCoupon = useCartStore((state) => state.setAppliedCoupon);
+  const clearCoupon = useCartStore((state) => state.clearCoupon);
+
   // Estados para recomendações inteligentes
   const [recommendedProducts, setRecommendedProducts] = useState<any[]>([]);
 
@@ -29,9 +34,8 @@ export const SideCart = ({ isOpen, onClose }: SideCartProps) => {
   const [showSizeModal, setShowSizeModal] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState<any>(null);
 
-  // Cupom states
+  // Cupom local states (apenas para UI)
   const [couponCode, setCouponCode] = useState('');
-  const [appliedCoupon, setAppliedCoupon] = useState<{ code: string; discount_percent: number } | null>(null);
   const [couponLoading, setCouponLoading] = useState(false);
   const [couponError, setCouponError] = useState('');
 
@@ -122,7 +126,7 @@ export const SideCart = ({ isOpen, onClose }: SideCartProps) => {
   };
 
   const handleRemoveCoupon = () => {
-    setAppliedCoupon(null);
+    clearCoupon();
     setCouponError('');
   };
 

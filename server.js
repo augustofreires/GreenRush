@@ -3005,6 +3005,281 @@ app.put('/api/settings/:key', async (req, res) => {
   }
 });
 
+// ==================== ROTAS DE CUPONS ====================
+
+// Listar todos os cupons (Admin)
+app.get('/api/admin/coupons', async (req, res) => {
+  try {
+    const [rows] = await db.execute(
+      'SELECT * FROM coupons ORDER BY created_at DESC'
+    );
+    res.json(rows);
+  } catch (error) {
+    console.error('Erro ao listar cupons:', error);
+    res.status(500).json({ error: { message: error.message } });
+  }
+});
+
+// Criar novo cupom (Admin)
+app.post('/api/admin/coupons', async (req, res) => {
+  try {
+    const {
+      code,
+      description,
+      discount_type,
+      discount_value,
+      min_purchase_amount,
+      max_discount_amount,
+      usage_limit,
+      valid_from,
+      valid_until,
+      is_active
+    } = req.body;
+
+    // Validações
+    if (!code || !discount_type || !discount_value) {
+      return res.status(400).json({
+        error: { message: 'Código, tipo de desconto e valor são obrigatórios' }
+      });
+    }
+
+    if (!['percentage', 'fixed'].includes(discount_type)) {
+      return res.status(400).json({
+        error: { message: 'Tipo de desconto inválido. Use "percentage" ou "fixed"' }
+      });
+    }
+
+    // Verificar se cupom já existe
+    const [existing] = await db.execute(
+      'SELECT id FROM coupons WHERE code = ?',
+      [code]
+    );
+
+    if (existing.length > 0) {
+      return res.status(400).json({
+        error: { message: 'Cupom com este código já existe' }
+      });
+    }
+
+    // Inserir cupom
+    const [result] = await db.execute(
+      `INSERT INTO coupons (
+        code, description, discount_type, discount_value,
+        min_purchase_amount, max_discount_amount, usage_limit,
+        valid_from, valid_until, is_active
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      [
+        code,
+        description || null,
+        discount_type,
+        discount_value,
+        min_purchase_amount || 0,
+        max_discount_amount || null,
+        usage_limit || null,
+        valid_from || null,
+        valid_until || null,
+        is_active !== undefined ? is_active : 1
+      ]
+    );
+
+    // Buscar cupom criado
+    const [newCoupon] = await db.execute(
+      'SELECT * FROM coupons WHERE id = ?',
+      [result.insertId]
+    );
+
+    res.status(201).json(newCoupon[0]);
+  } catch (error) {
+    console.error('Erro ao criar cupom:', error);
+    res.status(500).json({ error: { message: error.message } });
+  }
+});
+
+// Importar múltiplos cupons (Admin)
+app.post('/api/admin/coupons/import', async (req, res) => {
+  try {
+    const { coupons } = req.body;
+
+    if (!Array.isArray(coupons) || coupons.length === 0) {
+      return res.status(400).json({
+        error: { message: 'Array de cupons é obrigatório' }
+      });
+    }
+
+    const results = {
+      success: 0,
+      failed: 0,
+      errors: []
+    };
+
+    for (const coupon of coupons) {
+      try {
+        const {
+          code,
+          description,
+          discount_type,
+          discount_value,
+          min_purchase_amount,
+          max_discount_amount,
+          usage_limit,
+          valid_from,
+          valid_until,
+          is_active
+        } = coupon;
+
+        // Validações básicas
+        if (!code || !discount_type || !discount_value) {
+          results.failed++;
+          results.errors.push({ code, error: 'Dados obrigatórios faltando' });
+          continue;
+        }
+
+        // Verificar se cupom já existe
+        const [existing] = await db.execute(
+          'SELECT id FROM coupons WHERE code = ?',
+          [code]
+        );
+
+        if (existing.length > 0) {
+          results.failed++;
+          results.errors.push({ code, error: 'Cupom já existe' });
+          continue;
+        }
+
+        // Inserir cupom
+        await db.execute(
+          `INSERT INTO coupons (
+            code, description, discount_type, discount_value,
+            min_purchase_amount, max_discount_amount, usage_limit,
+            valid_from, valid_until, is_active
+          ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+          [
+            code,
+            description || null,
+            discount_type,
+            discount_value,
+            min_purchase_amount || 0,
+            max_discount_amount || null,
+            usage_limit || null,
+            valid_from || null,
+            valid_until || null,
+            is_active !== undefined ? is_active : 1
+          ]
+        );
+
+        results.success++;
+      } catch (error) {
+        results.failed++;
+        results.errors.push({ code: coupon.code, error: error.message });
+      }
+    }
+
+    res.json(results);
+  } catch (error) {
+    console.error('Erro ao importar cupons:', error);
+    res.status(500).json({ error: { message: error.message } });
+  }
+});
+
+// Deletar cupom (Admin)
+app.delete('/api/admin/coupons/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const [result] = await db.execute(
+      'DELETE FROM coupons WHERE id = ?',
+      [id]
+    );
+
+    if (result.affectedRows === 0) {
+      return res.status(404).json({
+        error: { message: 'Cupom não encontrado' }
+      });
+    }
+
+    res.json({ message: 'Cupom deletado com sucesso' });
+  } catch (error) {
+    console.error('Erro ao deletar cupom:', error);
+    res.status(500).json({ error: { message: error.message } });
+  }
+});
+
+// Ativar/Desativar cupom (Admin)
+app.patch('/api/admin/coupons/:id/toggle', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { is_active } = req.body;
+
+    if (is_active === undefined) {
+      return res.status(400).json({
+        error: { message: 'Campo is_active é obrigatório' }
+      });
+    }
+
+    const [result] = await db.execute(
+      'UPDATE coupons SET is_active = ? WHERE id = ?',
+      [is_active ? 1 : 0, id]
+    );
+
+    if (result.affectedRows === 0) {
+      return res.status(404).json({
+        error: { message: 'Cupom não encontrado' }
+      });
+    }
+
+    // Buscar cupom atualizado
+    const [updated] = await db.execute(
+      'SELECT * FROM coupons WHERE id = ?',
+      [id]
+    );
+
+    res.json(updated[0]);
+  } catch (error) {
+    console.error('Erro ao atualizar status do cupom:', error);
+    res.status(500).json({ error: { message: error.message } });
+  }
+});
+
+// Validar cupom (Público - usado no SideCart)
+app.get('/api/coupons/validate/:code', async (req, res) => {
+  try {
+    const { code } = req.params;
+
+    const [rows] = await db.execute(
+      `SELECT * FROM coupons
+       WHERE code = ?
+       AND is_active = 1
+       AND (valid_from IS NULL OR valid_from <= NOW())
+       AND (valid_until IS NULL OR valid_until >= NOW())
+       AND (usage_limit IS NULL OR usage_count < usage_limit)`,
+      [code]
+    );
+
+    if (rows.length === 0) {
+      return res.status(404).json({
+        error: { message: 'Cupom inválido ou expirado' }
+      });
+    }
+
+    const coupon = rows[0];
+
+    // Retornar no formato esperado pelo frontend
+    // O frontend usa "discount_percent" para compatibilidade
+    res.json({
+      code: coupon.code,
+      discount_type: coupon.discount_type,
+      discount_value: coupon.discount_value,
+      discount_percent: coupon.discount_type === 'percentage' ? coupon.discount_value : 0,
+      min_purchase_amount: coupon.min_purchase_amount,
+      max_discount_amount: coupon.max_discount_amount,
+      description: coupon.description
+    });
+  } catch (error) {
+    console.error('Erro ao validar cupom:', error);
+    res.status(500).json({ error: { message: error.message } });
+  }
+});
+
 app.listen(PORT, () => {
   console.log(`🚀 Servidor backend rodando em http://localhost:${PORT}`);
   loadAppmaxConfig(); // Carrega configuração do banco ao iniciar

@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom';
-import { FiInstagram, FiFacebook, FiTwitter, FiMail, FiPhone } from 'react-icons/fi';
+import { FiInstagram, FiFacebook, FiMail, FiPhone } from 'react-icons/fi';
+import { SiTiktok } from 'react-icons/si';
 
 export const Footer = () => {
   return (

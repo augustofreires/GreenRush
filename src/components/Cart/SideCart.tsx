@@ -276,7 +276,7 @@ export const SideCart = ({ isOpen, onClose }: SideCartProps) => {
                   <div className="space-y-2">
                     {recommendedProducts
                       .filter(p => !items.find(item => item.id === p.id))
-                      .slice(0, 2)
+                      .slice(0, 3)
                       .map((product) => (
                         <div
                           key={product.id}

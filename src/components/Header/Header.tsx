@@ -16,11 +16,6 @@ export const Header = () => {
   const closeCart = useCartStore((state) => state.closeCart);
   const { isAuthenticated, user } = useAuthStore();
 
-  const categories = [
-    { name: 'Emagrecimento', slug: 'emagrecimento' },
-    { name: 'Modeladores', slug: 'modeladores' },
-  ];
-
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
     if (searchQuery.trim()) {
@@ -47,43 +42,54 @@ export const Header = () => {
                 width="75"
                 height="40"
                 className="h-10 w-auto object-contain"
-                fetchpriority="high"
+                fetchPriority="high"
               />
             </Link>
 
             {/* Desktop Navigation */}
             <nav className="hidden lg:flex items-center gap-1">
-              <Link
-                to="/"
+              <a
+                href="https://www.greenrushoficial.com/"
                 className="relative px-4 py-2 rounded-lg font-semibold text-gray-700 hover:text-white transition-all group overflow-hidden text-sm"
               >
                 <span className="absolute inset-0 bg-gradient-to-r from-green-500 to-green-600 transform scale-x-0 group-hover:scale-x-100 transition-transform origin-left rounded-lg" style={{ backgroundColor: '#4a9d4e' }}></span>
                 <span className="relative z-10 group-hover:text-white transition-colors">Início</span>
-              </Link>
-              {categories.map((category) => (
-                <Link
-                  key={category.slug}
-                  to={`/produtos/${category.slug}`}
-                  className="relative px-4 py-2 rounded-lg font-semibold text-gray-700 hover:text-white transition-all group overflow-hidden text-sm"
-                >
-                  <span className="absolute inset-0 bg-gradient-to-r from-green-500 to-green-600 transform scale-x-0 group-hover:scale-x-100 transition-transform origin-left rounded-lg" style={{ backgroundColor: '#4a9d4e' }}></span>
-                  <span className="relative z-10 group-hover:text-white transition-colors">{category.name}</span>
-                </Link>
-              ))}
-              <Link
-                to="/blog"
+              </a>
+              <a
+                href="https://www.greenrushoficial.com/cinta-modeladora"
+                className="relative px-4 py-2 rounded-lg font-semibold text-gray-700 hover:text-white transition-all group overflow-hidden text-sm"
+              >
+                <span className="absolute inset-0 bg-gradient-to-r from-green-500 to-green-600 transform scale-x-0 group-hover:scale-x-100 transition-transform origin-left rounded-lg" style={{ backgroundColor: '#4a9d4e' }}></span>
+                <span className="relative z-10 group-hover:text-white transition-colors">Modeladores</span>
+              </a>
+              <a
+                href="https://www.greenrushoficial.com/cha"
+                className="relative px-4 py-2 rounded-lg font-semibold text-gray-700 hover:text-white transition-all group overflow-hidden text-sm"
+              >
+                <span className="absolute inset-0 bg-gradient-to-r from-green-500 to-green-600 transform scale-x-0 group-hover:scale-x-100 transition-transform origin-left rounded-lg" style={{ backgroundColor: '#4a9d4e' }}></span>
+                <span className="relative z-10 group-hover:text-white transition-colors">Chá Detox</span>
+              </a>
+              <a
+                href="https://www.greenrushoficial.com/capsulas"
+                className="relative px-4 py-2 rounded-lg font-semibold text-gray-700 hover:text-white transition-all group overflow-hidden text-sm"
+              >
+                <span className="absolute inset-0 bg-gradient-to-r from-green-500 to-green-600 transform scale-x-0 group-hover:scale-x-100 transition-transform origin-left rounded-lg" style={{ backgroundColor: '#4a9d4e' }}></span>
+                <span className="relative z-10 group-hover:text-white transition-colors">Cápsulas</span>
+              </a>
+              <a
+                href="https://www.greenrushoficial.com/slimshot"
+                className="relative px-4 py-2 rounded-lg font-semibold text-gray-700 hover:text-white transition-all group overflow-hidden text-sm"
+              >
+                <span className="absolute inset-0 bg-gradient-to-r from-green-500 to-green-600 transform scale-x-0 group-hover:scale-x-100 transition-transform origin-left rounded-lg" style={{ backgroundColor: '#4a9d4e' }}></span>
+                <span className="relative z-10 group-hover:text-white transition-colors">Vinagre de maçã</span>
+              </a>
+              <a
+                href="https://www.greenrushoficial.com/blog"
                 className="relative px-4 py-2 rounded-lg font-semibold text-gray-700 hover:text-white transition-all group overflow-hidden text-sm"
               >
                 <span className="absolute inset-0 bg-gradient-to-r from-green-500 to-green-600 transform scale-x-0 group-hover:scale-x-100 transition-transform origin-left rounded-lg" style={{ backgroundColor: '#4a9d4e' }}></span>
                 <span className="relative z-10 group-hover:text-white transition-colors">Blog</span>
-              </Link>
-              <Link
-                to="/contato"
-                className="relative px-4 py-2 rounded-lg font-semibold text-gray-700 hover:text-white transition-all group overflow-hidden text-sm"
-              >
-                <span className="absolute inset-0 bg-gradient-to-r from-green-500 to-green-600 transform scale-x-0 group-hover:scale-x-100 transition-transform origin-left rounded-lg" style={{ backgroundColor: '#4a9d4e' }}></span>
-                <span className="relative z-10 group-hover:text-white transition-colors">Contato</span>
-              </Link>
+              </a>
             </nav>
 
             {/* Actions */}
@@ -188,8 +194,8 @@ export const Header = () => {
             </form>
 
             {/* Menu Items */}
-            <Link
-              to="/"
+            <a
+              href="https://www.greenrushoficial.com/"
               onClick={() => setIsMenuOpen(false)}
               className="block py-3 px-4 rounded-lg font-semibold text-gray-700 hover:text-white transition-all"
               style={{ backgroundColor: 'transparent' }}
@@ -203,28 +209,73 @@ export const Header = () => {
               }}
             >
               Início
-            </Link>
-            {categories.map((category) => (
-              <Link
-                key={category.slug}
-                to={`/produtos/${category.slug}`}
-                onClick={() => setIsMenuOpen(false)}
-                className="block py-3 px-4 rounded-lg font-semibold text-gray-700 hover:text-white transition-all"
-                style={{ backgroundColor: 'transparent' }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.backgroundColor = '#4a9d4e';
-                  e.currentTarget.style.color = '#ffffff';
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.backgroundColor = 'transparent';
-                  e.currentTarget.style.color = '';
-                }}
-              >
-                {category.name}
-              </Link>
-            ))}
-            <Link
-              to="/blog"
+            </a>
+            <a
+              href="https://www.greenrushoficial.com/cinta-modeladora"
+              onClick={() => setIsMenuOpen(false)}
+              className="block py-3 px-4 rounded-lg font-semibold text-gray-700 hover:text-white transition-all"
+              style={{ backgroundColor: 'transparent' }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.backgroundColor = '#4a9d4e';
+                e.currentTarget.style.color = '#ffffff';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.backgroundColor = 'transparent';
+                e.currentTarget.style.color = '';
+              }}
+            >
+              Modeladores
+            </a>
+            <a
+              href="https://www.greenrushoficial.com/cha"
+              onClick={() => setIsMenuOpen(false)}
+              className="block py-3 px-4 rounded-lg font-semibold text-gray-700 hover:text-white transition-all"
+              style={{ backgroundColor: 'transparent' }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.backgroundColor = '#4a9d4e';
+                e.currentTarget.style.color = '#ffffff';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.backgroundColor = 'transparent';
+                e.currentTarget.style.color = '';
+              }}
+            >
+              Chá Detox
+            </a>
+            <a
+              href="https://www.greenrushoficial.com/capsulas"
+              onClick={() => setIsMenuOpen(false)}
+              className="block py-3 px-4 rounded-lg font-semibold text-gray-700 hover:text-white transition-all"
+              style={{ backgroundColor: 'transparent' }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.backgroundColor = '#4a9d4e';
+                e.currentTarget.style.color = '#ffffff';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.backgroundColor = 'transparent';
+                e.currentTarget.style.color = '';
+              }}
+            >
+              Cápsulas
+            </a>
+            <a
+              href="https://www.greenrushoficial.com/slimshot"
+              onClick={() => setIsMenuOpen(false)}
+              className="block py-3 px-4 rounded-lg font-semibold text-gray-700 hover:text-white transition-all"
+              style={{ backgroundColor: 'transparent' }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.backgroundColor = '#4a9d4e';
+                e.currentTarget.style.color = '#ffffff';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.backgroundColor = 'transparent';
+                e.currentTarget.style.color = '';
+              }}
+            >
+              Vinagre de maçã
+            </a>
+            <a
+              href="https://www.greenrushoficial.com/blog"
               onClick={() => setIsMenuOpen(false)}
               className="block py-3 px-4 rounded-lg font-semibold text-gray-700 hover:text-white transition-all"
               style={{ backgroundColor: 'transparent' }}
@@ -238,23 +289,7 @@ export const Header = () => {
               }}
             >
               Blog
-            </Link>
-            <Link
-              to="/contato"
-              onClick={() => setIsMenuOpen(false)}
-              className="block py-3 px-4 rounded-lg font-semibold text-gray-700 hover:text-white transition-all"
-              style={{ backgroundColor: 'transparent' }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.backgroundColor = '#4a9d4e';
-                e.currentTarget.style.color = '#ffffff';
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.backgroundColor = 'transparent';
-                e.currentTarget.style.color = '';
-              }}
-            >
-              Contato
-            </Link>
+            </a>
             <div className="pt-4 border-t">
               {isAuthenticated ? (
                 <Link

@@ -2,8 +2,9 @@ import { Link } from 'react-router-dom';
 import { FiX, FiShoppingBag, FiTrash2, FiMinus, FiPlus, FiTag } from 'react-icons/fi';
 import { useCartStore } from '../../store/useCartStore';
 import { useProductStore } from '../../store/useProductStore';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import axios from 'axios';
+import { SizeModal } from '../Product/SizeModal';
 
 const API_URL = import.meta.env.VITE_API_BASE_URL || '/api';
 
@@ -20,7 +21,13 @@ export const SideCart = ({ isOpen, onClose }: SideCartProps) => {
   const updateQuantity = useCartStore((state) => state.updateQuantity);
   const addItem = useCartStore((state) => state.addItem);
   const products = useProductStore((state) => state.products);
-  const [recommendedProducts] = useState(() => Array.isArray(products) ? products.slice(0, 3) : []);
+  
+  // Estados para recomendações inteligentes
+  const [recommendedProducts, setRecommendedProducts] = useState<any[]>([]);
+
+  // Estados para modal de tamanho
+  const [showSizeModal, setShowSizeModal] = useState(false);
+  const [selectedProduct, setSelectedProduct] = useState<any>(null);
 
   // Cupom states
   const [couponCode, setCouponCode] = useState('');
@@ -32,6 +39,102 @@ export const SideCart = ({ isOpen, onClose }: SideCartProps) => {
   const getItemKey = (item: any) => {
     return item.selectedVariant ? `${item.id}-${item.selectedVariant}` : item.id;
   };
+
+  // Função para identificar produtos por slug
+  const getProductType = (product: any) => {
+    const slug = product.slug?.toLowerCase() || '';
+    const name = product.name?.toLowerCase() || '';
+
+    if (slug.includes('slimshot') || slug.includes('vinagre') || name.includes('slimshot') || name.includes('vinagre')) {
+      return 'slimshot';
+    }
+    if (slug.includes('cha') || slug.includes('detox') || name.includes('chá') || name.includes('detox')) {
+      return 'cha';
+    }
+    if (slug.includes('capsul') || slug.includes('greenrush-capsulas') || name.includes('cápsula')) {
+      return 'capsulas';
+    }
+    if (slug.includes('cinta') || name.includes('cinta')) {
+      return 'cinta';
+    }
+    return 'outro';
+  };
+
+  // Função para obter recomendações inteligentes baseadas no carrinho
+  const getSmartRecommendations = (cartItems: any[], allProducts: any[]) => {
+    if (!Array.isArray(allProducts) || allProducts.length === 0) {
+      return [];
+    }
+
+    // Identificar quais tipos de produtos estão no carrinho
+    const cartProductTypes = new Set(cartItems.map(item => getProductType(item)));
+
+    // Definir regras de recomendação
+    const recommendationRules: { [key: string]: string[] } = {
+      slimshot: ['cinta', 'cha', 'capsulas'],
+      cha: ['cinta', 'slimshot', 'capsulas'],
+      capsulas: ['cinta', 'slimshot', 'cha'],
+      cinta: ['slimshot', 'cha', 'capsulas']
+    };
+
+    // Coletar todas as recomendações baseadas nos itens do carrinho
+    const recommendedTypes = new Set<string>();
+    cartProductTypes.forEach(type => {
+      if (recommendationRules[type]) {
+        recommendationRules[type].forEach(recommendedType => {
+          recommendedTypes.add(recommendedType);
+        });
+      }
+    });
+
+    // Se não houver itens no carrinho, recomendar produtos principais
+    if (cartProductTypes.size === 0) {
+      recommendedTypes.add('slimshot');
+      recommendedTypes.add('cha');
+      recommendedTypes.add('cinta');
+    }
+
+    // Filtrar produtos recomendados
+    const recommendations: any[] = [];
+    const addedTypes = new Set<string>();
+
+    allProducts.forEach(product => {
+      const productType = getProductType(product);
+
+      // Adicionar apenas se:
+      // 1. O tipo está nas recomendações
+      // 2. Não está no carrinho
+      // 3. Ainda não adicionamos um produto deste tipo
+      if (
+        recommendedTypes.has(productType) &&
+        !cartProductTypes.has(productType) &&
+        !addedTypes.has(productType)
+      ) {
+        recommendations.push(product);
+        addedTypes.add(productType);
+      }
+    });
+
+    // Ordem de prioridade: cinta > slimshot > cha > capsulas
+    const priorityOrder = ['cinta', 'slimshot', 'cha', 'capsulas'];
+    recommendations.sort((a, b) => {
+      const aType = getProductType(a);
+      const bType = getProductType(b);
+      const aIndex = priorityOrder.indexOf(aType);
+      const bIndex = priorityOrder.indexOf(bType);
+      return (aIndex === -1 ? 999 : aIndex) - (bIndex === -1 ? 999 : bIndex);
+    });
+
+    return recommendations.slice(0, 3);
+  };
+
+  // Atualizar recomendações quando o carrinho ou produtos mudarem
+  useEffect(() => {
+    const recommendations = getSmartRecommendations(items, products);
+    setRecommendedProducts(recommendations);
+  }, [items, products]);
+
+  
 
   // Função para aplicar cupom
   const handleApplyCoupon = async () => {
@@ -71,8 +174,24 @@ export const SideCart = ({ isOpen, onClose }: SideCartProps) => {
 
   console.log(`[SideCart v${version}] TOTAL ITEMS: ${items.length} | SUBTOTAL: R$ ${subtotal.toFixed(2)} | FRETE: R$ ${shipping.toFixed(2)} | DESCONTO: R$ ${couponDiscount.toFixed(2)} | TOTAL: R$ ${total.toFixed(2)}`);
 
+  // Função para adicionar produto recomendado
   const handleAddRecommended = (product: any) => {
-    addItem(product, 1);
+    const productType = getProductType(product);
+
+    // Se for cinta, abrir modal de tamanho
+    if (productType === 'cinta') {
+      setSelectedProduct(product);
+      setShowSizeModal(true);
+    } else {
+      // Adicionar direto ao carrinho
+      addItem(product, 1);
+    }
+  };
+
+  // Fechar modal de tamanho
+  const handleCloseSizeModal = () => {
+    setShowSizeModal(false);
+    setSelectedProduct(null);
   };
 
   return (
@@ -334,6 +453,15 @@ export const SideCart = ({ isOpen, onClose }: SideCartProps) => {
           </div>
         )}
       </div>
+
+      {/* Modal de Tamanho */}
+      {showSizeModal && selectedProduct && (
+        <SizeModal
+          isOpen={showSizeModal}
+          onClose={handleCloseSizeModal}
+          product={selectedProduct}
+        />
+      )}
     </>
   );
 };

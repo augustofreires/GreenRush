@@ -35,7 +35,7 @@ export const VideoCarousel = ({ productFilter }: VideoCarouselProps = {}) => {
     });
   }, [videos.length]);
 
-  // Auto-play videos when they become visible (desktop only)
+  // Auto-play videos when they become visible
   useEffect(() => {
     const playVisibleVideos = () => {
       const isMobile = window.innerWidth < 768;
@@ -44,8 +44,15 @@ export const VideoCarousel = ({ productFilter }: VideoCarouselProps = {}) => {
         const videoElement = videoRefs.current[video.id];
         if (videoElement) {
           if (isMobile) {
-            // On mobile, pause non-visible videos
-            if (index !== currentIndex) {
+            // On mobile, play current video and pause others
+            if (index === currentIndex) {
+              if (videoElement.paused) {
+                videoElement.play().catch(() => {
+                  // Se autoplay falhar, é porque o navegador bloqueia sem interação
+                  console.log("Autoplay bloqueado");
+                });
+              }
+            } else {
               videoElement.pause();
               videoElement.currentTime = 0;
             }
@@ -131,17 +138,31 @@ export const VideoCarousel = ({ productFilter }: VideoCarouselProps = {}) => {
                     poster={video.thumbnailUrl}
                     loop
                     playsInline
-                    controls
-                    controlsList="nodownload"
+                    autoPlay
+                    muted={mutedStates[video.id] !== false}
+                    onLoadedMetadata={() => handleVideoLoaded(video.id)}
                     preload="metadata"
                     className="w-full h-full object-cover"
                   />
 
-                  {/* Video Info Overlay - Positioned at top to not interfere with controls */}
-                  <div className="absolute top-0 left-0 right-0 bg-gradient-to-b from-black/80 to-transparent p-4 pointer-events-none">
+                  {/* Video Info Overlay */}
+                  <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-4">
                     <h3 className="text-white font-bold text-lg mb-1">{video.title}</h3>
                     <p className="text-white/80 text-sm">{video.customerName}</p>
                   </div>
+
+                  {/* Mute/Unmute Button - Mobile */}
+                  <button
+                    onClick={(e) => handleToggleMute(video.id, e)}
+                    className="absolute top-4 right-4 p-3 bg-black/60 rounded-full hover:bg-black/80 transition-all z-10"
+                    aria-label={mutedStates[video.id] ? "Ativar som" : "Desativar som"}
+                  >
+                    {mutedStates[video.id] ? (
+                      <FiVolumeX className="text-white" size={22} />
+                    ) : (
+                      <FiVolume2 className="text-white" size={22} />
+                    )}
+                  </button>
                 </div>
               </div>
             ))}

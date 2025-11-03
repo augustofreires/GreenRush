@@ -3,7 +3,7 @@ import { FiFileText, FiPlus, FiEdit2, FiTrash2, FiUpload, FiEye, FiEyeOff } from
 import { useBlogStore, type BlogPost } from '../../store/useBlogStore';
 
 export const AdminBlog = () => {
-  const { posts, addPost, updatePost, deletePost } = useBlogStore();
+  const { posts, addPost, updatePost, deletePost, loadPosts, isLoading } = useBlogStore();
   const [showModal, setShowModal] = useState(false);
   const [editingPost, setEditingPost] = useState<BlogPost | null>(null);
   const [searchQuery, setSearchQuery] = useState('');

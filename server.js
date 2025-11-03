@@ -3409,3 +3409,153 @@ app.post('/api/contact', async (req, res) => {
     });
   }
 });
+
+// ==================== BLOG POSTS API ====================
+
+// Listar todos os posts (público - apenas publicados)
+app.get("/api/blog/posts", async (req, res) => {
+  try {
+    const [posts] = await db.execute(
+      "SELECT * FROM blog_posts WHERE is_published = TRUE ORDER BY published_at DESC"
+    );
+    res.json(posts);
+  } catch (error) {
+    console.error("Erro ao listar posts:", error);
+    res.status(500).json({ error: { message: error.message } });
+  }
+});
+
+// Buscar post por slug (público)
+app.get("/api/blog/posts/:slug", async (req, res) => {
+  try {
+    const [posts] = await db.execute(
+      "SELECT * FROM blog_posts WHERE slug = ? AND is_published = TRUE",
+      [req.params.slug]
+    );
+    
+    if (posts.length === 0) {
+      return res.status(404).json({ error: { message: "Post não encontrado" } });
+    }
+    
+    res.json(posts[0]);
+  } catch (error) {
+    console.error("Erro ao buscar post:", error);
+    res.status(500).json({ error: { message: error.message } });
+  }
+});
+
+// Listar todos os posts (admin - incluindo não publicados)
+app.get("/api/admin/blog/posts", async (req, res) => {
+  try {
+    const [posts] = await db.execute(
+      "SELECT * FROM blog_posts ORDER BY created_at DESC"
+    );
+    res.json(posts);
+  } catch (error) {
+    console.error("Erro ao listar posts:", error);
+    res.status(500).json({ error: { message: error.message } });
+  }
+});
+
+// Criar novo post (admin)
+app.post("/api/admin/blog/posts", async (req, res) => {
+  try {
+    const {
+      title,
+      slug,
+      excerpt,
+      content,
+      image,
+      author,
+      category,
+      tags,
+      isPublished
+    } = req.body;
+
+    if (!title || !slug || !content) {
+      return res.status(400).json({
+        error: { message: "Título, slug e conteúdo são obrigatórios" }
+      });
+    }
+
+    const id = Date.now().toString();
+    const publishedAt = isPublished ? new Date() : null;
+
+    await db.execute(
+      `INSERT INTO blog_posts (id, slug, title, excerpt, content, image, author, category, tags, is_published, published_at, created_at, updated_at)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), NOW())`,
+      [
+        id,
+        slug,
+        excerpt || null,
+        content,
+        image || null,
+        author || "Admin",
+        category || null,
+        tags ? JSON.stringify(tags) : null,
+        isPublished ? 1 : 0,
+        publishedAt
+      ]
+    );
+
+    res.json({ id, message: "Post criado com sucesso" });
+  } catch (error) {
+    console.error("Erro ao criar post:", error);
+    res.status(500).json({ error: { message: error.message } });
+  }
+});
+
+// Atualizar post (admin)
+app.put("/api/admin/blog/posts/:id", async (req, res) => {
+  try {
+    const {
+      title,
+      slug,
+      excerpt,
+      content,
+      image,
+      author,
+      category,
+      tags,
+      isPublished
+    } = req.body;
+
+    const publishedAt = isPublished ? new Date() : null;
+
+    await db.execute(
+      `UPDATE blog_posts 
+       SET title = ?, slug = ?, excerpt = ?, content = ?, image = ?, author = ?, 
+           category = ?, tags = ?, is_published = ?, published_at = ?, updated_at = NOW()
+       WHERE id = ?`,
+      [
+        title,
+        slug,
+        excerpt || null,
+        content,
+        image || null,
+        author || "Admin",
+        category || null,
+        tags ? JSON.stringify(tags) : null,
+        isPublished ? 1 : 0,
+        publishedAt,
+        req.params.id
+      ]
+    );
+
+    res.json({ message: "Post atualizado com sucesso" });
+  } catch (error) {
+    console.error("Erro ao atualizar post:", error);
+    res.status(500).json({ error: { message: error.message } });
+  }
+});
+
+// Deletar post (admin)
+app.delete("/api/admin/blog/posts/:id", async (req, res) => {
+  try {
+    await db.execute("DELETE FROM blog_posts WHERE id = ?", [req.params.id]);
+    res.json({ message: "Post deletado com sucesso" });
+  } catch (error) {
+    console.error("Erro ao deletar post:", error);
+    res.status(500).json({ error: { message: error.message } });
+  }
+});

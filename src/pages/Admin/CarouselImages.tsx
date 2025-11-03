@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { FiImage, FiTrash2, FiPlus, FiMove, FiChevronUp, FiChevronDown } from 'react-icons/fi';
 import { useCarouselStore } from '../../store/useCarouselStore';
 

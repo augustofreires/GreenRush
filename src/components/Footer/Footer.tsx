@@ -24,7 +24,7 @@ export const Footer = () => {
             </p>
             <div className="flex gap-4">
               <a
-                href="https://instagram.com"
+                href="https://www.instagram.com/greenrushoficial"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="hover:text-primary-green transition-colors"
@@ -32,7 +32,7 @@ export const Footer = () => {
                 <FiInstagram size={24} />
               </a>
               <a
-                href="https://facebook.com"
+                href="https://www.facebook.com/greenrushoficial"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="hover:text-primary-green transition-colors"
@@ -40,12 +40,12 @@ export const Footer = () => {
                 <FiFacebook size={24} />
               </a>
               <a
-                href="https://twitter.com"
+                href="https://www.tiktok.com/@greenrushoficial"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="hover:text-primary-green transition-colors"
               >
-                <FiTwitter size={24} />
+                <SiTiktok size={24} />
               </a>
             </div>
           </div>
@@ -150,14 +150,10 @@ export const Footer = () => {
           <div className="flex flex-col md:flex-row justify-between items-center gap-4 text-sm">
             <p>&copy; 2025 GreenRush. Todos os direitos reservados.</p>
             <div className="flex items-center gap-4">
-              <img
-                src="/images/payment-methods.png"
-                alt="Formas de pagamento"
-                width="160"
-                height="32"
-                className="h-8"
-                loading="lazy"
-              />
+              <div className="flex items-center gap-2">
+                <span className="text-xs bg-white text-gray-700 px-3 py-1 rounded font-semibold">PIX</span>
+                <span className="text-xs bg-white text-gray-700 px-3 py-1 rounded font-semibold">Cartão de Crédito</span>
+              </div>
               <span className="text-primary-green font-semibold">
                 🔒 Compra 100% Segura
               </span>

@@ -13,7 +13,7 @@ const faqs: FAQItem[] = [
   },
   {
     question: 'Quais são as formas de pagamento?',
-    answer: 'Aceitamos Pix, cartão de crédito (até 12x) e boleto bancário. O pagamento é 100% seguro e processado através da plataforma Mercado Pago.'
+    answer: 'Aceitamos Pix e cartão de crédito (até 12x). O pagamento é 100% seguro e processado através da plataforma AppMax.'
   },
   {
     question: 'Qual o prazo de entrega?',
@@ -54,10 +54,6 @@ const faqs: FAQItem[] = [
   {
     question: 'Vocês vendem em lojas físicas?',
     answer: 'No momento, trabalhamos apenas com vendas online através do nosso site oficial. Isso nos permite oferecer preços mais competitivos e frete grátis.'
-  },
-  {
-    question: 'Os produtos são aprovados pela ANVISA?',
-    answer: 'Sim. Todos os nossos produtos seguem as normas da ANVISA e são fabricados em estabelecimentos regularizados.'
   },
   {
     question: 'Quanto tempo leva para ver resultados?',
@@ -124,20 +120,13 @@ export const FAQ = () => {
           <p className="text-gray-600 mb-6">
             Entre em contato conosco que teremos prazer em ajudar!
           </p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <a
-              href="mailto:contato@greenrushoficial.com"
-              className="px-6 py-3 rounded-lg font-semibold transition-colors"
-              style={{ backgroundColor: '#4a9d4e', color: '#ffffff' }}
-            >
-              Enviar E-mail
-            </a>
+          <div className="flex justify-center">
             <a
               href="https://wa.me/5519982284846"
               target="_blank"
               rel="noopener noreferrer"
-              className="px-6 py-3 border-2 rounded-lg font-semibold transition-colors"
-              style={{ borderColor: '#4a9d4e', color: '#4a9d4e' }}
+              className="px-6 py-3 rounded-lg font-semibold transition-colors text-white"
+              style={{ backgroundColor: '#4a9d4e' }}
             >
               WhatsApp
             </a>

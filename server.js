@@ -3365,16 +3365,6 @@ app.post('/api/upload/image', async (req, res) => {
 });
 
 
-// ==================== ROTA DE CONTATO ====================
-app.post('/api/contact', async (req, res) => {
-  try {
-    const { name, email, phone, subject, message } = req.body;
-
-    // Validação básica
-    if (!name || !email || !subject || !message) {
-      return res.status(400).json({ 
-        error: 'Por favor, preencha todos os campos obrigatórios' 
-      });
     }
 
     // Inserir no banco de dados

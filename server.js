@@ -3294,3 +3294,73 @@ app.listen(PORT, () => {
   console.log(`🖼️  API de Carrossel ativa!`);
   console.log(`⚙️  API de Configurações ativa!`);
 });
+
+// ============================================================
+// ROTA DE UPLOAD DE IMAGENS
+// ============================================================
+
+// Rota para upload de imagens (Banners, Produtos, etc)
+app.post('/api/upload/image', async (req, res) => {
+  try {
+    console.log('📤 Upload de imagem recebido');
+    
+    // Verificar se arquivo foi enviado
+    if (!req.files || !req.files.image) {
+      return res.status(400).json({ error: 'Nenhuma imagem foi enviada' });
+    }
+
+    const image = req.files.image;
+    const folder = req.body.folder || 'greenrush/general';
+
+    console.log('📁 Pasta de destino:', folder);
+    console.log('📄 Arquivo:', image.name, '(', image.size, 'bytes)');
+
+    // Validar tipo de arquivo
+    const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp', 'image/gif'];
+    if (!allowedTypes.includes(image.mimetype)) {
+      return res.status(400).json({ 
+        error: 'Tipo de arquivo inválido. Use: JPG, PNG, WEBP ou GIF' 
+      });
+    }
+
+    // Validar tamanho (máximo 10MB)
+    const maxSize = 10 * 1024 * 1024; // 10MB
+    if (image.size > maxSize) {
+      return res.status(400).json({ 
+        error: 'Arquivo muito grande. Tamanho máximo: 10MB' 
+      });
+    }
+
+    // Fazer upload para Cloudinary
+    const result = await cloudinary.uploader.upload(image.tempFilePath, {
+      folder: folder,
+      resource_type: 'image',
+      transformation: [
+        { quality: 'auto' },
+        { fetch_format: 'auto' }
+      ]
+    });
+
+    console.log('✅ Upload concluído para Cloudinary');
+    console.log('🔗 URL:', result.secure_url);
+
+    // Retornar URL da imagem
+    res.json({
+      success: true,
+      url: result.secure_url,
+      public_id: result.public_id,
+      width: result.width,
+      height: result.height,
+      format: result.format,
+      size: result.bytes
+    });
+
+  } catch (error) {
+    console.error('❌ Erro no upload:', error);
+    res.status(500).json({ 
+      error: 'Erro ao fazer upload da imagem',
+      message: error.message 
+    });
+  }
+});
+

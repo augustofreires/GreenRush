@@ -1300,17 +1300,28 @@ app.post('/api/leads', async (req, res) => {
     // Criar novo lead
     await db.execute(
       'INSERT INTO contacts (id, name, email, phone, type, source, accept_marketing, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
-      [leadId, email.split('@')[0], email, phone, 'lead', 'popup', acceptMarketing || true, createdAt]
+      [leadId, email.split('@')[0], email, phone, 'lead', source, acceptMarketing || true, createdAt]
     );
 
-    console.log(`📧 Novo lead capturado: ${email} - ${phone}`);
+    console.log(`📧 Novo lead capturado: ${email} - ${phone} (source: ${source})`);
     // Adicionar ao Reportana e enviar email de confirmação
     try {
+      // Mapear source para segmentId correto do Reportana
+      let segmentId = process.env.REPORTANA_SEGMENT_ID; // padrão
+      if (source === 'popup') {
+        segmentId = process.env.REPORTANA_SEGMENT_POPUP || '71679';
+      } else if (source === 'footer') {
+        segmentId = process.env.REPORTANA_SEGMENT_FOOTER || '71680';
+      }
+      
+      console.log(`📝 Enviando para Reportana - Lista: ${segmentId} (source: ${source})`);
+      
       // Adicionar contato ao Reportana
       await addContact({
         email: email,
         phone: phone,
-        name: email.split('@')[0]
+        name: email.split('@')[0],
+        segmentId: segmentId
       });
       // Email será enviado pela automação do Reportana
       

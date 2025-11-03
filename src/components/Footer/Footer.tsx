@@ -133,7 +133,9 @@ export const Footer = () => {
               <form className="flex gap-2" onSubmit={(e) => { e.preventDefault(); const formData = new FormData(e.currentTarget); fetch((import.meta.env.VITE_API_BASE_URL || "/api") + "/leads", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ email: formData.get("email"), phone: "", acceptMarketing: true, source: "footer" }) }).then(r => r.ok ? (alert("Inscrição realizada!"), e.currentTarget.reset()) : alert("Erro")); }}>
                 <input
                   type="email"
+                  name="email"
                   placeholder="Seu e-mail"
+                  required
                   className="flex-1 px-3 py-2 rounded bg-gray-800 border border-gray-700 focus:outline-none focus:border-primary-green text-sm"
                 />
                 <button className="btn-primary text-sm">

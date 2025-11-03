@@ -66,65 +66,28 @@ export const SideCart = ({ isOpen, onClose }: SideCartProps) => {
       return [];
     }
 
-    // Identificar quais tipos de produtos estão no carrinho
-    const cartProductTypes = new Set(cartItems.map(item => getProductType(item)));
-
-    // Definir regras de recomendação
-    const recommendationRules: { [key: string]: string[] } = {
-      slimshot: ['cinta', 'cha', 'capsulas'],
-      cha: ['cinta', 'slimshot', 'capsulas'],
-      capsulas: ['cinta', 'slimshot', 'cha'],
-      cinta: ['slimshot', 'cha', 'capsulas']
-    };
-
-    // Coletar todas as recomendações baseadas nos itens do carrinho
-    const recommendedTypes = new Set<string>();
-    cartProductTypes.forEach(type => {
-      if (recommendationRules[type]) {
-        recommendationRules[type].forEach(recommendedType => {
-          recommendedTypes.add(recommendedType);
-        });
-      }
+    // Identificar os 4 produtos principais (SlimShot, Chá Detox, Cápsulas, Cinta)
+    const mainProducts = allProducts.filter(product => {
+      const slug = (product.slug || '').toLowerCase();
+      const name = (product.name || '').toLowerCase();
+      
+      return (
+        // SlimShot / Vinagre de maçã
+        slug.includes('slimshot') || slug.includes('vinagre') ||
+        // Chá Detox
+        slug.includes('cha') || slug.includes('detox') ||
+        // Cápsulas
+        slug.includes('capsul') || name.includes('capsul') ||
+        // Cinta Modeladora
+        slug.includes('cinta') || name.includes('cinta')
+      );
     });
 
-    // Se não houver itens no carrinho, recomendar produtos principais
-    if (cartProductTypes.size === 0) {
-      recommendedTypes.add('slimshot');
-      recommendedTypes.add('cha');
-      recommendedTypes.add('cinta');
-    }
+    // Filtrar produtos que já estão no carrinho
+    const cartProductIds = cartItems.map(item => item.id);
+    const recommendations = mainProducts.filter(p => !cartProductIds.includes(p.id));
 
-    // Filtrar produtos recomendados
-    const recommendations: any[] = [];
-    const addedTypes = new Set<string>();
-
-    allProducts.forEach(product => {
-      const productType = getProductType(product);
-
-      // Adicionar apenas se:
-      // 1. O tipo está nas recomendações
-      // 2. Não está no carrinho
-      // 3. Ainda não adicionamos um produto deste tipo
-      if (
-        recommendedTypes.has(productType) &&
-        !cartProductTypes.has(productType) &&
-        !addedTypes.has(productType)
-      ) {
-        recommendations.push(product);
-        addedTypes.add(productType);
-      }
-    });
-
-    // Ordem de prioridade: cinta > slimshot > cha > capsulas
-    const priorityOrder = ['cinta', 'slimshot', 'cha', 'capsulas'];
-    recommendations.sort((a, b) => {
-      const aType = getProductType(a);
-      const bType = getProductType(b);
-      const aIndex = priorityOrder.indexOf(aType);
-      const bIndex = priorityOrder.indexOf(bType);
-      return (aIndex === -1 ? 999 : aIndex) - (bIndex === -1 ? 999 : bIndex);
-    });
-
+    // Retornar os 3 produtos restantes (quando adiciona 1 dos 4, sugere os outros 3)
     return recommendations.slice(0, 3);
   };
 

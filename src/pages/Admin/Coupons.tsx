@@ -7,11 +7,16 @@ const API_URL = import.meta.env.VITE_API_BASE_URL || '/api';
 interface Coupon {
   id: string;
   code: string;
-  discount_percent: number;
-  is_active: boolean;
+  description: string | null;
+  discount_type: 'percentage' | 'fixed';
+  discount_value: string; // vem como string do banco
+  min_purchase_amount: string;
+  max_discount_amount: string | null;
   usage_limit: number | null;
   usage_count: number;
-  expires_at: string | null;
+  valid_from: string;
+  valid_until: string | null;
+  is_active: boolean;
   created_at: string;
 }
 
@@ -24,9 +29,11 @@ export const AdminCoupons = () => {
   // Form state
   const [formData, setFormData] = useState({
     code: '',
-    discount_percent: '',
+    description: '',
+    discount_type: 'percentage',
+    discount_value: '',
     usage_limit: '',
-    expires_at: '',
+    valid_until: '',
   });
 
   // CSV state
@@ -54,14 +61,17 @@ export const AdminCoupons = () => {
     try {
       await axios.post(`${API_URL}/admin/coupons`, {
         code: formData.code,
-        discount_percent: parseFloat(formData.discount_percent),
+        description: formData.description || null,
+        discount_type: formData.discount_type,
+        discount_value: parseFloat(formData.discount_value),
         usage_limit: formData.usage_limit ? parseInt(formData.usage_limit) : null,
-        expires_at: formData.expires_at || null,
+        valid_until: formData.valid_until || null,
+        is_active: true
       });
 
       alert('Cupom criado com sucesso!');
       setShowModal(false);
-      setFormData({ code: '', discount_percent: '', usage_limit: '', expires_at: '' });
+      setFormData({ code: '', description: '', discount_type: 'percentage', discount_value: '', usage_limit: '', valid_until: '' });
       loadCoupons();
     } catch (error: any) {
       console.error('Erro ao criar cupom:', error);
@@ -72,15 +82,16 @@ export const AdminCoupons = () => {
   const handleImportCSV = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      // Parse CSV: espera formato "CODIGO,DESCONTO"
+      // Parse CSV: espera formato "CODIGO,TIPO,VALOR"
       const lines = csvData.trim().split('\n');
       const parsedCoupons = lines.map(line => {
-        const [code, discount] = line.split(',').map(s => s.trim());
+        const [code, type, value] = line.split(',').map(s => s.trim());
         return {
           code,
-          discount_percent: parseFloat(discount)
+          discount_type: type || 'percentage',
+          discount_value: parseFloat(value)
         };
-      }).filter(c => c.code && !isNaN(c.discount_percent));
+      }).filter(c => c.code && !isNaN(c.discount_value));
 
       if (parsedCoupons.length === 0) {
         alert('Nenhum cupom válido encontrado no CSV');
@@ -127,7 +138,7 @@ export const AdminCoupons = () => {
   };
 
   const downloadCSVTemplate = () => {
-    const template = 'CODIGO,DESCONTO\nVERAO10,10\nBLACKFRIDAY50,50\nPRIMEIRA15,15';
+    const template = 'CODIGO,TIPO,VALOR\nVERAO10,percentage,10\nBLACKFRIDAY50,fixed,50\nPRIMEIRA15,percentage,15';
     const blob = new Blob([template], { type: 'text/csv' });
     const url = window.URL.createObjectURL(blob);
     const a = document.createElement('a');
@@ -176,10 +187,11 @@ export const AdminCoupons = () => {
               <thead className="bg-gray-50 border-b">
                 <tr>
                   <th className="text-left py-3 px-4 font-semibold text-gray-700">Código</th>
+                  <th className="text-left py-3 px-4 font-semibold text-gray-700">Descrição</th>
                   <th className="text-left py-3 px-4 font-semibold text-gray-700">Desconto</th>
                   <th className="text-left py-3 px-4 font-semibold text-gray-700">Usos</th>
                   <th className="text-left py-3 px-4 font-semibold text-gray-700">Limite</th>
-                  <th className="text-left py-3 px-4 font-semibold text-gray-700">Expira em</th>
+                  <th className="text-left py-3 px-4 font-semibold text-gray-700">Válido até</th>
                   <th className="text-left py-3 px-4 font-semibold text-gray-700">Status</th>
                   <th className="text-right py-3 px-4 font-semibold text-gray-700">Ações</th>
                 </tr>
@@ -187,7 +199,7 @@ export const AdminCoupons = () => {
               <tbody>
                 {coupons.length === 0 ? (
                   <tr>
-                    <td colSpan={7} className="text-center py-12 text-gray-500">
+                    <td colSpan={8} className="text-center py-12 text-gray-500">
                       <FiTag size={48} className="mx-auto text-gray-300 mb-4" />
                       Nenhum cupom cadastrado
                     </td>
@@ -200,8 +212,14 @@ export const AdminCoupons = () => {
                           {coupon.code}
                         </code>
                       </td>
+                      <td className="py-3 px-4 text-gray-700 text-sm">
+                        {coupon.description || '-'}
+                      </td>
                       <td className="py-3 px-4 text-green-600 font-bold">
-                        {coupon.discount_percent}%
+                        {coupon.discount_type === 'percentage'
+                          ? `${coupon.discount_value}%`
+                          : `R$ ${parseFloat(coupon.discount_value).toFixed(2)}`
+                        }
                       </td>
                       <td className="py-3 px-4 text-gray-700">
                         {coupon.usage_count}
@@ -210,8 +228,8 @@ export const AdminCoupons = () => {
                         {coupon.usage_limit || 'Ilimitado'}
                       </td>
                       <td className="py-3 px-4 text-gray-700 text-sm">
-                        {coupon.expires_at
-                          ? new Date(coupon.expires_at).toLocaleDateString('pt-BR')
+                        {coupon.valid_until
+                          ? new Date(coupon.valid_until).toLocaleDateString('pt-BR')
                           : 'Sem expiração'}
                       </td>
                       <td className="py-3 px-4">
@@ -273,16 +291,40 @@ export const AdminCoupons = () => {
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-semibold mb-2">Desconto (%) *</label>
+                  <label className="block text-sm font-semibold mb-2">Descrição (opcional)</label>
+                  <input
+                    type="text"
+                    value={formData.description}
+                    onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                    placeholder="Ex: Desconto de verão"
+                    className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-semibold mb-2">Tipo de Desconto *</label>
+                  <select
+                    required
+                    value={formData.discount_type}
+                    onChange={(e) => setFormData({ ...formData, discount_type: e.target.value })}
+                    className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
+                  >
+                    <option value="percentage">Percentual (%)</option>
+                    <option value="fixed">Valor Fixo (R$)</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-sm font-semibold mb-2">
+                    Valor do Desconto * {formData.discount_type === 'percentage' ? '(%)' : '(R$)'}
+                  </label>
                   <input
                     type="number"
                     required
                     min="0"
-                    max="100"
+                    max={formData.discount_type === 'percentage' ? "100" : undefined}
                     step="0.01"
-                    value={formData.discount_percent}
-                    onChange={(e) => setFormData({ ...formData, discount_percent: e.target.value })}
-                    placeholder="Ex: 15"
+                    value={formData.discount_value}
+                    onChange={(e) => setFormData({ ...formData, discount_value: e.target.value })}
+                    placeholder={formData.discount_type === 'percentage' ? "Ex: 15" : "Ex: 50.00"}
                     className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
                   />
                 </div>
@@ -298,11 +340,11 @@ export const AdminCoupons = () => {
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-semibold mb-2">Data de Expiração (opcional)</label>
+                  <label className="block text-sm font-semibold mb-2">Válido até (opcional)</label>
                   <input
                     type="datetime-local"
-                    value={formData.expires_at}
-                    onChange={(e) => setFormData({ ...formData, expires_at: e.target.value })}
+                    value={formData.valid_until}
+                    onChange={(e) => setFormData({ ...formData, valid_until: e.target.value })}
                     className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
                   />
                 </div>
@@ -335,10 +377,12 @@ export const AdminCoupons = () => {
 
               <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">
                 <p className="text-sm text-blue-900 mb-2">
-                  <strong>Formato esperado:</strong> CODIGO,DESCONTO (uma linha por cupom)
+                  <strong>Formato esperado:</strong> CODIGO,TIPO,VALOR (uma linha por cupom)
                 </p>
                 <p className="text-xs text-blue-700 mb-3">
-                  Exemplo: VERAO10,10 (cupom VERAO10 com 10% de desconto)
+                  Exemplo: VERAO10,percentage,10 (cupom VERAO10 com 10% de desconto)
+                  <br />
+                  Tipos aceitos: <strong>percentage</strong> (percentual) ou <strong>fixed</strong> (valor fixo)
                 </p>
                 <button
                   onClick={downloadCSVTemplate}
@@ -356,7 +400,7 @@ export const AdminCoupons = () => {
                     required
                     value={csvData}
                     onChange={(e) => setCsvData(e.target.value)}
-                    placeholder="VERAO10,10&#10;BLACKFRIDAY50,50&#10;PRIMEIRA15,15"
+                    placeholder="VERAO10,percentage,10&#10;BLACKFRIDAY50,fixed,50&#10;PRIMEIRA15,percentage,15"
                     rows={10}
                     className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 font-mono text-sm"
                   />

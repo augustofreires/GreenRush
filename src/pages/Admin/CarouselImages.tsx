@@ -12,12 +12,16 @@ const products: { key: ProductKey; label: string }[] = [
 ];
 
 export const CarouselImages = () => {
-  const { images, addImage, removeImage, reorderImages } = useCarouselStore();
+  const { images, addImage, removeImage, reorderImages, loadImages, isLoading } = useCarouselStore();
   const [selectedProduct, setSelectedProduct] = useState<ProductKey>('cha');
   const [newImageUrl, setNewImageUrl] = useState('');
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
 
   const currentImages = images[selectedProduct] || [];
+
+  useEffect(() => {
+    loadImages();
+  }, []);
 
   const handleAddImage = () => {
     if (!newImageUrl.trim()) {
@@ -45,15 +49,25 @@ export const CarouselImages = () => {
     }
   };
 
-  const handleMoveUp = (index: number) => {
+  const handleMoveUp = async (index: number) => {
     if (index > 0) {
-      reorderImages(selectedProduct, index, index - 1);
+      try {
+        await reorderImages(selectedProduct, index, index - 1);
+      } catch (error) {
+        setMessage({ type: "error", text: "Erro ao reordenar. Tente novamente." });
+        setTimeout(() => setMessage(null), 3000);
+      }
     }
   };
 
-  const handleMoveDown = (index: number) => {
+  const handleMoveDown = async (index: number) => {
     if (index < currentImages.length - 1) {
-      reorderImages(selectedProduct, index, index + 1);
+      try {
+        await reorderImages(selectedProduct, index, index + 1);
+      } catch (error) {
+        setMessage({ type: "error", text: "Erro ao reordenar. Tente novamente." });
+        setTimeout(() => setMessage(null), 3000);
+      }
     }
   };
 

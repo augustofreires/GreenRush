@@ -21,8 +21,12 @@ export const CintaLanding = () => {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const { addItem } = useCartStore();
   const { images: carouselImages } = useCarouselStore();
-  const { settings } = useSettingsStore();
+  const { settings, fetchSettings } = useSettingsStore();
 
+
+  useEffect(() => {
+    fetchSettings();
+  }, [fetchSettings]);
   const { getProductBySlug, getAvailableProducts, getProductsByCustomLanding } = useProductStore();
 
   // Buscar produto do banco de dados pelo customLandingPage
@@ -489,7 +493,7 @@ export const CintaLanding = () => {
             </div>
             <div className="flex flex-col items-center gap-2">
               <FiCreditCard className="text-green-600 w-8 h-8" />
-              <p className="font-semibold text-sm">Parcele em até 3x</p>
+              <p className="font-semibold text-sm">Parcele em até 12x</p>
               <p className="text-xs text-gray-600">Sem juros no cartão</p>
             </div>
             <div className="flex flex-col items-center gap-2">

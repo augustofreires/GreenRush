@@ -21,7 +21,11 @@ export const CapsulesLanding = () => {
   const { addItem } = useCartStore();
   const { getProductBySlug, getAvailableProducts, getProductsByCustomLanding } = useProductStore();
   const { images: carouselImages } = useCarouselStore();
-  const { settings } = useSettingsStore();
+  const { settings, fetchSettings } = useSettingsStore();
+  useEffect(() => {
+    fetchSettings();
+  }, [fetchSettings]);
+
 
   // Buscar produto do banco de dados
   const products = getProductsByCustomLanding("/capsulas");
@@ -437,7 +441,7 @@ export const CapsulesLanding = () => {
                   <FiCreditCard className="w-7 h-7" />
                 </div>
                 <div>
-                  <p className="font-bold text-gray-900 mb-1">Parcele em até 3x</p>
+                  <p className="font-bold text-gray-900 mb-1">Parcele em até 12x</p>
                   <p className="text-xs text-gray-600">Sem juros no cartão</p>
                 </div>
               </div>

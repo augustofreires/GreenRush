@@ -25,7 +25,11 @@ export const SlimShotLanding = () => {
   const { images: carouselImages } = useCarouselStore();
   const { videos } = useTestimonialsVideoStore();
   const { getActiveItems } = useBeforeAfterStore();
-  const { settings } = useSettingsStore();
+  const { settings, fetchSettings } = useSettingsStore();
+  useEffect(() => {
+    fetchSettings();
+  }, [fetchSettings]);
+
 
   // Buscar imagens de antes/depois e vídeos do SlimShot do banco de dados
   const beforeAfterImages = getActiveItems();
@@ -507,7 +511,7 @@ export const SlimShotLanding = () => {
                 </div>
 
                 <div>
-                  <p className="font-bold text-gray-900 text-base mb-1">Parcele em até 3x</p>
+                  <p className="font-bold text-gray-900 text-base mb-1">Parcele em até 12x</p>
                   <p className="text-xs text-gray-600">Sem juros no cartão</p>
                 </div>
               </div>

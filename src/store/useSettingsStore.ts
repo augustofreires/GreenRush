@@ -89,6 +89,12 @@ export const useSettingsStore = create<SettingsStore>()(
     }),
     {
       name: "app-settings-storage",
+      onRehydrateStorage: () => (state) => {
+        // Automaticamente buscar configurações do backend após hidratar do localStorage
+        if (state) {
+          state.fetchSettings();
+        }
+      },
     }
   )
 );

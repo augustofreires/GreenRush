@@ -349,7 +349,7 @@ export const ProductDetail = () => {
                 <FiCreditCard className="text-primary-green flex-shrink-0 mt-1" size={24} />
                 <div>
                   <p className="font-semibold text-sm">Parcelamento</p>
-                  <p className="text-xs text-gray-600">Em até 3x sem juros</p>
+                  <p className="text-xs text-gray-600">Em até 12x</p>
                 </div>
               </div>
             </div>

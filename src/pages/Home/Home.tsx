@@ -20,17 +20,19 @@ export const Home = () => {
   const { getAvailableProducts } = useProductStore();
   const { getPublishedPosts } = useBlogStore();
   const { getActiveCategories, fetchCategories } = useCategoryStore();
-  const { settings } = useSettingsStore();
+  const { settings, fetchSettings } = useSettingsStore();
   const activeBanners = getActiveBanners() || [];
   const activeCategories = getActiveCategories() || [];
 
   // Carregar categorias da API
   useEffect(() => {
+    fetchSettings();
     fetchCategories();
-  }, [fetchCategories]);
+  }, [fetchCategories, fetchSettings]);
 
   // Carregar banners da API
   useEffect(() => {
+    fetchSettings();
     const fetchBanners = async () => {
       try {
         const response = await fetch(`${API_URL}/banners`);
@@ -74,6 +76,7 @@ export const Home = () => {
 
   // Auto-rotate banners
   useEffect(() => {
+    fetchSettings();
     if (activeBanners.length > 1) {
       const interval = setInterval(() => {
         setCurrentBannerIndex((prev) => (prev + 1) % activeBanners.length);

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { FiFileText, FiPlus, FiEdit2, FiTrash2, FiUpload, FiEye, FiEyeOff } from 'react-icons/fi';
 import { useBlogStore, type BlogPost } from '../../store/useBlogStore';
 
@@ -17,6 +17,11 @@ export const AdminBlog = () => {
     category: 'Cabelos',
     published: false,
   });
+
+
+  useEffect(() => {
+    loadPosts();
+  }, [loadPosts]);
 
   const categories = ['Cabelos', 'Saúde', 'Beleza', 'Suplementação', 'Nutrição', 'Bem-estar'];
 

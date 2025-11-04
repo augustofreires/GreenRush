@@ -3,6 +3,7 @@ import { create } from 'zustand';
 const API_URL = import.meta.env.VITE_API_BASE_URL || '/api';
 
 interface CarouselImages {
+  capsulas: string[];
   cha: string[];
   greenrush: string[];
   slimshot: string[];
@@ -21,6 +22,7 @@ interface CarouselStore {
 
 export const useCarouselStore = create<CarouselStore>()((set, get) => ({
   images: {
+    capsulas: [],
     cha: [],
     greenrush: [],
     slimshot: [],
@@ -41,6 +43,7 @@ export const useCarouselStore = create<CarouselStore>()((set, get) => ({
       
       // Organizar imagens por produto
       const imagesByProduct: CarouselImages = {
+        capsulas: [],
         cha: [],
         greenrush: [],
         slimshot: [],

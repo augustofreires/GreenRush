@@ -20,11 +20,12 @@ export const CapsulesLanding = () => {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const { addItem } = useCartStore();
   const { getProductBySlug, getAvailableProducts, getProductsByCustomLanding } = useProductStore();
-  const { images: carouselImages } = useCarouselStore();
+  const { images: carouselImages, loadImages } = useCarouselStore();
   const { settings, fetchSettings } = useSettingsStore();
   useEffect(() => {
+    loadImages();
     fetchSettings();
-  }, [fetchSettings]);
+  }, [loadImages, fetchSettings]);
 
 
   // Buscar produto do banco de dados

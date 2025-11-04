@@ -55,8 +55,10 @@ export const VideoCarousel = ({ productFilter }: VideoCarouselProps = {}) => {
                 }
               }, 100);
             } else {
-              // Pause and reset all non-current videos
-              videoElement.pause();
+              // Immediately pause and reset all non-current videos
+              if (!videoElement.paused) {
+                videoElement.pause();
+              }
               videoElement.currentTime = 0;
             }
           } else {
@@ -75,16 +77,15 @@ export const VideoCarousel = ({ productFilter }: VideoCarouselProps = {}) => {
     return () => {
       const isMobile = window.innerWidth < 768;
       if (isMobile) {
-        videos.forEach((video) => {
+        videos.forEach((video, index) => {
           const videoElement = videoRefs.current[video.id];
-          if (videoElement && !videoElement.paused) {
+          if (videoElement && !videoElement.paused && index !== currentIndex) {
             videoElement.pause();
           }
         });
       }
     };
-  }, [currentIndex, videos.length]);
-
+  }, [currentIndex, videos, videos.length]);
   const handleToggleMute = (videoId: string, event?: React.MouseEvent) => {
     if (event) {
       event.preventDefault();
@@ -156,6 +157,8 @@ export const VideoCarousel = ({ productFilter }: VideoCarouselProps = {}) => {
                     playsInline
                     muted={mutedStates[video.id] !== false}
                     onLoadedMetadata={() => handleVideoLoaded(video.id)}
+                    autoPlay
+                    preload="metadata"
                     preload="metadata"
                     className="w-full h-full object-cover"
                   />

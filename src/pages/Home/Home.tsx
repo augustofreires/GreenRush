@@ -18,7 +18,7 @@ export const Home = () => {
   const [bannersLoaded, setBannersLoaded] = useState(false);
   const { getActiveBanners, setBanners } = useBannerStore();
   const { getAvailableProducts } = useProductStore();
-  const { getPublishedPosts } = useBlogStore();
+  const { getPublishedPosts, loadPosts } = useBlogStore();
   const { getActiveCategories, fetchCategories } = useCategoryStore();
   const { settings, fetchSettings } = useSettingsStore();
   const activeBanners = getActiveBanners() || [];
@@ -26,9 +26,10 @@ export const Home = () => {
 
   // Carregar categorias da API
   useEffect(() => {
+    loadPosts();
     fetchSettings();
     fetchCategories();
-  }, [fetchCategories, fetchSettings]);
+  }, [loadPosts, fetchCategories, fetchSettings]);
 
   // Carregar banners da API
   useEffect(() => {

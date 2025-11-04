@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 import { useParams, Link, Navigate } from 'react-router-dom';
 import { FiCalendar, FiUser, FiTag, FiArrowLeft, FiArrowRight } from 'react-icons/fi';
 import { useBlogStore } from '../../store/useBlogStore';

@@ -237,7 +237,7 @@ export const Home = () => {
             {Array.isArray(activeCategories) && activeCategories.map((category) => (
               <Link
                 key={category.slug}
-                to={`/produtos/${category.slug}`}
+                to={`/${category.slug}`}
                 className={`relative overflow-hidden bg-gradient-to-br ${category.color} text-white rounded-lg p-4 hover:shadow-xl transition-all hover:scale-105 group min-h-[160px] flex items-end`}
               >
                 <div
@@ -268,7 +268,7 @@ export const Home = () => {
             {/* Card Grande Esquerdo */}
             {Array.isArray(activeCategories) && activeCategories[0] && (
               <Link
-                to={`/produtos/${activeCategories[0].slug}`}
+                to={`/${activeCategories[0].slug}`}
                 className={`relative overflow-hidden bg-gradient-to-br ${activeCategories[0].color} text-white rounded-lg p-6 hover:shadow-xl transition-all hover:scale-105 group row-span-2 min-h-[400px] flex items-end`}
               >
                 <div
@@ -300,7 +300,7 @@ export const Home = () => {
               {/* Card Superior Direito */}
               {Array.isArray(activeCategories) && activeCategories[1] && (
                 <Link
-                  to={`/produtos/${activeCategories[1].slug}`}
+                  to={`/${activeCategories[1].slug}`}
                   className={`relative overflow-hidden bg-gradient-to-br ${activeCategories[1].color} text-white rounded-lg p-6 hover:shadow-xl transition-all hover:scale-105 group min-h-[192px] flex items-end`}
                 >
                   <div
@@ -332,7 +332,7 @@ export const Home = () => {
                 {Array.isArray(activeCategories) && activeCategories.slice(2, 4).map((category) => (
                   <Link
                     key={category.slug}
-                    to={`/produtos/${category.slug}`}
+                    to={`/${category.slug}`}
                     className={`relative overflow-hidden bg-gradient-to-br ${category.color} text-white rounded-lg p-6 hover:shadow-xl transition-all hover:scale-105 group min-h-[192px] flex items-end`}
                   >
                     <div

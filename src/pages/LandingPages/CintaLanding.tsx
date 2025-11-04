@@ -13,6 +13,7 @@ import { ProductCard } from '../../components/Product/ProductCard';
 import { BeforeAfterCarousel } from '../../components/BeforeAfter/BeforeAfterCarousel';
 import { VideoCarousel } from '../../components/Testimonials/VideoCarousel';
 import { ReviewsSection } from '../../components/Review/ReviewsSection';
+import { getDeliveryDateRange } from '../../utils/dateUtils';
 
 export const CintaLanding = () => {
   const [selectedPackage, setSelectedPackage] = useState<number | null>(null); // Nenhum kit selecionado por padrão
@@ -34,8 +35,11 @@ export const CintaLanding = () => {
   const product = products.length > 0 ? products[0] : null;
 
   // Produtos relacionados (exceto o atual)
+
   const relatedProducts = getAvailableProducts().filter(p => p.slug !== 'cinta-modeladora').slice(0, 4);
 
+  // Prazo de entrega dinâmico
+  const deliveryDates = getDeliveryDateRange();
   // Todos os produtos disponíveis
   const allProducts = getAvailableProducts();
 
@@ -448,7 +452,7 @@ export const CintaLanding = () => {
                   <FiTruck className="text-green-600 mt-0.5 flex-shrink-0" size={18} />
                   <div>
                     <p className="text-green-800 font-semibold text-sm">
-                      Chegará entre 10 de out. e 13 de out.
+                      Chegará entre {deliveryDates.formatted}
                     </p>
                     <p className="text-green-700 text-xs mt-0.5">
                       Confirme o prazo de entrega antes de finalizar o pedido

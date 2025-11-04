@@ -13,6 +13,7 @@ import { ProductCard } from '../../components/Product/ProductCard';
 import { BeforeAfterCarousel } from '../../components/BeforeAfter/BeforeAfterCarousel';
 import { VideoCarousel } from '../../components/Testimonials/VideoCarousel';
 import { ReviewsSection } from '../../components/Review/ReviewsSection';
+import { getDeliveryDateRange } from '../../utils/dateUtils';
 
 export const CapsulesLanding = () => {
   const [selectedPackage, setSelectedPackage] = useState(2); // 3 frascos como padrão (mais vendido)
@@ -34,6 +35,9 @@ export const CapsulesLanding = () => {
 
   // Produtos relacionados (exceto o atual)
   const relatedProducts = getAvailableProducts().filter(p => p.slug !== 'capsulas').slice(0, 4);
+
+  // Prazo de entrega dinâmico
+  const deliveryDates = getDeliveryDateRange();
 
   // Pacotes de compra com descontos progressivos
   const packages = [
@@ -373,7 +377,7 @@ export const CapsulesLanding = () => {
                   <FiTruck className="text-blue-600 mt-0.5 flex-shrink-0" size={18} />
                   <div>
                     <p className="text-blue-900 font-semibold text-sm">
-                      Chegará entre 10 de out. e 13 de out.
+                      Chegará entre {deliveryDates.formatted}
                     </p>
                     <p className="text-blue-700 text-xs mt-0.5">
                       Confirme o prazo de entrega antes de finalizar o pedido

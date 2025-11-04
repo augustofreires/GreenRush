@@ -3,6 +3,7 @@ import { BrowserRouter as Router, Routes, Route, Navigate, Link, Outlet, useLoca
 import { Header } from './components/Header/Header';
 import { Footer } from './components/Footer/Footer';
 import { PopupNewsletter } from './components/Newsletter/PopupNewsletter';
+import { TrackingScripts } from './components/TrackingScripts';
 import { ProtectedRoute } from './components/ProtectedRoute';
 import { useNewsletterPopup } from './hooks/useNewsletterPopup';
 import { useLoadProducts } from './hooks/useLoadProducts';
@@ -93,6 +94,7 @@ function App() {
 
   return (
     <Router>
+      <TrackingScripts />
       <ScrollToTop />
       <Suspense fallback={<PageLoader />}>
         <Routes>

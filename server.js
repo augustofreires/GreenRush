@@ -2830,6 +2830,62 @@ app.delete('/api/banners/:id', async (req, res) => {
   }
 });
 
+
+// ==================== TRACKING PIXELS API ====================
+
+// Get tracking pixels configuration
+app.get('/api/tracking-pixels', async (req, res) => {
+  try {
+    const [rows] = await db.execute('SELECT * FROM tracking_pixels WHERE id = 1');
+    if (rows.length > 0) {
+      res.json(rows[0]);
+    } else {
+      res.json({
+        meta_pixel_id: null,
+        meta_pixel_enabled: false,
+        google_analytics_id: null,
+        google_analytics_enabled: false,
+        google_tag_manager_id: null,
+        google_tag_manager_enabled: false
+      });
+    }
+  } catch (error) {
+    console.error('Erro ao buscar tracking pixels:', error);
+    res.status(500).json({ error: { message: error.message } });
+  }
+});
+
+// Update tracking pixels configuration
+app.put('/api/tracking-pixels', async (req, res) => {
+  try {
+    const {
+      meta_pixel_id,
+      meta_pixel_enabled,
+      google_analytics_id,
+      google_analytics_enabled,
+      google_tag_manager_id,
+      google_tag_manager_enabled
+    } = req.body;
+
+    await db.execute(
+      'UPDATE tracking_pixels SET meta_pixel_id = ?, meta_pixel_enabled = ?, google_analytics_id = ?, google_analytics_enabled = ?, google_tag_manager_id = ?, google_tag_manager_enabled = ?, updated_at = NOW() WHERE id = 1',
+      [
+        meta_pixel_id || null,
+        meta_pixel_enabled || false,
+        google_analytics_id || null,
+        google_analytics_enabled || false,
+        google_tag_manager_id || null,
+        google_tag_manager_enabled || false
+      ]
+    );
+
+    res.json({ message: 'Configuração de pixels atualizada com sucesso' });
+  } catch (error) {
+    console.error('Erro ao atualizar tracking pixels:', error);
+    res.status(500).json({ error: { message: error.message } });
+  }
+});
+
 // ==================== BEFORE/AFTER API ====================
 
 app.get('/api/before-after', async (req, res) => {

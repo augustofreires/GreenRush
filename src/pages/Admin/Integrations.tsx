@@ -21,6 +21,17 @@ export const AdminIntegrations = () => {
     conversionPixel: '',
   });
 
+  // Tracking Pixels Config
+  const [trackingPixels, setTrackingPixels] = useState({
+    meta_pixel_id: '',
+    meta_pixel_enabled: false,
+    google_analytics_id: '',
+    google_analytics_enabled: false,
+    google_tag_manager_id: '',
+    google_tag_manager_enabled: false
+  });
+  const [savingPixels, setSavingPixels] = useState(false);
+
   useEffect(() => {
     loadConfigs();
   }, []);
@@ -37,6 +48,20 @@ export const AdminIntegrations = () => {
         appmaxStore.setAccessToken(appmax.accessToken);
         appmaxStore.setPublicKey(appmax.publicKey);
         appmaxStore.setEnabled(appmax.enabled);
+      }
+
+      // Carregar tracking pixels
+      const pixelsResponse = await fetch('/api/tracking-pixels');
+      if (pixelsResponse.ok) {
+        const pixels = await pixelsResponse.json();
+        setTrackingPixels({
+          meta_pixel_id: pixels.meta_pixel_id || '',
+          meta_pixel_enabled: pixels.meta_pixel_enabled || false,
+          google_analytics_id: pixels.google_analytics_id || '',
+          google_analytics_enabled: pixels.google_analytics_enabled || false,
+          google_tag_manager_id: pixels.google_tag_manager_id || '',
+          google_tag_manager_enabled: pixels.google_tag_manager_enabled || false
+        });
       }
     } catch (error) {
       console.error('Error loading configs:', error);
@@ -100,6 +125,29 @@ export const AdminIntegrations = () => {
       });
     } finally {
       setTesting(false);
+    }
+  };
+
+  const handleSaveTrackingPixels = async () => {
+    setSavingPixels(true);
+    try {
+      const response = await fetch('/api/tracking-pixels', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(trackingPixels)
+      });
+
+      if (response.ok) {
+        alert('Configurações de pixels salvas com sucesso! A página será recarregada para aplicar as mudanças.');
+        window.location.reload();
+      } else {
+        throw new Error('Erro ao salvar configurações');
+      }
+    } catch (error) {
+      console.error('Erro ao salvar tracking pixels:', error);
+      alert('Erro ao salvar configurações de pixels');
+    } finally {
+      setSavingPixels(false);
     }
   };
 
@@ -264,6 +312,100 @@ export const AdminIntegrations = () => {
             </div>
           </div>
         </div>
+
+      {/* Tracking Pixels Section */}
+      <div className="bg-white rounded-lg shadow-md p-6">
+        <div className="border-b pb-4 mb-6">
+          <h2 className="text-2xl font-bold text-gray-800">Pixels de Rastreamento</h2>
+          <p className="text-gray-600 mt-1">Configure seus pixels de conversão e análise</p>
+        </div>
+
+        <div className="space-y-6">
+          {/* Meta Pixel */}
+          <div className="border-b pb-6">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-lg font-semibold text-gray-700">Meta Pixel (Facebook)</h3>
+              <label className="flex items-center gap-2 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={trackingPixels.meta_pixel_enabled}
+                  onChange={(e) => setTrackingPixels({ ...trackingPixels, meta_pixel_enabled: e.target.checked })}
+                  className="w-4 h-4"
+                />
+                <span className="text-sm">Ativado</span>
+              </label>
+            </div>
+            <input
+              type="text"
+              value={trackingPixels.meta_pixel_id}
+              onChange={(e) => setTrackingPixels({ ...trackingPixels, meta_pixel_id: e.target.value })}
+              placeholder="Cole aqui seu Pixel ID (ex: 1234567890)"
+              className="w-full px-4 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-green-500 focus:border-transparent"
+            />
+            <p className="text-sm text-gray-500 mt-2">Encontre seu Pixel ID em: Meta Business Suite → Eventos → Pixels de Dados</p>
+          </div>
+
+          {/* Google Analytics */}
+          <div className="border-b pb-6">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-lg font-semibold text-gray-700">Google Analytics</h3>
+              <label className="flex items-center gap-2 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={trackingPixels.google_analytics_enabled}
+                  onChange={(e) => setTrackingPixels({ ...trackingPixels, google_analytics_enabled: e.target.checked })}
+                  className="w-4 h-4"
+                />
+                <span className="text-sm">Ativado</span>
+              </label>
+            </div>
+            <input
+              type="text"
+              value={trackingPixels.google_analytics_id}
+              onChange={(e) => setTrackingPixels({ ...trackingPixels, google_analytics_id: e.target.value })}
+              placeholder="Cole aqui seu ID de medição (ex: G-XXXXXXXXXX)"
+              className="w-full px-4 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-green-500 focus:border-transparent"
+            />
+            <p className="text-sm text-gray-500 mt-2">Encontre seu ID em: Google Analytics → Admin → Fluxos de dados → ID de medição</p>
+          </div>
+
+          {/* Google Tag Manager */}
+          <div className="pb-6">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-lg font-semibold text-gray-700">Google Tag Manager</h3>
+              <label className="flex items-center gap-2 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={trackingPixels.google_tag_manager_enabled}
+                  onChange={(e) => setTrackingPixels({ ...trackingPixels, google_tag_manager_enabled: e.target.checked })}
+                  className="w-4 h-4"
+                />
+                <span className="text-sm">Ativado</span>
+              </label>
+            </div>
+            <input
+              type="text"
+              value={trackingPixels.google_tag_manager_id}
+              onChange={(e) => setTrackingPixels({ ...trackingPixels, google_tag_manager_id: e.target.value })}
+              placeholder="Cole aqui seu Container ID (ex: GTM-XXXXXXX)"
+              className="w-full px-4 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-green-500 focus:border-transparent"
+            />
+            <p className="text-sm text-gray-500 mt-2">Encontre seu ID em: Google Tag Manager → Workspace → Container ID</p>
+          </div>
+
+          {/* Save Button */}
+          <div className="flex justify-end">
+            <button
+              onClick={handleSaveTrackingPixels}
+              disabled={savingPixels}
+              className="btn-primary flex items-center gap-2 disabled:opacity-50"
+            >
+              <FiSave />
+              {savingPixels ? 'Salvando...' : 'Salvar Pixels'}
+            </button>
+          </div>
+        </div>
+      </div>
       </div>
     </div>
   );

@@ -89,7 +89,19 @@ export const SlimShotLanding = () => {
   const handleAddToCart = () => {
     if (product) {
       const selectedPkg = packages.find(pkg => pkg.id === selectedPackage);
-      addItem(product, selectedPkg?.quantity || 1);
+      if (selectedPkg) {
+        // Criar produto com preço do kit
+        const productWithKitPrice = {
+          ...product,
+          name: selectedPkg.quantity > 1 
+            ? `${product.name} - Kit ${selectedPkg.quantity} Unidades`
+            : product.name,
+          price: selectedPkg.total,
+          originalPrice: selectedPkg.originalPrice
+        };
+        // Adicionar 1 kit ao carrinho
+        addItem(productWithKitPrice, 1);
+      }
     }
   };
 

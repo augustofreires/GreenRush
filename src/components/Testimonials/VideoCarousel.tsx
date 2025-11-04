@@ -16,6 +16,7 @@ export const VideoCarousel = ({ productFilter }: VideoCarouselProps = {}) => {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [mutedStates, setMutedStates] = useState<{ [key: string]: boolean }>({});
   const videoRefs = useRef<{ [key: string]: HTMLVideoElement | null }>({});
+  const desktopVideoRefs = useRef<{ [key: string]: HTMLVideoElement | null }>({});
 
   // Initialize all videos as muted (only for new videos)
   useEffect(() => {
@@ -41,12 +42,15 @@ export const VideoCarousel = ({ productFilter }: VideoCarouselProps = {}) => {
       const isMobile = window.innerWidth < 768;
 
       videos.forEach((video, index) => {
-        const videoElement = videoRefs.current[video.id];
+        // Use the correct ref based on screen size
+        const videoElement = isMobile 
+          ? videoRefs.current[video.id]
+          : desktopVideoRefs.current[video.id];
+          
         if (videoElement) {
           if (isMobile) {
             // On mobile, play ONLY current video and pause ALL others
             if (index === currentIndex) {
-              // Small delay to ensure DOM is ready
               setTimeout(() => {
                 if (videoElement.paused) {
                   videoElement.play().catch((err) => {
@@ -55,7 +59,6 @@ export const VideoCarousel = ({ productFilter }: VideoCarouselProps = {}) => {
                 }
               }, 100);
             } else {
-              // Immediately pause and reset all non-current videos
               if (!videoElement.paused) {
                 videoElement.pause();
               }
@@ -155,10 +158,8 @@ export const VideoCarousel = ({ productFilter }: VideoCarouselProps = {}) => {
                     poster={video.thumbnailUrl}
                     loop
                     playsInline
-                    muted={mutedStates[video.id] !== false}
                     onLoadedMetadata={() => handleVideoLoaded(video.id)}
-                    autoPlay
-                    preload="metadata"
+                    muted={mutedStates[video.id] !== false}
                     preload="metadata"
                     className="w-full h-full object-cover"
                   />
@@ -233,7 +234,7 @@ export const VideoCarousel = ({ productFilter }: VideoCarouselProps = {}) => {
                   <div className="relative aspect-[9/16] bg-gray-900 rounded-xl overflow-hidden">
                     <video
                       ref={(el) => {
-                        videoRefs.current[video.id] = el;
+                        desktopVideoRefs.current[video.id] = el;
                       }}
                       src={video.videoUrl}
                       poster={video.thumbnailUrl}

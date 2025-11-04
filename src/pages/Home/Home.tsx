@@ -10,6 +10,7 @@ import { useProductStore } from '../../store/useProductStore';
 import { useBlogStore } from '../../store/useBlogStore';
 import { useCategoryStore } from '../../store/useCategoryStore';
 import { useSettingsStore } from '../../store/useSettingsStore';
+import { usePageTitle } from '../../hooks/usePageTitle';
 
 const API_URL = import.meta.env.VITE_API_BASE_URL || '/api';
 
@@ -22,6 +23,8 @@ export const Home = () => {
   const { getActiveCategories, fetchCategories } = useCategoryStore();
   const { settings, fetchSettings } = useSettingsStore();
   const activeBanners = getActiveBanners() || [];
+  // Atualizar título da página
+  usePageTitle('Produtos Naturais para Emagrecimento');
   const activeCategories = getActiveCategories() || [];
 
   // Carregar categorias da API

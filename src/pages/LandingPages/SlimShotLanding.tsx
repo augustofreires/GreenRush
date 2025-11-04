@@ -15,6 +15,7 @@ import { ProductCard } from '../../components/Product/ProductCard';
 import { BeforeAfterCarousel } from '../../components/BeforeAfter/BeforeAfterCarousel';
 import { ReviewsSection } from '../../components/Review/ReviewsSection';
 import { getDeliveryDateRange } from '../../utils/dateUtils';
+import { usePageTitle } from '../../hooks/usePageTitle';
 
 export const SlimShotLanding = () => {
   const [selectedPackage, setSelectedPackage] = useState(2); // 3 shots como padrão (mais vendido)
@@ -27,6 +28,8 @@ export const SlimShotLanding = () => {
   const { videos } = useTestimonialsVideoStore();
   const { getActiveItems } = useBeforeAfterStore();
   const { settings, fetchSettings } = useSettingsStore();
+  // Atualizar título da página
+  usePageTitle('SlimShot - Emagrecimento Natural');
   useEffect(() => {
     fetchSettings();
   }, [fetchSettings]);

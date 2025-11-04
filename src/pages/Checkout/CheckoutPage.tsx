@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
+import { usePageTitle } from '../../hooks/usePageTitle';
 import { useNavigate } from 'react-router-dom';
 import { FiCreditCard, FiCheck, FiTag, FiX, FiChevronRight } from 'react-icons/fi';
 import { useCartStore } from '../../store/useCartStore';
@@ -11,6 +12,7 @@ import type { Address } from '../../types';
 const API_URL = import.meta.env.VITE_API_BASE_URL || '/api';
 
 export const CheckoutPage = () => {
+  usePageTitle('Finalizar Pedido');
   const navigate = useNavigate();
   const { items, getTotal, clearCart } = useCartStore();
   const { user } = useAuthStore();

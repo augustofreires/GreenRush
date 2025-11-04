@@ -14,6 +14,7 @@ import { BeforeAfterCarousel } from '../../components/BeforeAfter/BeforeAfterCar
 import { VideoCarousel } from '../../components/Testimonials/VideoCarousel';
 import { ReviewsSection } from '../../components/Review/ReviewsSection';
 import { getDeliveryDateRange } from '../../utils/dateUtils';
+import { usePageTitle } from '../../hooks/usePageTitle';
 
 export const CintaLanding = () => {
   const [selectedPackage, setSelectedPackage] = useState<number | null>(null); // Nenhum kit selecionado por padrão
@@ -23,6 +24,8 @@ export const CintaLanding = () => {
   const { addItem } = useCartStore();
   const { images: carouselImages } = useCarouselStore();
   const { settings, fetchSettings } = useSettingsStore();
+  // Atualizar título da página
+  usePageTitle('Cinta Modeladora - Corpo Perfeito');
 
 
   useEffect(() => {

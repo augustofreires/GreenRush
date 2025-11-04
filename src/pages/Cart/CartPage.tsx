@@ -1,8 +1,10 @@
 import { Link } from 'react-router-dom';
+import { usePageTitle } from '../../hooks/usePageTitle';
 import { FiTrash2, FiMinus, FiPlus, FiShoppingBag } from 'react-icons/fi';
 import { useCartStore } from '../../store/useCartStore';
 
 export const CartPage = () => {
+  usePageTitle('Carrinho de Compras');
   const { items, removeItem, updateQuantity, getTotal, clearCart } = useCartStore();
 
   console.log('[CartPage] Items:', items);

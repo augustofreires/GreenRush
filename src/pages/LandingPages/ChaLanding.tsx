@@ -14,6 +14,7 @@ import { BeforeAfterCarousel } from '../../components/BeforeAfter/BeforeAfterCar
 import { VideoCarousel } from '../../components/Testimonials/VideoCarousel';
 import { ReviewsSection } from '../../components/Review/ReviewsSection';
 import { getDeliveryDateRange } from '../../utils/dateUtils';
+import { usePageTitle } from '../../hooks/usePageTitle';
 
 export const ChaLanding = () => {
   const [selectedPackage, setSelectedPackage] = useState(2); // 3 unidades como padrão (mais vendido)
@@ -25,6 +26,8 @@ export const ChaLanding = () => {
   const { settings, fetchSettings } = useSettingsStore();
   useEffect(() => {
     fetchSettings();
+  // Atualizar título da página
+  usePageTitle('Chá Detox - Emagrecimento Natural');
   }, [fetchSettings]);
 
 

@@ -14,6 +14,7 @@ import { BeforeAfterCarousel } from '../../components/BeforeAfter/BeforeAfterCar
 import { VideoCarousel } from '../../components/Testimonials/VideoCarousel';
 import { ReviewsSection } from '../../components/Review/ReviewsSection';
 import { getDeliveryDateRange } from '../../utils/dateUtils';
+import { usePageTitle } from '../../hooks/usePageTitle';
 
 export const CapsulesLanding = () => {
   const [selectedPackage, setSelectedPackage] = useState(2); // 3 frascos como padrão (mais vendido)
@@ -27,6 +28,8 @@ export const CapsulesLanding = () => {
     loadImages();
     fetchSettings();
   }, [loadImages, fetchSettings]);
+  // Atualizar título da página
+  usePageTitle('Cápsulas Emagrecedoras - Resultado Garantido');
 
 
   // Buscar produto do banco de dados

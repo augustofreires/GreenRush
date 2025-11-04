@@ -44,15 +44,18 @@ export const VideoCarousel = ({ productFilter }: VideoCarouselProps = {}) => {
         const videoElement = videoRefs.current[video.id];
         if (videoElement) {
           if (isMobile) {
-            // On mobile, play current video and pause others
+            // On mobile, play ONLY current video and pause ALL others
             if (index === currentIndex) {
-              if (videoElement.paused) {
-                videoElement.play().catch(() => {
-                  // Se autoplay falhar, é porque o navegador bloqueia sem interação
-                  console.log("Autoplay bloqueado");
-                });
-              }
+              // Small delay to ensure DOM is ready
+              setTimeout(() => {
+                if (videoElement.paused) {
+                  videoElement.play().catch((err) => {
+                    console.log("Autoplay bloqueado:", err);
+                  });
+                }
+              }, 100);
             } else {
+              // Pause and reset all non-current videos
               videoElement.pause();
               videoElement.currentTime = 0;
             }
@@ -67,6 +70,19 @@ export const VideoCarousel = ({ productFilter }: VideoCarouselProps = {}) => {
     };
 
     playVisibleVideos();
+    
+    // Cleanup: pause all videos when unmounting or changing
+    return () => {
+      const isMobile = window.innerWidth < 768;
+      if (isMobile) {
+        videos.forEach((video) => {
+          const videoElement = videoRefs.current[video.id];
+          if (videoElement && !videoElement.paused) {
+            videoElement.pause();
+          }
+        });
+      }
+    };
   }, [currentIndex, videos.length]);
 
   const handleToggleMute = (videoId: string, event?: React.MouseEvent) => {
@@ -138,7 +154,6 @@ export const VideoCarousel = ({ productFilter }: VideoCarouselProps = {}) => {
                     poster={video.thumbnailUrl}
                     loop
                     playsInline
-                    autoPlay
                     muted={mutedStates[video.id] !== false}
                     onLoadedMetadata={() => handleVideoLoaded(video.id)}
                     preload="metadata"

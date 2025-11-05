@@ -298,7 +298,7 @@ export const ChaLanding = () => {
                   </span>
                 </div>
                 <p className="text-sm text-gray-600">
-                  ou 12x de <span className="font-semibold text-gray-900">R$ {((selectedPkg?.total || 0) / 12).toFixed(2)}</span> sem juros
+                  ou 12x de <span className="font-semibold text-gray-900">R$ {(((selectedPkg?.total || 0) * 1.3487) / 12).toFixed(2)}</span>
                 </p>
               </div>
 
@@ -408,7 +408,7 @@ export const ChaLanding = () => {
                 </div>
                 <div className="flex items-center gap-1.5 text-gray-600">
                   <FiAward className="text-green-600" size={16} />
-                  <span className="text-xs">Garantia de 30 dias</span>
+                  <span className="text-xs">Garantia de 07 dias</span>
                 </div>
                 <div className="flex items-center gap-1.5 text-gray-600">
                   <FiHeart className="text-green-600" size={16} />
@@ -433,7 +433,7 @@ export const ChaLanding = () => {
                 </div>
                 <div>
                   <p className="font-bold text-gray-900 mb-1">Frete Grátis</p>
-                  <p className="text-xs text-gray-600">Acima de R$ 350</p>
+                  <p className="text-xs text-gray-600">para todo o brasil</p>
                 </div>
               </div>
             </div>
@@ -461,7 +461,7 @@ export const ChaLanding = () => {
                 </div>
                 <div>
                   <p className="font-bold text-gray-900 mb-1">Parcele em até 12x</p>
-                  <p className="text-xs text-gray-600">Sem juros no cartão</p>
+                  <p className="text-xs text-gray-600">no seu cartão de crédito</p>
                 </div>
               </div>
             </div>
@@ -474,8 +474,7 @@ export const ChaLanding = () => {
                   <FiAward className="w-7 h-7" />
                 </div>
                 <div>
-                  <p className="font-bold text-gray-900 mb-1">Garantia 30 dias</p>
-                  <p className="text-xs text-gray-600">Devolução grátis</p>
+                  <p className="font-bold text-gray-900 mb-1">Garantia 07 dias</p>
                 </div>
               </div>
             </div>

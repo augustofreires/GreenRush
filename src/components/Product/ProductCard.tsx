@@ -123,7 +123,7 @@ export const ProductCard = ({ product }: ProductCardProps) => {
 
         {/* Installments */}
         <p className="text-xs text-gray-600 mt-1">
-          ou 12x de R$ {((product.price * 1.3487) / 12).toFixed(2).replace('.', ',')} sem juros
+          ou 12x de R$ {((product.price * 1.3487) / 12).toFixed(2).replace('.', ',')}
         </p>
 
         {/* Stock */}

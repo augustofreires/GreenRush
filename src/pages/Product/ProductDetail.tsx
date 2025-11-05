@@ -335,7 +335,7 @@ export const ProductDetail = () => {
                 <FiTruck className="text-primary-green flex-shrink-0 mt-1" size={24} />
                 <div>
                   <p className="font-semibold text-sm">Frete Grátis</p>
-                  <p className="text-xs text-gray-600">Acima de R$ 350</p>
+                  <p className="text-xs text-gray-600">para todo o brasil</p>
                 </div>
               </div>
               <div className="flex items-start gap-3">

@@ -347,7 +347,7 @@ export const SlimShotLanding = () => {
                   <span className="text-3xl md:text-4xl font-bold text-gray-900">
                     R$ {(selectedPkg?.total || 0).toFixed(2)}
                   </span>
-                  <span className="text-sm text-gray-600">12x de R$ {((selectedPkg?.total || 0) / 12).toFixed(2)} sem juros</span>
+                  <span className="text-sm text-gray-600">12x de R$ {(((selectedPkg?.total || 0) * 1.3487) / 12).toFixed(2)}</span>
                 </div>
               </div>
 
@@ -457,7 +457,7 @@ export const SlimShotLanding = () => {
                 </div>
                 <div className="flex items-center gap-1.5 text-gray-600">
                   <FiAward className="text-orange-600" size={16} />
-                  <span className="text-xs">Garantia de 30 dias</span>
+                  <span className="text-xs">Garantia de 07 dias</span>
                 </div>
                 <div className="flex items-center gap-1.5 text-gray-600">
                   <FiHeart className="text-red-600" size={16} />
@@ -492,7 +492,7 @@ export const SlimShotLanding = () => {
 
                 <div>
                   <p className="font-bold text-gray-900 text-base mb-1">Frete Grátis</p>
-                  <p className="text-xs text-gray-600">Acima de R$ 350</p>
+                  <p className="text-xs text-gray-600">para todo o brasil</p>
                 </div>
               </div>
 
@@ -531,7 +531,7 @@ export const SlimShotLanding = () => {
 
                 <div>
                   <p className="font-bold text-gray-900 text-base mb-1">Parcele em até 12x</p>
-                  <p className="text-xs text-gray-600">Sem juros no cartão</p>
+                  <p className="text-xs text-gray-600">no seu cartão de crédito</p>
                 </div>
               </div>
 
@@ -549,8 +549,7 @@ export const SlimShotLanding = () => {
                 </div>
 
                 <div>
-                  <p className="font-bold text-gray-900 text-base mb-1">Garantia 30 dias</p>
-                  <p className="text-xs text-gray-600">Devolução grátis</p>
+                  <p className="font-bold text-gray-900 text-base mb-1">Garantia 07 dias</p>
                 </div>
               </div>
 

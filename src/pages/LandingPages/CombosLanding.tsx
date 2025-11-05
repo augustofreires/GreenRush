@@ -344,7 +344,7 @@ export const CombosLanding = () => {
                   <span className="text-3xl md:text-4xl font-bold text-gray-900">
                     R$ {selectedPkg?.pricePerUnit.toFixed(2)}
                   </span>
-                  <span className="text-sm text-gray-600">12x de R$ {((selectedPkg?.total || 0) / 12).toFixed(2)} sem juros</span>
+                  <span className="text-sm text-gray-600">12x de R$ {(((selectedPkg?.total || 0) * 1.3487) / 12).toFixed(2)}</span>
                 </div>
               </div>
 
@@ -454,7 +454,7 @@ export const CombosLanding = () => {
                 </div>
                 <div className="flex items-center gap-1.5 text-gray-600">
                   <FiAward className="text-green-600" size={16} />
-                  <span className="text-xs">Garantia de 30 dias</span>
+                  <span className="text-xs">Garantia de 07 dias</span>
                 </div>
                 <div className="flex items-center gap-1.5 text-gray-600">
                   <FiHeart className="text-green-600" size={16} />
@@ -473,7 +473,7 @@ export const CombosLanding = () => {
             <div className="flex flex-col items-center gap-2">
               <FiTruck className="text-green-600 w-8 h-8" />
               <p className="font-semibold text-sm">Frete Grátis</p>
-              <p className="text-xs text-gray-600">Acima de R$ 350</p>
+              <p className="text-xs text-gray-600">para todo o brasil</p>
             </div>
             <div className="flex flex-col items-center gap-2">
               <FiShield className="text-green-600 w-8 h-8" />
@@ -483,12 +483,11 @@ export const CombosLanding = () => {
             <div className="flex flex-col items-center gap-2">
               <FiCreditCard className="text-green-600 w-8 h-8" />
               <p className="font-semibold text-sm">Parcele em até 12x</p>
-              <p className="text-xs text-gray-600">Sem juros no cartão</p>
+              <p className="text-xs text-gray-600">no seu cartão de crédito</p>
             </div>
             <div className="flex flex-col items-center gap-2">
               <FiAward className="text-green-600 w-8 h-8" />
-              <p className="font-semibold text-sm">Garantia 30 dias</p>
-              <p className="text-xs text-gray-600">Devolução grátis</p>
+              <p className="font-semibold text-sm">Garantia 07 dias</p>
             </div>
           </div>
         </div>

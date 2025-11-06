@@ -468,6 +468,63 @@ app.post('/api/appmax/track/event', async (req, res) => {
   }
 });
 
+// Tracking de Carrinho Abandonado
+app.post('/api/appmax/abandoned-cart', async (req, res) => {
+  try {
+    const { customerData, cartItems } = req.body;
+    
+    if (!appmaxConfig.enabled || !appmaxConfig.accessToken) {
+      return res.json({ success: false, message: 'Appmax não configurado' });
+    }
+
+    if (!customerData || !cartItems || cartItems.length === 0) {
+      return res.json({ success: false, message: 'Dados inválidos' });
+    }
+
+    console.log('📧 Enviando carrinho abandonado para Appmax...');
+
+    // Formatar produtos para Appmax
+    const products = cartItems.map(item => ({
+      product_sku: item.id?.toString() || 'SKU-' + Math.random().toString(36).substring(7),
+      product_qty: item.quantity
+    }));
+
+    const total = cartItems.reduce((sum, item) => 
+      sum + (item.price * item.quantity), 0
+    );
+
+    // Enviar para Appmax API
+    const response = await axios.post(
+      `${appmaxConfig.apiUrl}/customer`,
+      {
+        'access-token': appmaxConfig.accessToken,
+        firstname: customerData.name?.split(' ')[0] || 'Cliente',
+        lastname: customerData.name?.split(' ').slice(1).join(' ') || 'Appmax',
+        email: customerData.email,
+        telephone: customerData.phone,
+        custom_txt: `Carrinho abandonado - Total: R$ ${total.toFixed(2)} - ${cartItems.length} produtos`,
+        products: products,
+        tracking: {
+          utm_source: 'checkout',
+          utm_campaign: 'carrinho-abandonado',
+          utm_medium: 'website'
+        }
+      },
+      {
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      }
+    );
+
+    console.log('✅ Carrinho abandonado enviado para Appmax:', response.data);
+    res.json({ success: true, data: response.data });
+  } catch (error) {
+    console.error('❌ Erro ao enviar carrinho abandonado:', error.response?.data || error.message);
+    res.json({ success: false, error: error.message });
+  }
+});
+
 // Obter link de afiliado
 app.get('/api/appmax/affiliate/link/:productId', async (req, res) => {
   try {

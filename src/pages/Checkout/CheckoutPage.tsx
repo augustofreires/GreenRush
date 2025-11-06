@@ -6,6 +6,7 @@ import { useCartStore } from '../../store/useCartStore';
 import { useAuthStore } from '../../store/useAuthStore';
 import { useAddressStore } from '../../store/useAddressStore';
 import { orderService } from '../../services/orderService';
+import { appmaxService } from '../../services/appmaxService';
 import axios from 'axios';
 import type { Address } from '../../types';
 
@@ -65,6 +66,7 @@ export const CheckoutPage = () => {
   const [couponCode, setCouponCode] = useState('');
   const [couponLoading, setCouponLoading] = useState(false);
   const [couponError, setCouponError] = useState('');
+  const [abandonedCartSent, setAbandonedCartSent] = useState(false);
 
   const subtotal = getTotal();
   const shipping = 0; // Frete grátis sempre
@@ -107,6 +109,7 @@ export const CheckoutPage = () => {
     }
   }, [createdOrder]);
 
+
   // Validação da etapa de contato
   const validateContactStep = () => {
     if (!contactInfo.name.trim()) {
@@ -144,8 +147,27 @@ export const CheckoutPage = () => {
   };
 
   // Navegação entre etapas
-  const handleContinueToShipping = () => {
+  const handleContinueToShipping = async () => {
     if (validateContactStep()) {
+      // Enviar carrinho abandonado para Appmax antes de avançar
+      if (!abandonedCartSent && items.length > 0) {
+        try {
+          console.log('📧 Enviando carrinho abandonado para Appmax...');
+          await appmaxService.trackAbandonedCart(
+            {
+              name: contactInfo.name || 'Cliente',
+              email: contactInfo.email,
+              phone: contactInfo.phone
+            },
+            items
+          );
+          setAbandonedCartSent(true);
+          console.log('✅ Carrinho abandonado enviado com sucesso');
+        } catch (error) {
+          console.error('❌ Erro ao enviar carrinho abandonado:', error);
+          // Não bloquear o checkout se houver erro
+        }
+      }
       setCurrentStep('shipping');
     }
   };

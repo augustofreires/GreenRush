@@ -80,4 +80,17 @@ export const appmaxService = {
     const response = await appmaxApi.post('/orders', orderData);
     return response.data;
   },
+
+  // Tracking de Carrinho Abandonado
+  async trackAbandonedCart(customerData: any, items: any[]): Promise<void> {
+    try {
+      await appmaxApi.post('/abandoned-cart', {
+        customerData,
+        cartItems: items
+      });
+    } catch (error) {
+      console.error('Erro ao enviar carrinho abandonado:', error);
+      // Não lançar erro para não atrapalhar o checkout
+    }
+  },
 };

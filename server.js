@@ -1890,7 +1890,7 @@ function requireAdminAuth(req, res, next) {
 // Criar novo pedido
 app.post('/api/orders', async (req, res) => {
   try {
-    const { items, shippingAddress, billingAddress, paymentMethod } = req.body;
+    const { items, shippingAddress, billingAddress, paymentMethod, appliedCoupon } = req.body;
 
     if (!items || items.length === 0) {
       return res.status(400).json({ error: 'Carrinho vazio' });
@@ -1913,8 +1913,10 @@ app.post('/api/orders', async (req, res) => {
     const subtotal = items.reduce((sum, item) => sum + (item.price * item.quantity), 0);
     const shipping = 0; // Frete grátis sempre
     const pixDiscount = paymentMethod === 'pix' ? subtotal * 0.05 : 0;
-    const total = subtotal + shipping - pixDiscount;
+    const couponDiscount = appliedCoupon ? subtotal * (appliedCoupon.discount_percent / 100) : 0;
+    const total = subtotal + shipping - pixDiscount - couponDiscount;
 
+    if (appliedCoupon) console.log(`🎟️  Cupom aplicado: ${appliedCoupon.code} - Desconto: R$ ${couponDiscount.toFixed(2)}`);
     // 1. Criar cliente na Appmax
     console.log('👤 Criando cliente na Appmax...');
     
@@ -1930,7 +1932,7 @@ app.post('/api/orders', async (req, res) => {
       address_street_district: shippingAddress.neighborhood || 'Centro',
       address_city: shippingAddress.city || 'São Paulo',
       address_state: shippingAddress.state || 'SP',
-      ip: req.ip || '127.0.0.1',
+      ip: req.headers['cf-connecting-ip'] || req.headers['x-forwarded-for']?.split(',')[0]?.trim() || req.ip || '127.0.0.1',
     };
 
     if (shippingAddress.complement) {
@@ -1974,7 +1976,7 @@ app.post('/api/orders', async (req, res) => {
       })),
       shipping: shipping,
       customer_id: customerId,
-      discount: pixDiscount,
+      discount: pixDiscount + couponDiscount,
       freight_type: 'PAC'
     };
 
@@ -2014,6 +2016,7 @@ app.post('/api/orders', async (req, res) => {
         return res.status(400).json({
           error: 'Dados do cartão incompletos'
         });
+      console.log("📋 Dados do cartão sendo enviados:", JSON.stringify({ number: cardData.number.slice(0, 6) + "****" + cardData.number.slice(-4), name: cardData.name, month, year: `20${year}`, cvv: "***", document: shippingAddress.cpf, installments: installments || 1 }, null, 2));
       }
 
       // Separar mês e ano da validade
@@ -2140,7 +2143,7 @@ app.post('/api/orders', async (req, res) => {
       total: total,
       subtotal: subtotal,
       shipping: shipping,
-      discount: pixDiscount,
+      discount: pixDiscount + couponDiscount,
       status: cardPaymentData ? (cardPaymentData.status === 'approved' ? 'confirmed' : 'pending') : 'pending',
       paymentMethod: paymentMethod,
       paymentStatus: cardPaymentData ? (cardPaymentData.status || 'pending') : 'pending',

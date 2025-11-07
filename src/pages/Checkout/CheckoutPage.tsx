@@ -49,7 +49,7 @@ export const CheckoutPage = () => {
   });
 
   const [paymentMethod, setPaymentMethod] = useState('credit_card');
-  const [installments, setInstallments] = useState(1);
+  const [installments, setInstallments] = useState(0);
 
   // Card state
   const [cardNumber, setCardNumber] = useState('');
@@ -182,8 +182,8 @@ export const CheckoutPage = () => {
     e.preventDefault();
 
     // Validar CPF antes de processar
-    if (!contactInfo.cpf.trim() || contactInfo.cpf.length !== 11) {
-      alert('Por favor, preencha um CPF válido.');
+    if (!contactInfo.cpf.trim() || !(contactInfo.cpf.length === 11 || contactInfo.cpf.length === 14)) {
+      alert('Por favor, preencha um CPF ou CNPJ válido.');
       return;
     }
 
@@ -249,6 +249,7 @@ export const CheckoutPage = () => {
           cpf: contactInfo.cpf,
         },
         paymentMethod,
+        appliedCoupon: appliedCoupon,
         userId: user?.id,
         installments,
         ...(paymentMethod === 'credit_card' && {
@@ -618,13 +619,13 @@ export const CheckoutPage = () => {
                   </div>
                   <div className="p-5">
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">CPF</label>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">CPF/CNPJ</label>
                       <input
                         type="text"
                         required
                         value={contactInfo.cpf}
-                        onChange={(e) => setContactInfo({ ...contactInfo, cpf: e.target.value.replace(/\D/g, '').slice(0, 11) })}
-                        placeholder="000.000.000-00"
+                        onChange={(e) => setContactInfo({ ...contactInfo, cpf: e.target.value.replace(/\D/g, '').slice(0, 14) })}
+                        placeholder="000.000.000-00 ou 00.000.000/0000-00"
                         className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#4a9d4e] focus:border-transparent transition-all"
                       />
                     </div>
@@ -730,7 +731,7 @@ export const CheckoutPage = () => {
                             onChange={(e) => setInstallments(Number(e.target.value))}
                             className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#4a9d4e] focus:border-transparent"
                           >
-                            <option value={1}>Selecione a parcela</option>
+                            <option value="" disabled>Selecione a parcela</option>
                             {[...Array(12)].map((_, i) => {
                               const parcelas = i + 1;
                               let valorComJuros = total;

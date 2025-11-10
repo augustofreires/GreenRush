@@ -518,6 +518,58 @@ app.post('/api/appmax/abandoned-cart', async (req, res) => {
     );
 
     console.log('✅ Carrinho abandonado enviado para Appmax:', response.data);
+
+    // Enviar TAMBÉM para Reportana (em paralelo, sem bloquear o fluxo)
+    try {
+      console.log('📊 Enviando carrinho abandonado para Reportana API...');
+
+      // Credenciais API Reportana
+      const reportanaClientId = '9043271280546282';
+      const reportanaClientSecret = 'FbtJywj5TJ538QARwwZvGNGuFIgoWrZQ';
+      const reportanaAuth = Buffer.from(`${reportanaClientId}:${reportanaClientSecret}`).toString('base64');
+
+      // Formatar line_items para Reportana
+      const lineItems = cartItems.map(item => ({
+        title: item.name || 'Produto',
+        variant_title: item.variant || null,
+        quantity: item.quantity,
+        price: item.price
+      }));
+
+      // Gerar reference_id único
+      const referenceId = `cart_${Date.now()}_${Math.random().toString(36).substring(7)}`;
+
+      const reportanaPayload = {
+        reference_id: referenceId,
+        number: referenceId.substring(0, 20),
+        customer_name: customerData.name || 'Cliente',
+        customer_email: customerData.email,
+        customer_phone: customerData.phone || '',
+        currency: 'BRL',
+        total_price: total,
+        subtotal_price: total,
+        original_created_at: new Date().toISOString().slice(0, 16).replace('T', ' '),
+        checkout_url: `https://greenrush.com.br/checkout`,
+        line_items: lineItems
+      };
+
+      await axios.post(
+        'https://api.reportana.com/2022-05/abandoned-checkouts',
+        reportanaPayload,
+        {
+          headers: {
+            'Authorization': `Basic ${reportanaAuth}`,
+            'Content-Type': 'application/json',
+          },
+        }
+      );
+
+      console.log('✅ Carrinho abandonado criado na Reportana:', referenceId);
+    } catch (reportanaError) {
+      console.error('⚠️  Erro ao enviar para Reportana (não crítico):', reportanaError.response?.data || reportanaError.message);
+      // Não bloqueia o fluxo principal
+    }
+
     res.json({ success: true, data: response.data });
   } catch (error) {
     console.error('❌ Erro ao enviar carrinho abandonado:', error.response?.data || error.message);

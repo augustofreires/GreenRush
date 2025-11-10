@@ -9,6 +9,7 @@ import { orderService } from '../../services/orderService';
 import { appmaxService } from '../../services/appmaxService';
 import axios from 'axios';
 import type { Address } from '../../types';
+import { trackInitiateCheckout, trackAddPaymentInfo, trackPurchase } from '../../utils/tracking';
 
 const API_URL = import.meta.env.VITE_API_BASE_URL || '/api';
 
@@ -109,6 +110,28 @@ export const CheckoutPage = () => {
     }
   }, [createdOrder]);
 
+  // Disparar evento InitiateCheckout quando página carrega
+  useEffect(() => {
+    if (items.length > 0) {
+      const total = getTotal();
+      const trackingItems = items.map(item => ({
+        id: item.id,
+        name: item.name,
+        price: item.price,
+        quantity: item.quantity,
+        category: item.category
+      }));
+      trackInitiateCheckout(trackingItems, total);
+    }
+  }, []); // Apenas uma vez quando monta
+
+  // Disparar evento AddPaymentInfo quando método de pagamento mudar
+  useEffect(() => {
+    if (paymentMethod && currentStep === 'payment') {
+      const total = getTotal();
+      trackAddPaymentInfo(paymentMethod, total);
+    }
+  }, [paymentMethod, currentStep]);
 
   // Validação da etapa de contato
   const validateContactStep = () => {
@@ -267,6 +290,21 @@ export const CheckoutPage = () => {
       const order = await orderService.create(orderData);
 
       console.log('✅ Pedido criado:', order);
+
+      // 🎉 DISPARAR EVENTO DE CONVERSÃO (Purchase)
+      const trackingItems = items.map(item => ({
+        id: item.id,
+        name: item.name,
+        price: item.price,
+        quantity: item.quantity,
+        category: item.category
+      }));
+      trackPurchase(
+        order.id || order.localId,
+        trackingItems,
+        order.total,
+        appliedCoupon?.code
+      );
 
       // Salvar o pedido criado no estado
       setCreatedOrder(order);

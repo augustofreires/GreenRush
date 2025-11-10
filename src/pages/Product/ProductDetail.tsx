@@ -7,6 +7,7 @@ import { ProductCard } from '../../components/Product/ProductCard';
 import { WhyChoose } from '../../components/Product/WhyChoose';
 import { ProductFAQ } from '../../components/Product/ProductFAQ';
 import { ProductReviews } from '../../components/Review/ProductReviews';
+import { trackViewContent, trackAddToCart } from '../../utils/tracking';
 
 export const ProductDetail = () => {
   const { slug } = useParams<{ slug: string }>();
@@ -19,6 +20,22 @@ export const ProductDetail = () => {
 
   const [selectedVariant, setSelectedVariant] = useState<string>('');
   const [activeTab, setActiveTab] = useState<'description' | 'benefits' | 'ingredients' | 'howToUse'>('description');
+
+  // Disparar evento ViewContent quando produto carregar
+  useEffect(() => {
+    if (product) {
+      const variant = product.variants?.find(v => v.id === selectedVariant);
+      const price = variant?.price || product.price;
+
+      trackViewContent({
+        id: product.id,
+        name: product.name,
+        price: price,
+        category: product.category,
+        brand: 'Green Rush'
+      });
+    }
+  }, [product?.id]); // Só dispara quando o produto muda
 
   // Selecionar automaticamente a primeira variação com estoque quando o produto carregar
   useEffect(() => {
@@ -72,6 +89,15 @@ export const ProductDetail = () => {
   const handleAddToCart = () => {
     const productToAdd = { ...product, selectedVariant };
     addItem(productToAdd, quantity);
+
+    // Disparar evento AddToCart
+    trackAddToCart([{
+      id: product.id,
+      name: product.name,
+      price: currentPrice,
+      quantity: quantity,
+      category: product.category
+    }]);
   };
 
   const incrementQuantity = () => setQuantity(q => Math.min(q + 1, currentStock));

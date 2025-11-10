@@ -4,6 +4,7 @@ import { FiCheckCircle, FiPackage, FiCreditCard, FiMapPin, FiClock, FiCopy, FiLo
 import { orderService } from '../../services/orderService';
 import axios from 'axios';
 import type { Order } from '../../types';
+import { trackPurchase } from '../../utils/tracking';
 
 const API_URL = import.meta.env.VITE_API_BASE_URL || '/api';
 
@@ -33,6 +34,7 @@ export const OrderConfirmation = () => {
   });
   const [processingPayment, setProcessingPayment] = useState(false);
   const [paymentSuccess, setPaymentSuccess] = useState(false);
+  const [purchaseEventFired, setPurchaseEventFired] = useState(false);
 
   useEffect(() => {
     const fetchOrder = async () => {
@@ -49,6 +51,26 @@ export const OrderConfirmation = () => {
         const orderData = await orderService.getById(orderId);
         console.log('✅ Pedido encontrado:', orderData);
         setOrder(orderData);
+
+        // 🎉 DISPARAR EVENTO DE CONVERSÃO (Purchase) - Backup
+        // Só dispara se ainda não foi disparado (evita duplicatas)
+        if (!purchaseEventFired && orderData.items) {
+          const trackingItems = orderData.items.map((item: any) => ({
+            id: item.id,
+            name: item.name,
+            price: item.price,
+            quantity: item.quantity,
+            category: item.category
+          }));
+          trackPurchase(
+            orderData.id,
+            trackingItems,
+            orderData.total,
+            undefined // coupon não disponível aqui
+          );
+          setPurchaseEventFired(true);
+          console.log('🎯 Purchase event (backup) disparado na confirmação');
+        }
       } catch (error) {
         console.error('❌ Erro ao buscar pedido:', error);
         alert('Pedido não encontrado. Você será redirecionado para a home.');

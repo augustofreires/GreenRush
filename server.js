@@ -606,14 +606,81 @@ app.get('/api/appmax/commissions', async (req, res) => {
 app.post('/api/appmax/webhook', async (req, res) => {
   try {
     const payload = req.body;
-    console.log('📥 Webhook Appmax recebido:', payload);
+    console.log('📥 Webhook Appmax recebido:', JSON.stringify(payload, null, 2));
 
-    // Processar webhook (implementar lógica de negócio)
-    // Por exemplo: atualizar status de pedido, comissão de afiliado, etc.
+    // Processar webhook - atualizar status e incrementar cupom se aprovado
+    if (payload.data && payload.data.id && payload.event) {
+      try {
+        const appmaxOrderId = payload.data.id;
+        const event = payload.event;
+
+        console.log(`🔔 Evento: ${event} | Pedido Appmax: ${appmaxOrderId}`);
+
+        // Mapear eventos da Appmax para status internos
+        const eventStatusMap = {
+          'OrderApproved': 'approved',
+          'OrderAuthorized': 'approved',
+          'OrderPaid': 'paid',
+          'PixPaid': 'paid',
+          'BilletGenerated': 'waiting_payment',
+          'PixGenerated': 'waiting_payment',
+          'OrderRefunded': 'refunded',
+          'OrderRefundedPartially': 'refunded_partially',
+          'PaymentNotAuthorized': 'payment_failed',
+          'PixExpired': 'expired',
+          'OrderWithExpiredBillet': 'expired'
+        };
+
+        const newStatus = eventStatusMap[event];
+
+        if (!newStatus) {
+          console.log(`⚠️  Evento ${event} não mapeado, ignorando...`);
+          return res.json({ success: true, message: 'Evento não mapeado' });
+        }
+
+        // Buscar pedido pelo appmax_order_id
+        const [orders] = await db.execute(
+          'SELECT id, status, coupon_code FROM orders WHERE appmax_order_id = ?',
+          [appmaxOrderId]
+        );
+
+        if (orders.length > 0) {
+          const order = orders[0];
+          const approvedStatuses = ['approved', 'confirmed', 'paid', 'processing'];
+          const wasNotApproved = !approvedStatuses.includes(order.status);
+          const isNowApproved = approvedStatuses.includes(newStatus);
+
+          console.log(`📦 Pedido local: ${order.id} | Status anterior: ${order.status} → Novo: ${newStatus}`);
+
+          // Atualizar status do pedido
+          await db.execute(
+            'UPDATE orders SET status = ? WHERE id = ?',
+            [newStatus, order.id]
+          );
+
+          console.log(`✅ Status atualizado: ${order.id} → ${newStatus}`);
+
+          // Se foi aprovado e tinha cupom, incrementar usage_count
+          if (wasNotApproved && isNowApproved && order.coupon_code) {
+            await db.execute(
+              'UPDATE coupons SET usage_count = usage_count + 1 WHERE code = ?',
+              [order.coupon_code]
+            );
+            console.log(`🎟️  Cupom ${order.coupon_code} incrementado via webhook (venda aprovada)`);
+          }
+        } else {
+          console.log(`⚠️  Pedido Appmax ${appmaxOrderId} não encontrado no banco local`);
+        }
+      } catch (dbError) {
+        console.error('❌ Erro ao processar webhook no banco:', dbError);
+      }
+    } else {
+      console.log('⚠️  Webhook sem dados válidos:', payload);
+    }
 
     res.json({ success: true, message: 'Webhook processado' });
   } catch (error) {
-    console.error('Erro ao processar webhook Appmax:', error);
+    console.error('❌ Erro ao processar webhook Appmax:', error);
     res.status(500).json({
       error: { message: error.message },
     });
@@ -2112,7 +2179,7 @@ app.post('/api/orders', async (req, res) => {
       const shippingJSON = JSON.stringify(shippingAddress);
       
       await db.execute(
-        'INSERT INTO orders (id, customer_name, customer_email, customer_phone, customer_cpf, items, total, payment_method, shipping_address, status, created_at, appmax_order_id, appmax_customer_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
+        'INSERT INTO orders (id, customer_name, customer_email, customer_phone, customer_cpf, items, total, payment_method, coupon_code, coupon_discount, shipping_address, status, created_at, appmax_order_id, appmax_customer_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
         [
           localOrderId,
           shippingAddress.name || 'Cliente',
@@ -2122,6 +2189,8 @@ app.post('/api/orders', async (req, res) => {
           itemsJSON,
           total,
           paymentMethod,
+          appliedCoupon ? appliedCoupon.code : null,
+          couponDiscount,
           shippingJSON,
           'pending',
           new Date(),
@@ -2271,12 +2340,38 @@ app.put('/api/orders/:id/status', async (req, res) => {
     const { id } = req.params;
     const { status } = req.body;
 
+    // Buscar pedido antes de atualizar para verificar status anterior
+    const [ordersBefore] = await db.execute('SELECT status, coupon_code FROM orders WHERE id = ?', [id]);
+    if (ordersBefore.length === 0) {
+      return res.status(404).json({
+        error: 'Pedido não encontrado',
+      });
+    }
+    const orderBefore = ordersBefore[0];
+
     const [result] = await db.execute('UPDATE orders SET status = ? WHERE id = ?', [status, id]);
 
     if (result.affectedRows === 0) {
       return res.status(404).json({
         error: 'Pedido não encontrado',
       });
+    }
+
+    // Se o pedido foi aprovado/confirmado e tinha cupom, incrementar usage_count
+    const approvedStatuses = ['approved', 'confirmed', 'paid', 'processing'];
+    const wasNotApproved = !approvedStatuses.includes(orderBefore.status);
+    const isNowApproved = approvedStatuses.includes(status);
+
+    if (wasNotApproved && isNowApproved && orderBefore.coupon_code) {
+      try {
+        await db.execute(
+          'UPDATE coupons SET usage_count = usage_count + 1 WHERE code = ?',
+          [orderBefore.coupon_code]
+        );
+        console.log(`🎟️  Cupom ${orderBefore.coupon_code} incrementado (venda aprovada)`);
+      } catch (couponError) {
+        console.warn('⚠️  Erro ao incrementar cupom:', couponError.message);
+      }
     }
 
     const [orders] = await db.execute('SELECT * FROM orders WHERE id = ?', [id]);
@@ -3143,6 +3238,35 @@ app.get('/api/admin/coupons', async (req, res) => {
     res.json(rows);
   } catch (error) {
     console.error('Erro ao listar cupons:', error);
+    res.status(500).json({ error: { message: error.message } });
+  }
+});
+
+// Relatório de performance de cupons por influencer (Admin)
+app.get('/api/admin/coupons/report', async (req, res) => {
+  try {
+    const [report] = await db.execute(`
+      SELECT
+        c.code,
+        c.description,
+        c.discount_type,
+        c.discount_value,
+        c.usage_count,
+        c.usage_limit,
+        c.is_active,
+        COUNT(DISTINCT o.id) as total_orders,
+        COUNT(DISTINCT CASE WHEN o.status IN ('approved', 'confirmed', 'paid', 'processing') THEN o.id END) as approved_orders,
+        COALESCE(SUM(CASE WHEN o.status IN ('approved', 'confirmed', 'paid', 'processing') THEN o.coupon_discount ELSE 0 END), 0) as total_discount_given,
+        COALESCE(SUM(CASE WHEN o.status IN ('approved', 'confirmed', 'paid', 'processing') THEN o.total ELSE 0 END), 0) as total_revenue
+      FROM coupons c
+      LEFT JOIN orders o ON c.code = o.coupon_code
+      GROUP BY c.id, c.code, c.description, c.discount_type, c.discount_value, c.usage_count, c.usage_limit, c.is_active
+      ORDER BY approved_orders DESC, total_revenue DESC
+    `);
+
+    res.json(report);
+  } catch (error) {
+    console.error('Erro ao gerar relatório de cupons:', error);
     res.status(500).json({ error: { message: error.message } });
   }
 });

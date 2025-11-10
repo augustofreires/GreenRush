@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { FiPlus, FiTrash2, FiUpload, FiEye, FiEyeOff, FiTag, FiDownload } from 'react-icons/fi';
+import { FiPlus, FiTrash2, FiUpload, FiEye, FiEyeOff, FiTag, FiDownload, FiBarChart2, FiTrendingUp } from 'react-icons/fi';
 import axios from 'axios';
 
 const API_URL = import.meta.env.VITE_API_BASE_URL || '/api';
@@ -20,9 +20,26 @@ interface Coupon {
   created_at: string;
 }
 
+interface CouponReport {
+  code: string;
+  description: string | null;
+  discount_type: 'percentage' | 'fixed';
+  discount_value: string;
+  usage_count: number;
+  usage_limit: number | null;
+  is_active: number;
+  total_orders: number;
+  approved_orders: number;
+  total_discount_given: string;
+  total_revenue: string;
+}
+
 export const AdminCoupons = () => {
+  const [activeTab, setActiveTab] = useState<'manage' | 'report'>('manage');
   const [coupons, setCoupons] = useState<Coupon[]>([]);
+  const [report, setReport] = useState<CouponReport[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadingReport, setLoadingReport] = useState(false);
   const [showModal, setShowModal] = useState(false);
   const [showImportModal, setShowImportModal] = useState(false);
 
@@ -43,6 +60,12 @@ export const AdminCoupons = () => {
     loadCoupons();
   }, []);
 
+  useEffect(() => {
+    if (activeTab === 'report') {
+      loadReport();
+    }
+  }, [activeTab]);
+
   const loadCoupons = async () => {
     try {
       setLoading(true);
@@ -53,6 +76,19 @@ export const AdminCoupons = () => {
       alert('Erro ao carregar cupons');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const loadReport = async () => {
+    try {
+      setLoadingReport(true);
+      const response = await axios.get(`${API_URL}/admin/coupons/report`);
+      setReport(response.data);
+    } catch (error) {
+      console.error('Erro ao carregar relatório:', error);
+      alert('Erro ao carregar relatório de cupons');
+    } finally {
+      setLoadingReport(false);
     }
   };
 
@@ -151,37 +187,69 @@ export const AdminCoupons = () => {
     <div className="min-h-screen bg-gray-50 p-6">
       <div className="max-w-7xl mx-auto">
         {/* Header */}
-        <div className="mb-8 flex justify-between items-center">
-          <div>
-            <h1 className="text-3xl font-bold text-gray-900">Cupons de Desconto</h1>
-            <p className="text-gray-600 mt-2">Gerencie cupons de desconto para o checkout</p>
+        <div className="mb-8">
+          <div className="flex justify-between items-center mb-4">
+            <div>
+              <h1 className="text-3xl font-bold text-gray-900">Cupons de Desconto</h1>
+              <p className="text-gray-600 mt-2">Gerencie cupons e acompanhe performance das influencers</p>
+            </div>
+            {activeTab === 'manage' && (
+              <div className="flex gap-3">
+                <button
+                  onClick={() => setShowImportModal(true)}
+                  className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700 transition-colors"
+                >
+                  <FiUpload size={20} />
+                  Importar CSV
+                </button>
+                <button
+                  onClick={() => setShowModal(true)}
+                  className="flex items-center gap-2 px-4 py-2 rounded-lg font-semibold text-white transition-colors"
+                  style={{ backgroundColor: '#4a9d4e' }}
+                >
+                  <FiPlus size={20} />
+                  Novo Cupom
+                </button>
+              </div>
+            )}
           </div>
-          <div className="flex gap-3">
+
+          {/* Tabs */}
+          <div className="flex gap-2 border-b border-gray-200">
             <button
-              onClick={() => setShowImportModal(true)}
-              className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700 transition-colors"
+              onClick={() => setActiveTab('manage')}
+              className={`flex items-center gap-2 px-4 py-3 font-semibold transition-all ${
+                activeTab === 'manage'
+                  ? 'text-green-600 border-b-2 border-green-600'
+                  : 'text-gray-500 hover:text-gray-700'
+              }`}
             >
-              <FiUpload size={20} />
-              Importar CSV
+              <FiTag size={18} />
+              Gerenciar Cupons
             </button>
             <button
-              onClick={() => setShowModal(true)}
-              className="flex items-center gap-2 px-4 py-2 rounded-lg font-semibold text-white transition-colors"
-              style={{ backgroundColor: '#4a9d4e' }}
+              onClick={() => setActiveTab('report')}
+              className={`flex items-center gap-2 px-4 py-3 font-semibold transition-all ${
+                activeTab === 'report'
+                  ? 'text-green-600 border-b-2 border-green-600'
+                  : 'text-gray-500 hover:text-gray-700'
+              }`}
             >
-              <FiPlus size={20} />
-              Novo Cupom
+              <FiBarChart2 size={18} />
+              Relatório de Influencers
             </button>
           </div>
         </div>
 
-        {/* Cupons List */}
-        {loading ? (
-          <div className="text-center py-12">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-green mx-auto"></div>
-            <p className="text-gray-600 mt-4">Carregando cupons...</p>
-          </div>
-        ) : (
+        {/* Manage Cupons Tab */}
+        {activeTab === 'manage' && (
+          <>
+            {loading ? (
+              <div className="text-center py-12">
+                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-green mx-auto"></div>
+                <p className="text-gray-600 mt-4">Carregando cupons...</p>
+              </div>
+            ) : (
           <div className="bg-white rounded-lg shadow-md overflow-hidden">
             <table className="w-full">
               <thead className="bg-gray-50 border-b">
@@ -271,6 +339,152 @@ export const AdminCoupons = () => {
               </tbody>
             </table>
           </div>
+            )}
+          </>
+        )}
+
+        {/* Report Tab */}
+        {activeTab === 'report' && (
+          <>
+            {loadingReport ? (
+              <div className="text-center py-12">
+                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-green mx-auto"></div>
+                <p className="text-gray-600 mt-4">Carregando relatório...</p>
+              </div>
+            ) : (
+              <div className="space-y-6">
+                {/* Summary Cards */}
+                <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                  <div className="bg-white rounded-lg shadow-md p-6">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="text-gray-500 text-sm font-semibold">Cupons Ativos</p>
+                        <p className="text-3xl font-bold text-gray-900 mt-2">
+                          {report.filter(r => r.is_active).length}
+                        </p>
+                      </div>
+                      <FiTag size={32} className="text-green-500" />
+                    </div>
+                  </div>
+
+                  <div className="bg-white rounded-lg shadow-md p-6">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="text-gray-500 text-sm font-semibold">Vendas Aprovadas</p>
+                        <p className="text-3xl font-bold text-gray-900 mt-2">
+                          {report.reduce((sum, r) => sum + r.approved_orders, 0)}
+                        </p>
+                      </div>
+                      <FiTrendingUp size={32} className="text-blue-500" />
+                    </div>
+                  </div>
+
+                  <div className="bg-white rounded-lg shadow-md p-6">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="text-gray-500 text-sm font-semibold">Desconto Total</p>
+                        <p className="text-3xl font-bold text-gray-900 mt-2">
+                          R$ {report.reduce((sum, r) => sum + parseFloat(r.total_discount_given || '0'), 0).toFixed(2)}
+                        </p>
+                      </div>
+                      <FiTag size={32} className="text-orange-500" />
+                    </div>
+                  </div>
+
+                  <div className="bg-white rounded-lg shadow-md p-6">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="text-gray-500 text-sm font-semibold">Receita Total</p>
+                        <p className="text-3xl font-bold text-green-600 mt-2">
+                          R$ {report.reduce((sum, r) => sum + parseFloat(r.total_revenue || '0'), 0).toFixed(2)}
+                        </p>
+                      </div>
+                      <FiBarChart2 size={32} className="text-green-500" />
+                    </div>
+                  </div>
+                </div>
+
+                {/* Report Table */}
+                <div className="bg-white rounded-lg shadow-md overflow-hidden">
+                  <div className="px-6 py-4 border-b bg-gray-50">
+                    <h2 className="text-xl font-bold text-gray-900">Performance por Influencer</h2>
+                    <p className="text-sm text-gray-600 mt-1">Resultados de vendas por cupom de desconto</p>
+                  </div>
+                  <div className="overflow-x-auto">
+                    <table className="w-full">
+                      <thead className="bg-gray-50 border-b">
+                        <tr>
+                          <th className="text-left py-3 px-4 font-semibold text-gray-700">Cupom</th>
+                          <th className="text-left py-3 px-4 font-semibold text-gray-700">Desconto</th>
+                          <th className="text-center py-3 px-4 font-semibold text-gray-700">Pedidos Totais</th>
+                          <th className="text-center py-3 px-4 font-semibold text-gray-700">🎉 Vendas Aprovadas</th>
+                          <th className="text-right py-3 px-4 font-semibold text-gray-700">Desconto Concedido</th>
+                          <th className="text-right py-3 px-4 font-semibold text-gray-700">💰 Receita Gerada</th>
+                          <th className="text-center py-3 px-4 font-semibold text-gray-700">Status</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {report.length === 0 ? (
+                          <tr>
+                            <td colSpan={7} className="text-center py-12 text-gray-500">
+                              <FiBarChart2 size={48} className="mx-auto text-gray-300 mb-4" />
+                              Nenhum dado disponível ainda
+                            </td>
+                          </tr>
+                        ) : (
+                          report.map((item, index) => (
+                            <tr key={index} className="border-b hover:bg-gray-50">
+                              <td className="py-3 px-4">
+                                <div>
+                                  <code className="bg-gray-100 px-2 py-1 rounded font-mono font-bold text-gray-900">
+                                    {item.code}
+                                  </code>
+                                  {item.description && (
+                                    <p className="text-xs text-gray-500 mt-1">{item.description}</p>
+                                  )}
+                                </div>
+                              </td>
+                              <td className="py-3 px-4">
+                                <span className="text-green-600 font-bold">
+                                  {item.discount_type === 'percentage'
+                                    ? `${item.discount_value}%`
+                                    : `R$ ${parseFloat(item.discount_value).toFixed(2)}`
+                                  }
+                                </span>
+                              </td>
+                              <td className="py-3 px-4 text-center text-gray-700">
+                                {item.total_orders}
+                              </td>
+                              <td className="py-3 px-4 text-center">
+                                <span className="inline-block px-3 py-1 bg-green-100 text-green-700 rounded-full font-bold">
+                                  {item.approved_orders}
+                                </span>
+                              </td>
+                              <td className="py-3 px-4 text-right text-orange-600 font-semibold">
+                                R$ {parseFloat(item.total_discount_given || '0').toFixed(2)}
+                              </td>
+                              <td className="py-3 px-4 text-right font-bold text-green-600">
+                                R$ {parseFloat(item.total_revenue || '0').toFixed(2)}
+                              </td>
+                              <td className="py-3 px-4 text-center">
+                                <span className={`inline-block px-3 py-1 rounded-full text-xs font-semibold ${
+                                  item.is_active
+                                    ? 'bg-green-100 text-green-700'
+                                    : 'bg-gray-100 text-gray-600'
+                                }`}>
+                                  {item.is_active ? 'Ativo' : 'Inativo'}
+                                </span>
+                              </td>
+                            </tr>
+                          ))
+                        )}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              </div>
+            )}
+          </>
         )}
 
         {/* Create Coupon Modal */}

@@ -1,11 +1,13 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import type { Order } from '../types';
+import { orderService } from '../services/orderService';
 
 interface OrderStore {
   orders: Order[];
   addOrder: (order: Order) => void;
   getOrdersByUserId: (userId: string) => Order[];
+  fetchOrdersByEmail: (email: string) => Promise<void>;
   updateOrderStatus: (orderId: string, status: Order['status']) => void;
 }
 
@@ -123,6 +125,26 @@ export const useOrderStore = create<OrderStore>()(
 
       getOrdersByUserId: (userId) => {
         return get().orders.filter((order) => order.userId === userId);
+      },
+
+      fetchOrdersByEmail: async (email) => {
+        try {
+          console.log('🔍 Store: Buscando pedidos por email:', email);
+          const orders = await orderService.getByEmail(email);
+          console.log('📦 Store: Pedidos recebidos:', orders.length);
+          
+          // Mesclar pedidos da API com pedidos locais (evitar duplicatas)
+          set((state) => {
+            const apiOrderIds = orders.map(o => o.id);
+            const localOrders = state.orders.filter(o => !apiOrderIds.includes(o.id));
+            return {
+              orders: [...orders, ...localOrders],
+            };
+          });
+        } catch (error) {
+          console.error('❌ Store: Erro ao buscar pedidos:', error);
+          // Mantém pedidos existentes em caso de erro
+        }
       },
 
       updateOrderStatus: (orderId, status) => {

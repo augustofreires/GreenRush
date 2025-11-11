@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { FiCreditCard, FiCheck, FiTag, FiX, FiChevronRight } from 'react-icons/fi';
 import { useCartStore } from '../../store/useCartStore';
 import { useAuthStore } from '../../store/useAuthStore';
+import { useOrderStore } from '../../store/useOrderStore';
 import { useAddressStore } from '../../store/useAddressStore';
 import { orderService } from '../../services/orderService';
 import { appmaxService } from '../../services/appmaxService';
@@ -18,6 +19,7 @@ export const CheckoutPage = () => {
   const navigate = useNavigate();
   const { items, getTotal, clearCart } = useCartStore();
   const { user } = useAuthStore();
+  const { addOrder } = useOrderStore();
   const { getAddressesByUserId } = useAddressStore();
   const [loading, setLoading] = useState(false);
   const [currentStep, setCurrentStep] = useState<'contact' | 'shipping' | 'payment'>('contact');
@@ -295,6 +297,9 @@ export const CheckoutPage = () => {
       const order = await orderService.create(orderData);
 
       console.log('✅ Pedido criado:', order);
+      // Adicionar pedido ao store local
+      addOrder(order);
+      console.log('💾 Pedido salvo no store local');
 
       // 🎉 DISPARAR EVENTO DE CONVERSÃO (Purchase)
       const trackingItems = items.map(item => ({

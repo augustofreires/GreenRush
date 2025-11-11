@@ -2420,6 +2420,39 @@ app.get('/api/orders/user/:userId', async (req, res) => {
   }
 });
 
+// Nova rota: Buscar pedidos por email (mais clara e específica)
+app.get('/api/orders/by-email/:email', async (req, res) => {
+  try {
+    const { email } = req.params;
+    console.log('🔍 Buscando pedidos para email:', email);
+    
+    const [rows] = await db.execute('SELECT * FROM orders WHERE customer_email = ? ORDER BY created_at DESC', [email]);
+    
+    console.log('📦 Pedidos encontrados:', rows.length);
+
+    const orders = rows.map(order => ({
+      id: order.id,
+      userId: email,
+      items: typeof order.items === 'string' ? JSON.parse(order.items) : order.items,
+      total: parseFloat(order.total),
+      status: order.status,
+      paymentMethod: order.payment_method,
+      couponCode: order.coupon_code,
+      couponDiscount: order.coupon_discount ? parseFloat(order.coupon_discount) : 0,
+      shippingAddress: typeof order.shipping_address === 'string' ? JSON.parse(order.shipping_address) : order.shipping_address,
+      createdAt: order.created_at,
+      appmaxOrderId: order.appmax_order_id,
+    }));
+
+    res.json(orders);
+  } catch (error) {
+    console.error('❌ Erro ao buscar pedidos por email:', error);
+    res.status(500).json({
+      error: { message: error.message },
+    });
+  }
+});
+
 // Atualizar status do pedido
 app.put('/api/orders/:id/status', async (req, res) => {
   try {

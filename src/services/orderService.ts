@@ -42,6 +42,18 @@ export const orderService = {
     return response.data;
   },
 
+  async getByEmail(email: string): Promise<Order[]> {
+    console.log('🔍 OrderService: Buscando pedidos por email:', email);
+    try {
+      const response = await api.get(`/orders/by-email/${email}`);
+      console.log('📦 Pedidos encontrados:', response.data.length);
+      return response.data;
+    } catch (error: any) {
+      console.error('❌ Erro ao buscar pedidos por email:', error);
+      return []; // Retorna array vazio em caso de erro
+    }
+  },
+
   async getByCPF(cpf: string): Promise<Order[]> {
     const response = await api.get(`/orders/customer/${cpf}`);
     return response.data;

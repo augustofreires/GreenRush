@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { FiUser, FiMail, FiPhone, FiMapPin, FiPackage, FiLogOut, FiEdit2, FiSave, FiX, FiPlus, FiTrash2, FiCheck, FiStar } from 'react-icons/fi';
 import { useAuthStore } from '../../store/useAuthStore';
@@ -11,7 +11,7 @@ type TabType = 'profile' | 'orders' | 'addresses';
 export const AccountPage = () => {
   const navigate = useNavigate();
   const { user, logout, updateUser, isAuthenticated } = useAuthStore();
-  const { getOrdersByUserId } = useOrderStore();
+  const { getOrdersByUserId, fetchOrdersByEmail } = useOrderStore();
   const { getAddressesByUserId, addAddress, updateAddress, deleteAddress, setDefaultAddress } = useAddressStore();
 
   const [activeTab, setActiveTab] = useState<TabType>('profile');
@@ -24,6 +24,14 @@ export const AccountPage = () => {
 
   // Review form state
   const [reviewingProduct, setReviewingProduct] = useState<{ productId: string; productName: string } | null>(null);
+
+  // Carregar pedidos da API quando o componente montar
+  useEffect(() => {
+    if (user?.email) {
+      console.log('📧 AccountPage: Carregando pedidos para', user.email);
+      fetchOrdersByEmail(user.email);
+    }
+  }, [user?.email, fetchOrdersByEmail]);
 
   // Address form state
   const [isAddingAddress, setIsAddingAddress] = useState(false);
@@ -47,7 +55,7 @@ export const AccountPage = () => {
     return null;
   }
 
-  const orders = getOrdersByUserId(user.id);
+  const orders = getOrdersByUserId(user.email);
   const addresses = getAddressesByUserId(user.id);
 
   const handleLogout = () => {
@@ -352,7 +360,7 @@ export const AccountPage = () => {
                           <div>
                             <p className="font-semibold text-gray-900 text-lg">Pedido #{order.id}</p>
                             <p className="text-sm text-gray-500">
-                              {order.createdAt.toLocaleDateString('pt-BR', {
+                              {new Date(order.createdAt).toLocaleDateString('pt-BR', {
                                 day: '2-digit',
                                 month: 'long',
                                 year: 'numeric',

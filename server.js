@@ -26,6 +26,7 @@ cloudinary.config({
   api_key: process.env.CLOUDINARY_API_KEY,
   api_secret: process.env.CLOUDINARY_API_SECRET
 });
+import metaConversionsApi from './metaConversionsApi.js';
 import { sendEmail, emailBoasVindas, emailConfirmacaoPedido, addContact, emailConfirmacaoNewsletter } from './reportana.js';
 
 
@@ -2253,6 +2254,39 @@ app.post('/api/orders', async (req, res) => {
     } catch (dbError) {
       console.warn('⚠️  Erro ao salvar no banco local:', dbError.message);
       // Não falhar o pedido se o banco local falhar
+    }
+
+    // 🎯 Enviar evento de Purchase para Meta Conversions API (server-side)
+    // IMPORTANTE: Usa try/catch para NUNCA quebrar o checkout se falhar
+    try {
+      const metaResult = await metaConversionsApi.trackPurchase({
+        event_id: req.body.eventId, // ID do evento do frontend para deduplicação
+        order_id: appmaxOrderId,
+        customer: {
+          email: shippingAddress.email,
+          phone: shippingAddress.phone,
+          name: shippingAddress.name,
+          city: shippingAddress.city,
+          state: shippingAddress.state,
+          zip: shippingAddress.zipCode,
+          country: 'BR'
+        },
+        items: items,
+        value: total,
+        currency: 'BRL',
+        user_ip: req.headers['cf-connecting-ip'] || req.headers['x-forwarded-for']?.split(',')[0]?.trim() || req.ip || '127.0.0.1',
+        user_agent: req.headers['user-agent'] || 'Unknown',
+        event_source_url: process.env.FRONTEND_URL || 'http://147.93.176.132'
+      });
+      
+      if (metaResult.success) {
+        console.log('✅ Meta CAPI: Purchase enviado com sucesso para pedido', appmaxOrderId);
+      } else {
+        console.warn('⚠️  Meta CAPI: Falha ao enviar Purchase (pedido continua normalmente):', metaResult.error);
+      }
+    } catch (metaError) {
+      console.error('❌ Meta CAPI: Erro ao enviar Purchase (pedido continua normalmente):', metaError.message);
+      // NÃO lançar erro - pedido já foi criado com sucesso
     }
 
     const responseOrder = {

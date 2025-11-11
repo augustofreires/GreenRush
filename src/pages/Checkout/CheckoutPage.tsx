@@ -9,7 +9,7 @@ import { orderService } from '../../services/orderService';
 import { appmaxService } from '../../services/appmaxService';
 import axios from 'axios';
 import type { Address } from '../../types';
-import { trackInitiateCheckout, trackAddPaymentInfo, trackPurchase } from '../../utils/tracking';
+import { trackInitiateCheckout, trackAddPaymentInfo, trackPurchase, generateEventId } from '../../utils/tracking';
 
 const API_URL = import.meta.env.VITE_API_BASE_URL || '/api';
 
@@ -255,6 +255,10 @@ export const CheckoutPage = () => {
         }
       }
 
+      // Gerar event_id único para deduplicação entre Pixel e CAPI
+      const eventId = generateEventId();
+      console.log("🎯 Event ID gerado:", eventId);
+
       const orderData = {
         items,
         shippingAddress: {
@@ -274,6 +278,7 @@ export const CheckoutPage = () => {
         paymentMethod,
         appliedCoupon: appliedCoupon,
         userId: user?.id,
+        eventId: eventId, // Para deduplicação Meta Pixel + CAPI
         installments,
         ...(paymentMethod === 'credit_card' && {
           cardData: {
@@ -300,10 +305,11 @@ export const CheckoutPage = () => {
         category: item.category
       }));
       trackPurchase(
-        order.id || order.localId,
+        order.id,
         trackingItems,
         order.total,
-        appliedCoupon?.code
+        appliedCoupon?.code,
+        eventId // Passa o mesmo eventId usado na API
       );
 
       // Salvar o pedido criado no estado

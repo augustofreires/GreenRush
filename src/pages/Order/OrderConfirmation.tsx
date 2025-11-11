@@ -54,23 +54,23 @@ export const OrderConfirmation = () => {
 
         // 🎉 DISPARAR EVENTO DE CONVERSÃO (Purchase) - Backup
         // Só dispara se ainda não foi disparado (evita duplicatas)
-        if (!purchaseEventFired && orderData.items) {
-          const trackingItems = orderData.items.map((item: any) => ({
-            id: item.id,
-            name: item.name,
-            price: item.price,
-            quantity: item.quantity,
-            category: item.category
-          }));
-          trackPurchase(
-            orderData.id,
-            trackingItems,
-            orderData.total,
-            undefined // coupon não disponível aqui
-          );
-          setPurchaseEventFired(true);
-          console.log('🎯 Purchase event (backup) disparado na confirmação');
-        }
+        //         if (!purchaseEventFired && orderData.items) {
+        //           const trackingItems = orderData.items.map((item: any) => ({
+        //             id: item.id,
+        //             name: item.name,
+        //             price: item.price,
+        //             quantity: item.quantity,
+        //             category: item.category
+        //           }));
+        //           trackPurchase(
+        //             orderData.id,
+        //             trackingItems,
+        //             orderData.total,
+        //             undefined // coupon não disponível aqui
+        //           );
+        //           setPurchaseEventFired(true);
+        //           console.log('🎯 Purchase event (backup) disparado na confirmação');
+        //         }
       } catch (error) {
         console.error('❌ Erro ao buscar pedido:', error);
         alert('Pedido não encontrado. Você será redirecionado para a home.');

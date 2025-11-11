@@ -25,6 +25,16 @@ declare global {
 }
 
 /**
+ * Gera um event_id único para deduplicação entre Pixel e CAPI
+ * Formato: timestamp-random
+ */
+export const generateEventId = (): string => {
+  const timestamp = Date.now();
+  const random = Math.random().toString(36).substring(2, 15);
+  return `${timestamp}-${random}`;
+};
+
+/**
  * Dispara evento de visualização de produto
  */
 export const trackViewContent = (product: TrackingProduct) => {
@@ -170,13 +180,20 @@ export const trackAddPaymentInfo = (paymentMethod: string, value: number) => {
 
 /**
  * Dispara evento de compra (CONVERSÃO)
+ * 
+ * IMPORTANTE: Retorna o event_id gerado para ser usado na API (CAPI server-side)
  */
 export const trackPurchase = (
   orderId: string,
   items: CartItem[],
   value: number,
-  couponCode?: string
-) => {
+  couponCode?: string,
+  providedEventId?: string
+): string => {
+  // Gerar event_id único para deduplicação entre Pixel e CAPI
+  // Usar eventId fornecido ou gerar um novo
+  const eventId = providedEventId || generateEventId();
+
   // Facebook Pixel
   if (typeof window !== 'undefined' && window.fbq) {
     window.fbq('track', 'Purchase', {
@@ -190,8 +207,8 @@ export const trackPurchase = (
         quantity: item.quantity,
         item_price: item.price
       }))
-    });
-    console.log('🎉 FB Pixel: Purchase', { orderId, value, items: items.length });
+    }, { eventID: eventId }); // event_id para deduplicação
+    console.log('🎉 FB Pixel: Purchase', { orderId, value, items: items.length, eventId });
   }
 
   // Google Analytics via GTM
@@ -214,6 +231,9 @@ export const trackPurchase = (
     });
     console.log('🎉 GTM: purchase', { orderId, value, items: items.length });
   }
+
+  // Retornar event_id para ser usado pela API server-side
+  return eventId;
 };
 
 /**

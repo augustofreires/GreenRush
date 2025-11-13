@@ -3364,7 +3364,33 @@ app.get('/api/admin/coupons', async (req, res) => {
 // Relatório de performance de cupons por influencer (Admin)
 app.get('/api/admin/coupons/report', async (req, res) => {
   try {
-    const [report] = await db.execute(`
+    // Parâmetros opcionais de filtro de data
+    let { startDate, endDate } = req.query;
+    
+    // Ajustar datas para incluir o dia completo
+    if (startDate && !startDate.includes(' ')) {
+      startDate = startDate + ' 00:00:00';
+    }
+    if (endDate && !endDate.includes(' ')) {
+      endDate = endDate + ' 23:59:59';
+    }
+    
+    // Construir a cláusula WHERE dinâmica para filtro de data
+    let dateFilter = '';
+    const params = [];
+    
+    if (startDate && endDate) {
+      dateFilter = 'AND o.created_at BETWEEN ? AND ?';
+      params.push(startDate, endDate);
+    } else if (startDate) {
+      dateFilter = 'AND o.created_at >= ?';
+      params.push(startDate);
+    } else if (endDate) {
+      dateFilter = 'AND o.created_at <= ?';
+      params.push(endDate);
+    }
+    
+    const query = `
       SELECT
         c.code,
         c.description,
@@ -3378,10 +3404,12 @@ app.get('/api/admin/coupons/report', async (req, res) => {
         COALESCE(SUM(CASE WHEN o.status IN ('approved', 'confirmed', 'paid', 'processing') THEN o.coupon_discount ELSE 0 END), 0) as total_discount_given,
         COALESCE(SUM(CASE WHEN o.status IN ('approved', 'confirmed', 'paid', 'processing') THEN o.total ELSE 0 END), 0) as total_revenue
       FROM coupons c
-      LEFT JOIN orders o ON c.code = o.coupon_code
+      LEFT JOIN orders o ON c.code = o.coupon_code ${dateFilter}
       GROUP BY c.id, c.code, c.description, c.discount_type, c.discount_value, c.usage_count, c.usage_limit, c.is_active
       ORDER BY approved_orders DESC, total_revenue DESC
-    `);
+    `;
+    
+    const [report] = await db.execute(query, params);
 
     res.json(report);
   } catch (error) {

@@ -43,6 +43,10 @@ export const AdminCoupons = () => {
   const [showModal, setShowModal] = useState(false);
   const [showImportModal, setShowImportModal] = useState(false);
 
+  // Filtros de data para o relatório
+  const [startDate, setStartDate] = useState('');
+  const [endDate, setEndDate] = useState('');
+
   // Form state
   const [formData, setFormData] = useState({
     code: '',
@@ -82,7 +86,18 @@ export const AdminCoupons = () => {
   const loadReport = async () => {
     try {
       setLoadingReport(true);
-      const response = await axios.get(`${API_URL}/admin/coupons/report`);
+
+      // Construir parâmetros de query
+      const params = new URLSearchParams();
+      if (startDate) params.append('startDate', startDate);
+      if (endDate) params.append('endDate', endDate);
+
+      const queryString = params.toString();
+      const url = queryString
+        ? `${API_URL}/admin/coupons/report?${queryString}`
+        : `${API_URL}/admin/coupons/report`;
+
+      const response = await axios.get(url);
       setReport(response.data);
     } catch (error) {
       console.error('Erro ao carregar relatório:', error);
@@ -181,6 +196,11 @@ export const AdminCoupons = () => {
     a.href = url;
     a.download = 'template-cupons.csv';
     a.click();
+  };
+
+  const handleClearFilters = () => {
+    setStartDate('');
+    setEndDate('');
   };
 
   return (
@@ -353,6 +373,61 @@ export const AdminCoupons = () => {
               </div>
             ) : (
               <div className="space-y-6">
+                {/* Filtros de Data */}
+                <div className="bg-white rounded-lg shadow-md p-6">
+                  <h3 className="text-lg font-bold text-gray-900 mb-4">Filtrar por Período</h3>
+                  <div className="flex flex-wrap gap-4 items-end">
+                    <div className="flex-1 min-w-[200px]">
+                      <label className="block text-sm font-semibold text-gray-700 mb-2">
+                        Data Inicial
+                      </label>
+                      <input
+                        type="date"
+                        value={startDate}
+                        onChange={(e) => setStartDate(e.target.value)}
+                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
+                      />
+                    </div>
+                    <div className="flex-1 min-w-[200px]">
+                      <label className="block text-sm font-semibold text-gray-700 mb-2">
+                        Data Final
+                      </label>
+                      <input
+                        type="date"
+                        value={endDate}
+                        onChange={(e) => setEndDate(e.target.value)}
+                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
+                      />
+                    </div>
+                    <div className="flex gap-2">
+                      <button
+                        onClick={loadReport}
+                        className="px-6 py-2 bg-green-600 text-white rounded-lg font-semibold hover:bg-green-700 transition-colors"
+                      >
+                        Aplicar Filtro
+                      </button>
+                      <button
+                        onClick={() => {
+                          handleClearFilters();
+                          // Recarregar o relatório sem filtros após limpar
+                          setTimeout(loadReport, 100);
+                        }}
+                        className="px-6 py-2 bg-gray-200 text-gray-700 rounded-lg font-semibold hover:bg-gray-300 transition-colors"
+                      >
+                        Limpar
+                      </button>
+                    </div>
+                  </div>
+                  {(startDate || endDate) && (
+                    <div className="mt-3 text-sm text-gray-600">
+                      <strong>Filtro ativo:</strong>{' '}
+                      {startDate && `De ${new Date(startDate).toLocaleDateString('pt-BR')}`}
+                      {startDate && endDate && ' '}
+                      {endDate && `até ${new Date(endDate).toLocaleDateString('pt-BR')}`}
+                    </div>
+                  )}
+                </div>
+
                 {/* Summary Cards */}
                 <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                   <div className="bg-white rounded-lg shadow-md p-6">

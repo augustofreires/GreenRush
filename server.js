@@ -6,6 +6,12 @@ import QRCode from 'qrcode';
 import bcrypt from 'bcrypt';
 import mysql from 'mysql2/promise';
 import fileUpload from 'express-fileupload';
+import path from 'path';
+import { fileURLToPath } from 'url';
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+import fs from 'fs';
+import nodemailer from 'nodemailer';
 import dotenv from 'dotenv';
 import { v4 as uuidv4 } from 'uuid';
 import { v2 as cloudinary } from 'cloudinary';
@@ -26,6 +32,30 @@ cloudinary.config({
   api_key: process.env.CLOUDINARY_API_KEY,
   api_secret: process.env.CLOUDINARY_API_SECRET
 });
+
+// ============================================================
+// SMTP TRANSPORTER - Email Marketing
+// ============================================================
+const smtpTransporter = nodemailer.createTransport({
+  host: process.env.SMTP_HOST,
+  port: parseInt(process.env.SMTP_PORT || '465'),
+  secure: true,
+  auth: {
+    user: process.env.SMTP_USER,
+    pass: process.env.SMTP_PASS,
+  },
+});
+
+// Status global do disparo em andamento
+let emailCampaignStatus = {
+  sending: false,
+  total: 0,
+  sent: 0,
+  failed: 0,
+  errors: [],
+  startedAt: null,
+  finishedAt: null,
+};
 import metaConversionsApi from './metaConversionsApi.js';
 import { sendEmail, emailBoasVindas, emailConfirmacaoPedido, addContact, emailConfirmacaoNewsletter } from './reportana.js';
 
@@ -485,10 +515,23 @@ app.post('/api/appmax/abandoned-cart', async (req, res) => {
     console.log('📧 Enviando carrinho abandonado para Appmax...');
 
     // Formatar produtos para Appmax
-    const products = cartItems.map(item => ({
-      product_sku: item.id?.toString() || 'SKU-' + Math.random().toString(36).substring(7),
-      product_qty: item.quantity
-    }));
+    const products = cartItems.map(item => {
+      // Usar SKU da variante selecionada, se houver
+      let product_sku = item.id?.toString() || 'SKU-' + Math.random().toString(36).substring(7);
+      
+      if (item.selectedVariant) {
+        // Buscar o SKU da variante selecionada
+        const variant = item.variants?.find(v => v.id === item.selectedVariant);
+        if (variant && variant.sku) {
+          product_sku = variant.sku;
+        }
+      }
+      
+      return {
+        product_sku: product_sku,
+        product_qty: item.quantity
+      };
+    });
 
     const total = cartItems.reduce((sum, item) => 
       sum + (item.price * item.quantity), 0
@@ -2136,11 +2179,12 @@ app.post('/api/orders', async (req, res) => {
         return res.status(400).json({
           error: 'Dados do cartão incompletos'
         });
-      console.log("📋 Dados do cartão sendo enviados:", JSON.stringify({ number: cardData.number.slice(0, 6) + "****" + cardData.number.slice(-4), name: cardData.name, month, year: `20${year}`, cvv: "***", document: shippingAddress.cpf, installments: installments || 1 }, null, 2));
       }
 
       // Separar mês e ano da validade
       const [month, year] = cardData.expiry.split('/');
+
+      console.log("📋 Dados do cartão sendo enviados:", JSON.stringify({ number: cardData.number.slice(0, 6) + "****" + cardData.number.slice(-4), name: cardData.name, month, year: `20${year}`, cvv: "***", document: shippingAddress.cpf, installments: installments || 1 }, null, 2));
 
       try {
         const cardResponse = await axios.post(
@@ -2219,7 +2263,10 @@ app.post('/api/orders', async (req, res) => {
         console.log('✅ PIX gerado na Appmax com QR Code e código EMV');
       } catch (error) {
         console.error('⚠️  Erro ao gerar PIX na Appmax:', error.response?.data || error.message);
-        // Não falhar o pedido se o PIX falhar - pode ser gerado depois
+        return res.status(502).json({
+          error: 'Não foi possível gerar o código PIX. Por favor, tente novamente.',
+          details: error.response?.data
+        });
       }
     }
 
@@ -2762,7 +2809,7 @@ app.delete('/api/admin/reviews/:reviewId', async (req, res) => {
 // Listar todos os produtos
 app.get('/api/products', async (req, res) => {
   try {
-    const [products] = await db.execute('SELECT * FROM products WHERE is_active = TRUE ORDER BY created_at DESC');
+    const [products] = await db.execute('SELECT * FROM products WHERE is_active = TRUE ');
 
     const productsFormatted = products.map(p => {
       let images = [];
@@ -3678,6 +3725,177 @@ app.get('/api/coupons/validate/:code', async (req, res) => {
   }
 });
 
+
+// ============================================================
+// EMAIL CAMPAIGN ROUTES (Admin)
+// ============================================================
+
+// Helper: espera N ms
+const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+
+// GET /api/admin/email-campaign/status
+app.get('/api/admin/email-campaign/status', requireAdminAuth, (req, res) => {
+  res.json(emailCampaignStatus);
+});
+
+// GET /api/admin/email-templates/:name — retorna o HTML do template
+app.get('/api/admin/email-templates/:name', async (req, res) => {
+  try {
+    const templateName = req.params.name;
+    const templatePath = path.join('/var/www/site-big', 'email-templates', `${templateName}.html`);
+    
+    if (!fs.existsSync(templatePath)) {
+      return res.status(404).json({ error: 'Template não encontrado' });
+    }
+    
+    const htmlContent = fs.readFileSync(templatePath, 'utf8');
+    res.setHeader('Content-Type', 'text/html; charset=utf-8');
+    res.send(htmlContent);
+  } catch (error) {
+    console.error('❌ Erro ao ler template:', error.message);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+
+// POST /api/admin/email-campaign/test — envia um email de teste
+app.post('/api/admin/email-campaign/test', requireAdminAuth, async (req, res) => {
+  try {
+    const { subject, htmlContent, testEmail } = req.body;
+
+    if (!testEmail || !subject || !htmlContent) {
+      return res.status(400).json({ error: 'subject, htmlContent e testEmail são obrigatórios' });
+    }
+
+    // Buscar nome real do testEmail no banco
+    let nomeParaTeste = 'cliente';
+    try {
+      const [rows] = await db.execute('SELECT name FROM contacts WHERE email = ? LIMIT 1', [testEmail]);
+      if (rows.length > 0 && rows[0].name) {
+        nomeParaTeste = rows[0].name.split(' ')[0];
+      }
+    } catch (e) {
+      // fallback silencioso
+    }
+    
+    const personalizedHtml = htmlContent
+      .replace(/{{nome}}/g, nomeParaTeste)
+      .replace(/{{email}}/g, testEmail || '');
+
+    await smtpTransporter.sendMail({
+      from: `"${process.env.SMTP_FROM_NAME}" <${process.env.SMTP_USER}>`,
+      to: testEmail,
+      subject,
+      html: personalizedHtml,
+      headers: {
+        'List-Unsubscribe': `<mailto:${process.env.SMTP_USER}?subject=descadastro>`,
+      },
+    });
+
+    console.log(`✅ Email de teste enviado para ${testEmail}`);
+    res.json({ success: true, message: `Email de teste enviado para ${testEmail}` });
+  } catch (error) {
+    console.error('❌ Erro no email de teste:', error.message);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// POST /api/admin/email-campaign/send — disparo para todos os leads
+app.post('/api/admin/email-campaign/send', requireAdminAuth, async (req, res) => {
+  const { subject, htmlContent, testEmail } = req.body;
+
+  if (!subject || !htmlContent) {
+    return res.status(400).json({ error: 'subject e htmlContent são obrigatórios' });
+  }
+
+  // Modo teste: envia só para um email
+  if (testEmail) {
+    try {
+      await smtpTransporter.sendMail({
+        from: `"${process.env.SMTP_FROM_NAME}" <${process.env.SMTP_USER}>`,
+        to: testEmail,
+        subject,
+        html: htmlContent,
+        headers: { 'List-Unsubscribe': `<mailto:${process.env.SMTP_USER}?subject=descadastro>` },
+      });
+      return res.json({ status: 'sent', message: `Enviado para ${testEmail}` });
+    } catch (error) {
+      return res.status(500).json({ error: error.message });
+    }
+  }
+
+  // Se já há um disparo em andamento, bloquear
+  if (emailCampaignStatus.sending) {
+    return res.status(409).json({ error: 'Já há um disparo em andamento', status: emailCampaignStatus });
+  }
+
+  // Buscar contatos aptos
+  let contacts;
+  try {
+    const [rows] = await db.execute(
+      "SELECT email, name FROM contacts WHERE accept_marketing = 1 AND email IS NOT NULL AND email != '' AND email LIKE '%@%'"
+    );
+    contacts = rows;
+  } catch (dbErr) {
+    return res.status(500).json({ error: 'Erro ao buscar contatos: ' + dbErr.message });
+  }
+
+  // Inicializar status e retornar imediatamente
+  emailCampaignStatus = {
+    sending: true,
+    total: contacts.length,
+    sent: 0,
+    failed: 0,
+    errors: [],
+    startedAt: new Date().toISOString(),
+    finishedAt: null,
+  };
+
+  res.json({ status: 'sending', total: contacts.length });
+
+  // Disparo em background (sem await)
+  (async () => {
+    const BATCH_SIZE = 10;
+    const BATCH_DELAY_MS = 3000;
+
+    for (let i = 0; i < contacts.length; i += BATCH_SIZE) {
+      const batch = contacts.slice(i, i + BATCH_SIZE);
+
+      await Promise.allSettled(
+        batch.map(async (contact) => {
+          try {
+            const personalizedHtml = htmlContent
+              .replace(/{{nome}}/g, (contact.name || 'Cliente').split(' ')[0])
+              .replace(/{{email}}/g, contact.email || '');
+            await smtpTransporter.sendMail({
+              from: `"${process.env.SMTP_FROM_NAME}" <${process.env.SMTP_USER}>`,
+              to: contact.email,
+              subject,
+              html: personalizedHtml,
+              headers: { 'List-Unsubscribe': `<mailto:${process.env.SMTP_USER}?subject=descadastro>` },
+            });
+            emailCampaignStatus.sent++;
+            console.log(`✅ [${emailCampaignStatus.sent}/${emailCampaignStatus.total}] Enviado: ${contact.email}`);
+          } catch (err) {
+            emailCampaignStatus.failed++;
+            emailCampaignStatus.errors.push({ email: contact.email, error: err.message });
+            console.error(`❌ Falha: ${contact.email} — ${err.message}`);
+          }
+        })
+      );
+
+      // Aguardar entre lotes (exceto após o último)
+      if (i + BATCH_SIZE < contacts.length) {
+        await sleep(BATCH_DELAY_MS);
+      }
+    }
+
+    emailCampaignStatus.sending = false;
+    emailCampaignStatus.finishedAt = new Date().toISOString();
+    console.log(`🎉 Campanha concluída! Enviados: ${emailCampaignStatus.sent} | Falhas: ${emailCampaignStatus.failed}`);
+  })();
+});
+
 app.listen(PORT, () => {
   console.log(`🚀 Servidor backend rodando em http://localhost:${PORT}`);
   loadAppmaxConfig(); // Carrega configuração do banco ao iniciar
@@ -3762,6 +3980,81 @@ app.post('/api/upload/image', async (req, res) => {
   }
 });
 
+
+
+
+// ============================================================
+// ROTA DE UPLOAD DE IMAGENS PARA BANNERS (armazenamento local)
+// ============================================================
+app.post('/api/upload/banner-image', async (req, res) => {
+  try {
+    console.log('📤 Upload de banner recebido (local)');
+
+    if (!req.files || !req.files.image) {
+      return res.status(400).json({ error: 'Nenhuma imagem foi enviada' });
+    }
+
+    const image = req.files.image;
+    console.log('📄 Arquivo:', image.name, '(', image.size, 'bytes)');
+
+    // Validar tipo de arquivo
+    const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp', 'image/gif'];
+    if (!allowedTypes.includes(image.mimetype)) {
+      return res.status(400).json({
+        error: 'Tipo de arquivo inválido. Use: JPG, PNG, WEBP ou GIF'
+      });
+    }
+
+    // Validar tamanho (máximo 10MB)
+    const maxSize = 10 * 1024 * 1024;
+    if (image.size > maxSize) {
+      return res.status(400).json({
+        error: 'Arquivo muito grande. Tamanho máximo: 10MB'
+      });
+    }
+
+    // Gerar nome único: timestamp + nome sanitizado
+    const ext = path.extname(image.name).toLowerCase();
+    const safeName = path.basename(image.name, ext)
+      .toLowerCase()
+      .replace(/[^a-z0-9]/g, '-')
+      .substring(0, 60);
+    const filename = Date.now() + '-' + safeName + ext;
+    const uploadDir = '/var/www/site-big/uploads/banners/';
+    const destPath = uploadDir + filename;
+
+    // Garantir que o diretório existe
+    if (!fs.existsSync(uploadDir)) {
+      fs.mkdirSync(uploadDir, { recursive: true });
+    }
+
+    // Mover arquivo do diretório temporário para destino
+    await image.mv(destPath);
+
+    const publicUrl = 'https://www.greenrushoficial.com/uploads/banners/' + filename;
+
+    console.log('✅ Banner salvo localmente:', destPath);
+    console.log('🔗 URL pública:', publicUrl);
+
+    // Retornar mesmo formato da rota Cloudinary para compatibilidade
+    res.json({
+      success: true,
+      url: publicUrl,
+      public_id: 'local/banners/' + filename,
+      width: null,
+      height: null,
+      format: ext.replace('.', ''),
+      size: image.size
+    });
+
+  } catch (error) {
+    console.error('❌ Erro no upload de banner:', error);
+    res.status(500).json({
+      error: 'Erro ao fazer upload do banner',
+      message: error.message
+    });
+  }
+});
 
 // ==================== ROTA DE CONTATO ====================
 app.post('/api/contact', async (req, res) => {

@@ -45,7 +45,7 @@ const faqs: FAQItem[] = [
   },
   {
     question: 'Como entro em contato com o suporte?',
-    answer: 'Você pode nos contatar pelo e-mail contato@greenrushoficial.com ou pelo WhatsApp (19) 98228-4846. Estamos prontos para ajudar!'
+    answer: 'Você pode nos contatar pelo e-mail contato@greenrushoficial.com ou pelo WhatsApp (19) 98229-1787. Estamos prontos para ajudar!'
   },
   {
     question: 'Posso parcelar minha compra?',
@@ -122,7 +122,7 @@ export const FAQ = () => {
           </p>
           <div className="flex justify-center">
             <a
-              href="https://wa.me/5519982284846"
+              href="https://wa.me/5519982291787"
               target="_blank"
               rel="noopener noreferrer"
               className="px-6 py-3 rounded-lg font-semibold transition-colors text-white"

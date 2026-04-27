@@ -47,13 +47,13 @@ export const Contact = () => {
               </div>
             </div>
             <a
-              href="https://wa.me/5519982284846"
+              href="https://wa.me/5519982291787"
               target="_blank"
               rel="noopener noreferrer"
               className="text-lg font-semibold hover:underline"
               style={{ color: '#4a9d4e' }}
             >
-              (19) 98228-4846
+              (19) 98229-1787
             </a>
           </div>
 
@@ -69,11 +69,11 @@ export const Contact = () => {
               </div>
             </div>
             <a
-              href="tel:+5519982284846"
+              href="tel:+5519982291787"
               className="text-lg font-semibold hover:underline"
               style={{ color: '#4a9d4e' }}
             >
-              (19) 98228-4846
+              (19) 98229-1787
             </a>
           </div>
 

@@ -103,7 +103,7 @@ export const ReturnPolicy = () => {
                     <h4 className="font-semibold">Entre em Contato</h4>
                   </div>
                   <p className="text-gray-600 ml-11">
-                    Envie um e-mail para contato@greenrushoficial.com ou WhatsApp (19) 98228-4846 informando:
+                    Envie um e-mail para contato@greenrushoficial.com ou WhatsApp (19) 98229-1787 informando:
                   </p>
                   <ul className="list-disc list-inside ml-11 mt-2 text-gray-600 text-sm space-y-1">
                     <li>Número do pedido</li>
@@ -244,7 +244,7 @@ export const ReturnPolicy = () => {
               </p>
               <ul className="space-y-2">
                 <li><strong>E-mail:</strong> contato@greenrushoficial.com</li>
-                <li><strong>WhatsApp:</strong> (19) 98228-4846</li>
+                <li><strong>WhatsApp:</strong> (19) 98229-1787</li>
               </ul>
             </section>
           </div>

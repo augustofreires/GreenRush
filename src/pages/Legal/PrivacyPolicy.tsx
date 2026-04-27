@@ -143,7 +143,7 @@ export const PrivacyPolicy = () => {
               </p>
               <ul className="space-y-2">
                 <li><strong>E-mail:</strong> contato@greenrushoficial.com</li>
-                <li><strong>WhatsApp:</strong> (19) 98228-4846</li>
+                <li><strong>WhatsApp:</strong> (19) 98229-1787</li>
               </ul>
             </section>
           </div>

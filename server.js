@@ -1214,14 +1214,14 @@ app.get('/api/orders/:id', async (req, res) => {
         foundOrder = {
           id: dbOrder.id,
           userId: 'guest', // Pode adicionar userId na tabela futuramente
-          items: JSON.parse(dbOrder.items),
+          items: typeof dbOrder.items === 'string' ? JSON.parse(dbOrder.items) : dbOrder.items,
           total: parseFloat(dbOrder.total),
-          subtotal: parseFloat(dbOrder.total), // Calcular se necessário
+          subtotal: parseFloat(dbOrder.total),
           status: dbOrder.status,
           paymentMethod: dbOrder.payment_method,
           paymentStatus: 'pending',
-          shippingAddress: JSON.parse(dbOrder.shipping_address),
-          billingAddress: JSON.parse(dbOrder.shipping_address),
+          shippingAddress: typeof dbOrder.shipping_address === 'string' ? JSON.parse(dbOrder.shipping_address) : dbOrder.shipping_address,
+          billingAddress: typeof dbOrder.shipping_address === 'string' ? JSON.parse(dbOrder.shipping_address) : dbOrder.shipping_address,
           createdAt: dbOrder.created_at,
           updatedAt: dbOrder.created_at,
         };

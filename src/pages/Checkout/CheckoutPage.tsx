@@ -136,6 +136,22 @@ export const CheckoutPage = () => {
   }, [paymentMethod, currentStep]);
 
   // Validação da etapa de contato
+  const validateCPF = (cpf: string): boolean => {
+    const digits = cpf.replace(/\D/g, "");
+    if (digits.length !== 11) return false;
+    if (/^(\d)\1+$/.test(digits)) return false;
+    let sum = 0;
+    for (let i = 0; i < 9; i++) sum += parseInt(digits[i]) * (10 - i);
+    let rem = (sum * 10) % 11;
+    if (rem === 10 || rem === 11) rem = 0;
+    if (rem !== parseInt(digits[9])) return false;
+    sum = 0;
+    for (let i = 0; i < 10; i++) sum += parseInt(digits[i]) * (11 - i);
+    rem = (sum * 10) % 11;
+    if (rem === 10 || rem === 11) rem = 0;
+    return rem === parseInt(digits[10]);
+  };
+
   const validateContactStep = () => {
     if (!contactInfo.name.trim()) {
       alert('Por favor, preencha seu nome completo.');
@@ -207,8 +223,13 @@ export const CheckoutPage = () => {
     e.preventDefault();
 
     // Validar CPF antes de processar
-    if (!contactInfo.cpf.trim() || !(contactInfo.cpf.length === 11 || contactInfo.cpf.length === 14)) {
+    const cpfDigits = contactInfo.cpf.replace(/\D/g, '');
+    if (!cpfDigits || (cpfDigits.length !== 11 && cpfDigits.length !== 14)) {
       alert('Por favor, preencha um CPF ou CNPJ válido.');
+      return;
+    }
+    if (cpfDigits.length === 11 && !validateCPF(cpfDigits)) {
+      alert('CPF inválido. Por favor, verifique o número digitado.');
       return;
     }
 
@@ -320,10 +341,14 @@ export const CheckoutPage = () => {
       // Salvar o pedido criado no estado
       setCreatedOrder(order);
 
-      // Se for PIX e tiver dados do PIX, não redirecionar ainda
-      if (paymentMethod === 'pix' && (order as any).pixData) {
-        console.log('💰 Mostrando dados do PIX...');
-        // Não limpar o carrinho ainda
+      if (paymentMethod === 'pix') {
+        if ((order as any).pixData) {
+          console.log('💰 Mostrando dados do PIX...');
+          // Não limpar o carrinho ainda
+        } else {
+          // PIX sem QR code — segurança extra após M1 (não deve ocorrer)
+          alert('Não foi possível gerar o código PIX. Por favor, tente novamente.');
+        }
       } else {
         // Para outros métodos de pagamento, redirecionar normalmente
         console.log('🚀 Redirecionando para confirmação...');

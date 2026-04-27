@@ -1207,7 +1207,7 @@ app.get('/api/orders/:id', async (req, res) => {
 
     // 1. Buscar primeiro no banco de dados MySQL
     try {
-      const [dbOrders] = await db.execute('SELECT * FROM orders WHERE id = ?', [id]);
+      const [dbOrders] = await db.execute('SELECT * FROM orders WHERE id = ? OR appmax_order_id = ?', [id, id]);
       
       if (dbOrders.length > 0) {
         const dbOrder = dbOrders[0];

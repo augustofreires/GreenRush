@@ -30,7 +30,10 @@ Thumbs.db
 
 # Backup files
 *.bak
+*.bak2
+*.bak3
 *.backup
+*.backup-*
 *.old
 
 # PM2
@@ -39,3 +42,6 @@ Thumbs.db
 # Backups locais
 backups/
 server.js.backup*
+
+# Uploads (sincronizado via rsync, nao versionado)
+uploads/

@@ -27,7 +27,7 @@ export const Header = () => {
     <header className="bg-white shadow-md sticky top-0 z-50">
       {/* Top Bar - Promoção */}
       <div className="bg-primary-green text-white text-center py-2 px-4 text-sm" style={{ backgroundColor: '#4a9d4e', color: '#FFFFFF' }}>
-        <p className="font-medium">🎁 Todo o site com Frete GRÁTIS | BLACKFRIDAY? Use o cupom PROMO30 e ganhe 30% OFF!</p>
+        <p className="font-medium">SEMANA DO CONSUMIDOR! Compre os produtos mais desejados com preços incríveis ✨+ frete GRÁTIS 🎁</p>
       </div>
 
       {/* Main Header - Tudo em uma linha */}

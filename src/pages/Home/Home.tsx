@@ -71,7 +71,7 @@ export const Home = () => {
 
   // Get featured and combo products (only with stock)
   const availableProducts = getAvailableProducts() || [];
-  const featuredProducts = Array.isArray(availableProducts) ? availableProducts.slice(0, 4) : [];
+  const featuredProducts = Array.isArray(availableProducts) ? availableProducts.filter(p => p.badge !== 'combo').sort((a, b) => a.name.includes('Cinta Modeladora Green') ? -1 : b.name.includes('Cinta Modeladora Green') ? 1 : 0).slice(0, 4) : [];
   const combos = Array.isArray(availableProducts) ? availableProducts.filter(p => p.badge === 'combo').slice(0, 4) : [];
 
   // Get latest blog posts
@@ -117,27 +117,62 @@ export const Home = () => {
     <div className="min-h-screen">
       {/* Hero/Banner Section */}
       {activeBanners.length > 0 && currentBanner ? (
-        <section className="relative h-[650px] md:h-[500px] overflow-hidden bg-gray-100 w-full">
-          {/* Mobile Image */}
-          {currentBanner.mobileImage && (
-            <img
-              src={currentBanner.mobileImage}
-              alt={currentBanner.title}
-              width="800"
-              height="1200"
-              fetchPriority="high"
-              className="md:hidden absolute inset-0 w-full h-full object-cover object-center transition-all duration-1000"
-            />
+        <section className="relative w-full overflow-hidden bg-gray-100">
+          {/* Banner Images with conditional link */}
+          {currentBanner.link ? (
+            currentBanner.link.startsWith("http") ? (
+              <a href={currentBanner.link} target="_blank" rel="noopener noreferrer" className="block cursor-pointer">
+                {currentBanner.mobileImage && (
+                  <img
+                    src={currentBanner.mobileImage}
+                    alt={currentBanner.title || "Banner"}
+                    loading="eager"
+                    className="md:hidden w-full h-auto block"
+                  />
+                )}
+                <img
+                  src={currentBanner.image}
+                  alt={currentBanner.title || "Banner"}
+                  loading="eager"
+                  className={`${currentBanner.mobileImage ? 'hidden md:block' : ''} w-full h-auto block`}
+                />
+              </a>
+            ) : (
+              <Link to={currentBanner.link} className="block cursor-pointer">
+                {currentBanner.mobileImage && (
+                  <img
+                    src={currentBanner.mobileImage}
+                    alt={currentBanner.title || "Banner"}
+                    loading="eager"
+                    className="md:hidden w-full h-auto block"
+                  />
+                )}
+                <img
+                  src={currentBanner.image}
+                  alt={currentBanner.title || "Banner"}
+                  loading="eager"
+                  className={`${currentBanner.mobileImage ? 'hidden md:block' : ''} w-full h-auto block`}
+                />
+              </Link>
+            )
+          ) : (
+            <>
+              {currentBanner.mobileImage && (
+                <img
+                  src={currentBanner.mobileImage}
+                  alt={currentBanner.title || "Banner"}
+                  loading="eager"
+                  className="md:hidden w-full h-auto block"
+                />
+              )}
+              <img
+                src={currentBanner.image}
+                alt={currentBanner.title || "Banner"}
+                loading="eager"
+                className={`${currentBanner.mobileImage ? 'hidden md:block' : ''} w-full h-auto block`}
+              />
+            </>
           )}
-          {/* Desktop Image */}
-          <img
-            src={currentBanner.image}
-            alt={currentBanner.title}
-            width="1920"
-            height="600"
-            fetchPriority="high"
-            className={`${currentBanner.mobileImage ? 'hidden md:block' : ''} absolute inset-0 w-full h-full object-cover object-center transition-all duration-1000`}
-          />
 
           {/* Banner Indicators */}
           {activeBanners.length > 1 && (
@@ -406,7 +441,7 @@ export const Home = () => {
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
             {Array.isArray(combos) && combos.map((product) => (
-              <ProductCard key={product.id} product={product} />
+              <ProductCard key={product.id} product={product} disableLink />
             ))}
           </div>
         </div>

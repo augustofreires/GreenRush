@@ -73,11 +73,16 @@ export const useProductStore = create<ProductStore>()(
             { id: 'm3', author: 'Amanda Costa', rating: 4, date: '2024-09-11', comment: 'Muito boa! Ajudou muito na minha postura também. Recomendo!', verified: true },
           ],
           variants: [
-            { id: 'pp', name: 'PP', price: 297.00, stock: 10 },
-            { id: 'p', name: 'P', price: 297.00, stock: 12 },
-            { id: 'm', name: 'M', price: 297.00, stock: 15 },
-            { id: 'g', name: 'G', price: 297.00, stock: 8 },
-            { id: 'gg', name: 'GG', price: 297.00, stock: 5 },
+            { id: '32168944', sku: '1761327673774-PP', name: 'PP', price: 297.00, stock: 10 },
+            { id: '30702309', sku: '1761327673774', name: 'P', price: 297.00, stock: 12 },
+            { id: '32168961', sku: '1761327673774-M', name: 'M', price: 297.00, stock: 15 },
+            { id: '32168991', sku: '1761327673774-G', name: 'G', price: 297.00, stock: 8 },
+            { id: '32169017', sku: '1761327673774-GG', name: 'GG', price: 297.00, stock: 5 },
+
+
+
+
+
           ],
         },
         {

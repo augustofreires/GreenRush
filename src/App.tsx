@@ -52,6 +52,7 @@ const AdminUsers = lazy(() => import('./pages/Admin/Users').then(m => ({ default
 const CarouselImages = lazy(() => import('./pages/Admin/CarouselImages').then(m => ({ default: m.CarouselImages })));
 const TestimonialsVideo = lazy(() => import('./pages/Admin/TestimonialsVideo').then(m => ({ default: m.TestimonialsVideo })));
 const Settings = lazy(() => import('./pages/Admin/Settings').then(m => ({ default: m.Settings })));
+const AdminEmailCampaign = lazy(() => import('./pages/Admin/AdminEmailCampaign').then(m => ({ default: m.AdminEmailCampaign })));
 
 // Legal Pages
 const FAQ = lazy(() => import('./pages/Legal/FAQ').then(m => ({ default: m.FAQ })));
@@ -148,6 +149,7 @@ function App() {
             <Route path="integracoes" element={<AdminIntegrations />} />
             <Route path="carrossel" element={<CarouselImages />} />
             <Route path="configuracoes" element={<Settings />} />
+            <Route path="email" element={<AdminEmailCampaign />} />
           </Route>
 
           {/* Catch all */}
@@ -295,6 +297,12 @@ function AdminLayout() {
             className="block px-6 py-3 hover:bg-gray-800 transition-colors"
           >
             Integrações
+          </Link>
+          <Link
+            to="/admin/email"
+            className="block px-6 py-3 hover:bg-gray-800 transition-colors text-yellow-400 font-semibold"
+          >
+            ✉️ Email Marketing
           </Link>
           <div className="border-t border-gray-800 mt-6 pt-6">
             <Link

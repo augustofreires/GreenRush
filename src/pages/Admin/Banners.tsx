@@ -61,7 +61,7 @@ export const AdminBanners = () => {
         formData.append('folder', 'greenrush/banners');
 
         // Fazer upload para Cloudinary via API
-        const response = await fetch(`${API_URL}/upload/image`, {
+        const response = await fetch(`${API_URL}/upload/banner-image`, {
           method: 'POST',
           body: formData
         });

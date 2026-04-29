@@ -7,9 +7,10 @@ import { SizeModal } from './SizeModal';
 
 interface ProductCardProps {
   product: Product;
+  disableLink?: boolean;
 }
 
-export const ProductCard = ({ product }: ProductCardProps) => {
+export const ProductCard = ({ product, disableLink = false }: ProductCardProps) => {
   const [showSizeModal, setShowSizeModal] = useState(false);
   const addItem = useCartStore((state) => state.addItem);
 
@@ -37,7 +38,8 @@ export const ProductCard = ({ product }: ProductCardProps) => {
   return (
     <Link
       to={productUrl}
-      className="group bg-white rounded-lg shadow-md hover:shadow-xl transition-shadow duration-300 overflow-hidden"
+      onClick={disableLink ? (e) => e.preventDefault() : undefined}
+      className={`group bg-white rounded-lg shadow-md hover:shadow-xl transition-shadow duration-300 overflow-hidden${disableLink ? ' cursor-default' : ''}`}
     >
       {/* Image */}
       <div className="relative overflow-hidden aspect-square">
@@ -48,6 +50,7 @@ export const ProductCard = ({ product }: ProductCardProps) => {
         />
 
         {/* Badges */}
+        {!disableLink && (
         <div className="absolute top-3 left-3 flex flex-col gap-2">
           {product.badge === 'new' && (
             <span className="bg-blue-500 text-white px-3 py-1 rounded-full text-xs font-semibold shadow-md">
@@ -70,8 +73,10 @@ export const ProductCard = ({ product }: ProductCardProps) => {
             </span>
           )}
         </div>
+        )}
 
         {/* Wishlist */}
+        {!disableLink && (
         <button
           onClick={(e) => {
             e.preventDefault();
@@ -81,6 +86,7 @@ export const ProductCard = ({ product }: ProductCardProps) => {
         >
           <FiHeart size={18} />
         </button>
+        )}
       </div>
 
       {/* Content */}

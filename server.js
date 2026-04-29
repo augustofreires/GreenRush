@@ -2914,13 +2914,13 @@ app.get('/api/products/:slug', async (req, res) => {
 // Criar produto
 app.post('/api/products', async (req, res) => {
   try {
-    const { name, description, shortDescription, price, originalPrice, category, badge, stock, images, tags, isFeatured } = req.body;
+    const { name, description, shortDescription, price, originalPrice, category, badge, stock, images, tags, isFeatured, customLandingPage } = req.body;
 
     const productId = Date.now().toString();
     const slug = name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
 
     await db.execute(
-      'INSERT INTO products (id, name, slug, description, short_description, price, original_price, category, badge, stock, images, tags, is_featured) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
+      'INSERT INTO products (id, name, slug, description, short_description, price, original_price, category, badge, stock, images, tags, is_featured, custom_landing_page) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
       [
         productId,
         name,
@@ -2934,7 +2934,8 @@ app.post('/api/products', async (req, res) => {
         stock || 0,
         JSON.stringify(images || []),
         JSON.stringify(tags || []),
-        isFeatured || false
+        isFeatured || false,
+        customLandingPage || null
       ]
     );
 
@@ -2972,11 +2973,14 @@ app.put('/api/products/:id', async (req, res) => {
     const tags = req.body.tags !== undefined ? req.body.tags : (typeof currentProduct.tags === 'string' ? JSON.parse(currentProduct.tags) : currentProduct.tags);
     const isFeatured = req.body.isFeatured !== undefined ? req.body.isFeatured : currentProduct.is_featured;
     const isActive = req.body.hidden !== undefined ? !req.body.hidden : currentProduct.is_active;
+    const customLandingPage = req.body.customLandingPage !== undefined
+      ? (req.body.customLandingPage || null)
+      : currentProduct.custom_landing_page;
 
-    const slug = name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+    const slug = req.body.slug || name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
 
     await db.execute(
-      'UPDATE products SET name = ?, slug = ?, description = ?, short_description = ?, price = ?, original_price = ?, category = ?, badge = ?, stock = ?, images = ?, tags = ?, is_featured = ?, is_active = ?, updated_at = NOW() WHERE id = ?',
+      'UPDATE products SET name = ?, slug = ?, description = ?, short_description = ?, price = ?, original_price = ?, category = ?, badge = ?, stock = ?, images = ?, tags = ?, is_featured = ?, is_active = ?, custom_landing_page = ?, updated_at = NOW() WHERE id = ?',
       [
         name,
         slug,
@@ -2991,6 +2995,7 @@ app.put('/api/products/:id', async (req, res) => {
         JSON.stringify(tags),
         isFeatured ? 1 : 0,
         isActive ? 1 : 0,
+        customLandingPage,
         req.params.id
       ]
     );
